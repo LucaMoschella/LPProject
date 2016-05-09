@@ -3,7 +3,6 @@ use "SintassiAstratta.sml";
 exception NonTypedVar
 exception FieldNotFound
 exception MethodNotFound
-
 exception ClassNotFound
 
 (* SEMANTICA STATICA - GESTIONE DEI TIPI *)
