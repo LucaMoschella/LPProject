@@ -1,9 +1,12 @@
 use "SintassiAstratta.sml";
 
 exception NonTypedVar
+exception NonTypedThis
 exception FieldNotFound
 exception MethodNotFound
 exception ClassNotFound
+
+exception TypeIsNotAClass
 
 (* SEMANTICA STATICA - GESTIONE DEI TIPI *)
 datatype ContestoDeiTipi = tipiList of (Varpiu * Types) list
@@ -24,15 +27,6 @@ fun stampaContesto ( tipiList []) = "\n"
 (* concatena contesto dei tipi *) 
 fun concatenaContesto ( tipiList l1 , tipiList l2) = tipiList ( l1 @ l2);
 
-(* cerca tipo di una variaible in un contesto dei tipi*)
-fun equalVar ( varNome( nomeV v ), nomeV s ) = ( v = s )
-	| equalVar (  varThis , nomeV s ) = ( "this" = s );
-
-fun appoggioPerRicerca ( tipiList [] , nomeV s ) = raise NonTypedVar
-	| appoggioPerRicerca ( tipiList ((n1,t1)::l), nomeV s ) = if (equalVar(n1, nomeV s)) then t1 else appoggioPerRicerca( tipiList l, nomeV s);
-fun cercaTipoVariabile ( tipiList l, nomeV s ) = appoggioPerRicerca( tipiList(rev l), nomeV s);
-
-
 (* %%%%%%%%%%%%%%%%% cerca la definizione di una classe in un programmo %%%%%%%%%%%%%%%%%%%%% *)
 fun cercaClasseInProgramma ( programma, Object ) = defClass(Object, Object, [], [])	
 	| cercaClasseInProgramma ( codice [], nomeCl nclasse ) = raise ClassNotFound
@@ -41,6 +35,8 @@ fun cercaClasseInProgramma ( programma, Object ) = defClass(Object, Object, [], 
 	| cercaClasseInProgramma ( codice (  (defClass (Object, ce , lv , lm)) ::l ), nomeCl nclasse ) =  
 				cercaClasseInProgramma( codice l, nomeCl nclasse);
 
+(* %%%%%%%%%%%%%%%%% data la definizione di una classe, torna la classe che estende %%%%%%%%%%%%%%%%%%%%% *)
+fun getExtendedClass( defClass (nomeclasse, nomeclasseestesa , campi , metodi) ) = nomeclasseestesa;
 
 (* %%%%%%%%%%%%%%%%% tipo di un campo (programma, nomecampo, cnomeclasse) %%%%%%%%%%%%%%%%%%%%% *)
 fun cercaTipoCampoinClasse ( programma, defClass (Object, _ , _ , _), nomeC campo ) = raise FieldNotFound
@@ -75,7 +71,49 @@ fun cercaTipoMetodoInClasse(programma, defClass (Object, _ , _ , _), nomeM metod
 fun mtype( programma, nomem, nomecl, tipi) = cercaTipoMetodoInClasse(programma, cercaClasseInProgramma ( programma, nomecl ), nomem, tipi );
 
 
+(* %%%%%%%%%%%%%%%%% regole per i tipi %%%%%%%%%%%%%%%%%%%%% *)
+
+
+(*  REGOLA 1 - cerca var *)
+fun equalVarpiu( varThis, varThis ) = true
+| equalVarpiu( varThis, varNome n2) = false
+| equalVarpiu( varNome( nomeV n), varThis) = false
+| equalVarpiu( varNome( nomeV n), varNome ( nomeV n2)) = (n = n2) 
+
+
+
+fun equalVar ( varNome( nomeV v ), nomeV s ) = ( v = s )
+	| equalVar (  varThis , nomeV s ) = ( "this" = s );
+
+fun cercaTipoVariabileInContesto ( tipiList [],nomeV s ) = raise NonTypedVar
+	| cercaTipoVariabileInContesto ( tipiList ((n1,t1)::l), nomeV s ) = 
+		if (equalVar(n1, nomeV s)) then t1 else cercaTipoVariabileInContesto( tipiList l, nomeV s);
+
+
+fun cercaTipoThisInContesto ( tipiList [] ) = raise NonTypedThis
+	| cercaTipoThisInContesto ( tipiList ((varThis,t1)::l) ) = t1
+	|  cercaTipoThisInContesto ( tipiList ((_,t1)::l) ) =cercaTipoThisInContesto( tipiList l );
+
+fun getNomeClasseDaTipo( myInt ) =  raise TypeIsNotAClass
+ 	| getNomeClasseDaTipo( T ) = raise TypeIsNotAClass
+	| getNomeClasseDaTipo( tyC n) = n;
+
+
+
+fun cercaTipoRightValueInContesto(programma, contesto, isvariabile(nomeV v)  ) = cercaTipoVariabileInContesto( contesto, nomeV v)
+	| cercaTipoRightValueInContesto(programma, contesto, isint n) = myInt
+	| cercaTipoRightValueInContesto(programma, contesto, new( c)) = tyC c
+	| cercaTipoRightValueInContesto(programma, contesto, kw( null )) = T
+	| cercaTipoRightValueInContesto(programma, contesto, kw( this )) = cercaTipoThisInContesto(contesto)
+	| cercaTipoRightValueInContesto(programma, contesto, kw( super )) = tyC (getExtendedClass( cercaClasseInProgramma(programma, getNomeClasseDaTipo( cercaTipoThisInContesto contesto)) ) )
+	| cercaTipoRightValueInContesto( programma, contesto, accessocampo( right, c) ) = ftype( programma, c, getNomeClasseDaTipo( cercaTipoRightValueInContesto(programma,contesto, right)));
+ 
+
+                accessocampo of rigthvalue * campo |
+
+
 (* TEST *)
+(*)
 val x=tipiList [(varNome (nomeV "i"), myInt), (varNome(nomeV "e"), myInt)];
 
 val y=tipiList [(varNome (nomeV "e"), T), (varNome(nomeV "g"), T)];
@@ -85,8 +123,8 @@ print (stampaContesto x);
 print (stampaContesto y);
 print (stampaContesto (concatenaContesto (x,y)));
 print (stampaContesto ( concatenaContesto (x,y)));
-print( (stampaTypes (cercaTipoVariabile (concatenaContesto (x,y), nomeV "i"))) ^ "\n");
-
+print( "Cerca tipo variabile: " ^ (stampaTypes (cercaTipoVariabileInContesto (concatenaContesto (x,y), nomeV "g"))) ^ "\n");
+*)
 
 (* SEMANTICA DINAMICA - ESECUZIONE *)
 (*
@@ -97,7 +135,9 @@ and Env = envList of (Varpiu * Valori) list
 and Heap = heapList of (Loc * Valori) list;
 	
 *)
-
+(*
 print (stampaTipo(ftype( esempio, nomeC "a", nomeCl "Classe1")) ^ "\n");
 print (stampaProgramma esempio);
 print (stampaTipo( mtype(esempio, nomeM "metodo3", nomeCl "Classe2", [intero,intero])) ^ "\n");
+*)
+

@@ -100,5 +100,3 @@ and
 and
 	stampaProgramma ( codice l ) = stampaLista( l, "", "\n", stampaClasse); 
 
-
- print (stampaProgramma esempio); 
