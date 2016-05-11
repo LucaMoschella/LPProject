@@ -128,12 +128,12 @@ use "PrintToJava.sml";
 use "ProgrammiEsempio.sml";
 
 
-val chiama = chiamatametodo((new (nomeCl "Classe1")) ,
-							nomeM "metodo2",
-							[isint 1]
+val chiama = chiamatametodo((new (nomeCl "Classe2")) ,
+							nomeM "metodo4",
+							[isvariabile ( nomeV "v")]
 							);
 print (stampaProgramma esempio);
-print (stampaTypes( cercaTipoRightValueInContesto(esempio, tipiList [], chiama )) ^ "\n");
+print (stampaTypes( cercaTipoRightValueInContesto(esempio, tipiList [(varNome(nomeV "v"), myInt)], chiama )) ^ "\n");
 
 (*)
 val x=tipiList [(varNome (nomeV "i"), myInt), (varNome(nomeV "e"), myInt)];
