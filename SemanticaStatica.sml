@@ -14,15 +14,6 @@ and Varpiu = varNome of nomeVar | varThis
 and Types = tyC of nomeClasse | myInt | T;
 
 
-(* gestione stampa *)
-fun stampaTypes (tyC s) = stampaNomeClasse( s )
-	| stampaTypes ( myInt) = "int"
-	| stampaTypes (T) = "T";
-fun stampaVarPiu ( varNome n ) = stampaNomeVar n
-	| stampaVarPiu (varThis) = "this";
-fun stampaContesto ( tipiList []) = "\n"
-	| stampaContesto ( tipiList( (v,t)::l)) = "( " ^ (stampaVarPiu v) ^ ":" ^ (stampaTypes t) ^ " ) ; " ^ (stampaContesto (tipiList l));
-
 
 (* concatena contesto dei tipi *) 
 fun concatenaContesto ( tipiList l1 , tipiList l2) = tipiList ( l1 @ l2);
@@ -39,15 +30,20 @@ fun cercaClasseInProgramma ( programma, Object ) = defClass(Object, Object, [], 
 fun getExtendedClass( defClass (nomeclasse, nomeclasseestesa , campi , metodi) ) = nomeclasseestesa;
 
 (* %%%%%%%%%%%%%%%%% tipo di un campo (programma, nomecampo, cnomeclasse) %%%%%%%%%%%%%%%%%%%%% *)
+
+fun tipoToType ( intero   ) = myInt
+| tipoToType ( class c ) = tyC c;
+
 fun cercaTipoCampoinClasse ( programma, defClass (Object, _ , _ , _), nomeC campo ) = raise FieldNotFound
 	| cercaTipoCampoinClasse (programma,  defClass (nomeCl _, classeEstesa , [] , _), nomeC campo ) = cercaTipoCampoinClasse( programma, cercaClasseInProgramma(programma,classeEstesa ), nomeC campo)
 	| cercaTipoCampoinClasse ( programma, defClass (nomeCl classe, ext , (defCampo( t, nomeC nc, r))::campi , metodi), nomeC campo ) =
-			if( nc = campo ) then t else cercaTipoCampoinClasse(programma, defClass (nomeCl classe, ext , campi , metodi), nomeC campo );
+			if( nc = campo ) then tipoToType ( t ) else cercaTipoCampoinClasse(programma, defClass (nomeCl classe, ext , campi , metodi), nomeC campo );
 
 fun ftype( programma, nomec, nomecl) = cercaTipoCampoinClasse(programma, cercaClasseInProgramma ( programma, nomecl ), nomec );
 
 
 (* %%%%%%%%%%%%%%%%% tipo di un metodo (programma, nomemetodo, nomeclasse, [t1,...,tn] ) %%%%%%%%%%%%%%%%%%%%% *)
+(*
 fun equalType ( intero, intero ) = true
 	| equalType ( intero, class( c) ) = false
 	| equalType ( class( c), intero ) = false
@@ -55,16 +51,32 @@ fun equalType ( intero, intero ) = true
 	| equalType ( class( Object), class( nomeCl c2) ) = false
 	| equalType ( class( nomeCl c1), class( Object) ) = false
 	| equalType ( class( nomeCl c1), class( nomeCl c2) ) = (c1 = c2);
+*)
+
+fun compatibleTipoTypes ( intero, myInt ) = true
+	| compatibleTipoTypes ( intero, tyC( c) ) = false
+	| compatibleTipoTypes ( intero, T ) = false
+	| compatibleTipoTypes ( c, T ) = true
+	| compatibleTipoTypes ( class( c), myInt ) = false
+	| compatibleTipoTypes ( class( Object), tyC( Object) ) = true
+	| compatibleTipoTypes ( class( Object), tyC( nomeCl c2) ) = false
+	| compatibleTipoTypes ( class( nomeCl c1), tyC( Object) ) = false
+	| compatibleTipoTypes ( class( nomeCl c1), tyC( nomeCl c2) ) = (c1 = c2);
+
 
 fun parametriCompatibili( [], [] ) = true
 	| parametriCompatibili( defvariabile(t,n)::l, [] ) = false
 	| parametriCompatibili( [], t::l ) = false
-	| parametriCompatibili( (defvariabile(t1,n))::l1, t2::l2 ) = if( not (equalType(t1,t2))) then false else parametriCompatibili(l1,l2 );
+	| parametriCompatibili( (defvariabile(t1,n))::l1, t2::l2 ) = if( not (compatibleTipoTypes(t1,t2))) then false else parametriCompatibili(l1,l2 );
 
 fun cercaTipoMetodoInClasse(programma, defClass (Object, _ , _ , _), nomeM metodo, parametri ) = raise MethodNotFound
-	| cercaTipoMetodoInClasse(programma,  defClass (nomeCl _, classeEstesa , _ , []), nomeM metodo, parametri ) = cercaTipoMetodoInClasse( programma, cercaClasseInProgramma(programma,classeEstesa ), nomeM metodo, parametri)
+
+	| cercaTipoMetodoInClasse(programma,  defClass (nomeCl _, classeEstesa , _ , []), nomeM metodo, parametri ) = 
+			cercaTipoMetodoInClasse( programma, cercaClasseInProgramma(programma,classeEstesa ), nomeM metodo, parametri)
+
 	| cercaTipoMetodoInClasse ( programma, defClass (nomeCl classe, ext , campi , (defMetodo(t,nomeM m,args,locals,cmds))::metodi), nomeM metodo,parametri ) =
-			if( (m = metodo) andalso (parametriCompatibili(args, parametri))) then t 
+			if( (m = metodo) andalso (parametriCompatibili(args, parametri))) (* parametri deve contere tipi dal datatype types*)
+				then tipoToType ( t ) 
 				else cercaTipoMetodoInClasse(programma, defClass (nomeCl classe, ext , campi , metodi), nomeM metodo, parametri );
 
 
@@ -98,21 +110,31 @@ fun getNomeClasseDaTipo( myInt ) =  raise TypeIsNotAClass
  	| getNomeClasseDaTipo( T ) = raise TypeIsNotAClass
 	| getNomeClasseDaTipo( tyC n) = n;
 
+fun getListTipiArgs (programma, contesto, [] ) = []
+	| getListTipiArgs ( programma, contesto,r::l ) = (cercaTipoRightValueInContesto(programma, contesto, r)) :: (getListTipiArgs (  programma, contesto,l ))
 
-
-fun cercaTipoRightValueInContesto(programma, contesto, isvariabile(nomeV v)  ) = cercaTipoVariabileInContesto( contesto, nomeV v)
-	| cercaTipoRightValueInContesto(programma, contesto, isint n) = myInt
-	| cercaTipoRightValueInContesto(programma, contesto, new( c)) = tyC c
-	| cercaTipoRightValueInContesto(programma, contesto, kw( null )) = T
-	| cercaTipoRightValueInContesto(programma, contesto, kw( this )) = cercaTipoThisInContesto(contesto)
-	| cercaTipoRightValueInContesto(programma, contesto, kw( super )) = tyC (getExtendedClass( cercaClasseInProgramma(programma, getNomeClasseDaTipo( cercaTipoThisInContesto contesto)) ) )
-	| cercaTipoRightValueInContesto( programma, contesto, accessocampo( right, c) ) = ftype( programma, c, getNomeClasseDaTipo( cercaTipoRightValueInContesto(programma,contesto, right)));
- 
-
-                accessocampo of rigthvalue * campo |
+and	cercaTipoRightValueInContesto( programma, contesto, isvariabile(nomeV v)  ) = cercaTipoVariabileInContesto( contesto, nomeV v)
+	| cercaTipoRightValueInContesto( programma, contesto, isint n) = myInt
+	| cercaTipoRightValueInContesto( programma, contesto, new( c)) = tyC c
+	| cercaTipoRightValueInContesto( programma, contesto, kw( null )) = T 
+	| cercaTipoRightValueInContesto( programma, contesto, kw( this )) = cercaTipoThisInContesto(contesto)
+	| cercaTipoRightValueInContesto( programma, contesto, kw( super )) = tyC (getExtendedClass( cercaClasseInProgramma(programma, getNomeClasseDaTipo( cercaTipoThisInContesto contesto)) ) )
+	| cercaTipoRightValueInContesto( programma, contesto, accessocampo( right, c) ) = ftype( programma, c, getNomeClasseDaTipo( cercaTipoRightValueInContesto(programma,contesto, right)))
+	| cercaTipoRightValueInContesto( programma, contesto, chiamatametodo( right, m, args) ) = mtype(programma, m, getNomeClasseDaTipo( cercaTipoRightValueInContesto( programma, contesto, right) ) , getListTipiArgs (programma, contesto, args )) ;
 
 
 (* TEST *)
+use "PrintToJava.sml";
+use "ProgrammiEsempio.sml";
+
+
+val chiama = chiamatametodo((new (nomeCl "Classe1")) ,
+							nomeM "metodo2",
+							[isint 1]
+							);
+print (stampaProgramma esempio);
+print (stampaTypes( cercaTipoRightValueInContesto(esempio, tipiList [], chiama )) ^ "\n");
+
 (*)
 val x=tipiList [(varNome (nomeV "i"), myInt), (varNome(nomeV "e"), myInt)];
 
@@ -138,6 +160,5 @@ and Heap = heapList of (Loc * Valori) list;
 (*
 print (stampaTipo(ftype( esempio, nomeC "a", nomeCl "Classe1")) ^ "\n");
 print (stampaProgramma esempio);
-print (stampaTipo( mtype(esempio, nomeM "metodo3", nomeCl "Classe2", [intero,intero])) ^ "\n");
 *)
 
