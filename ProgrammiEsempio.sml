@@ -22,8 +22,8 @@ defClass(
         ],
         [
          defMetodo ( class (nomeCl "Classe1"), nomeM "metodo3", [defvariabile (intero, nomeV "input"),defvariabile (intero, nomeV "input")], [], [assegnamentoVar(nomeV "input", kw null), return (isvariabile (nomeV "input"))]) ,
-         defMetodo ( intero, nomeM "metodo3", [defvariabile (class (nomeCl Classe1), nomeV "input"),defvariabile (intero, nomeV "input")], [], [assegnamentoVar(nomeV "input", kw null), return (isvariabile (nomeV "input"))]) ,
-            defMetodo ( class (nomeCl "Classe2"), nomeM "metodo4", [defvariabile (intero, nomeV "input")], [], [assegnamentoVar(nomeV "input", kw null), return (isvariabile (nomeV "input"))]) 
+         defMetodo ( intero, nomeM "metodo3", [defvariabile (class (nomeCl "Classe1"), nomeV "input")], [], [assegnamentoVar(nomeV "input", kw null), return (isvariabile (nomeV "input"))]) ,
+        defMetodo ( class (nomeCl "Classe2"), nomeM "metodo4", [defvariabile (intero, nomeV "input")], [], [assegnamentoVar(nomeV "input", kw null), return (isvariabile (nomeV "input"))]) 
 
         ]
         ) 
