@@ -44,16 +44,16 @@ fun tipoDefault( intero ) = valInt 0
 fun cbody( programma,  nomec ) = let val ( defClass( _ , _ , campi, _ ) ) = cercaClasseInProgramma ( programma, nomec ) 
 								in campi end;
 
-fun aggiungiCampiAOggettoEHeap([], ncl, obj, memoria h) = (obj, memoria h)
-	| aggiungiCampiAOggettoEHeap( defCampo( t, nc, r)::l1, ncl, istanza(n, l2), memoria h)= 
-		(let val x = nextLoc() 
-		in
-			aggiungiCampiAOggettoEHeap( l1, ncl, istanza(n, (ncl,nc,x)::l2), memoria( (x, tipoDefault(t))::h)) 
-		end);
+fun aggiornaObjAndHeap([], ncl, istanza(n, l2), memoria h) = (istanza(ncl,l2), memoria h)
+	| aggiornaObjAndHeap( defCampo( t, nc, r)::l1, ncl, istanza(n, l2), memoria h)= (	let val x = nextLoc() 
+																						in aggiornaObjAndHeap( l1, ncl, istanza(n, (ncl,nc,x)::l2), memoria( (x, tipoDefault(t))::h)) 
+																						end);
 
 (* Prende un ( oggetto, classe ) => ( obj, heap) dove obj = oggetto + campi in classe, con i valori nell'heap *)
-fun alloc (programma, obj, ncl) = aggiungiCampiAOggettoEHeap( cbody(programma, ncl), ncl, obj, memoria []);
+fun alloc (programma, obj, ncl) = aggiornaObjAndHeap( cbody(programma, ncl), ncl, obj, memoria []);
 
+(* Inizializza la locazione nell'heap conil corretto right value. *)
+fun initCampi( programma, obj, memoria h ) = QUI I CAMPI DEVONO ESSERE INZIIZALIZZATI RICHIAMANDO regolaRightExpr, CON UN AMBIENTE IN CUI è PRESENTE (THIS, OBJ)
 
 (*REGOLE PER VALUTARE RIGHT EXPRESSION *)
 fun regolaRightExpr (programma, ambiente a, isvariabile(v), memoria h) = (getValEnv(ambiente a, varNome v),memoria h)
@@ -71,17 +71,19 @@ fun regolaRightExpr (programma, ambiente a, isvariabile(v), memoria h) = (getVal
 
 	| regolaRightExpr (programma, ambiente a, new( Object), memoria h) = (valObj( istanza( Object, [])) , memoria h)
 
-	| regolaRightExpr (programma, ambiente a, new( c ), memoria h) = (valNull, memoria h);
-(*
 	| regolaRightExpr (programma, ambiente a, new( c ), memoria h) =  
 		let val (x, y) = regolaRightExpr (programma, ambiente a, new( getExtendedClass( cercaClasseInProgramma( programma, c))), memoria h)
 		in 
-			let val (x1, y1) = alloc( programma, getObjFromVal x, c) 
+			let 
+				val (x1, y1) = alloc( programma, getObjFromVal x, c) 
 			in
-				( valObj x1, concatHeap(y, y1))
+				let 
+					val h = initCampi( programma, x1, concatHeap(y, y1) )
+				in
+					( valObj x1, h)
+				end
 			end
 		end;
-*)
 
 use "PrintToJava.sml";
 use "ProgrammiEsempio.sml";
