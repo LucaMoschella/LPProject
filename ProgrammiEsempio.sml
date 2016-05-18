@@ -59,8 +59,7 @@ val esempioDispensa = codice(
 	        nomeCl "B",
 	        nomeCl "A",
 	        [
-	            defCampo ( intero, nomeC ("g"),chiamatametodo ((kw this) , nomeM "m" , [])),
-	            defCampo ( intero, nomeC ("buu"),(kw this))
+	            defCampo ( intero, nomeC ("g"),chiamatametodo ((kw this) , nomeM "m" , []))
 	        ],
 	        [
 	            defMetodo ( intero, nomeM "m", [], [], [return (accessocampo( kw this, nomeC "g"))])

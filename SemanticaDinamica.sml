@@ -104,11 +104,14 @@ and regolaRightExpr (programma, ambiente a, isvariabile(v), memoria h) = (getVal
 	| regolaRightExpr (programma, ambiente a, new( Object), memoria h) = (valObj( istanza( Object, [])) , memoria h)
 
 	| regolaRightExpr (programma, ambiente a, new( c ), memoria h) =  
+		(* Sale verso Object*)
 		let val (x, y) = regolaRightExpr (programma, ambiente a, new( getExtendedClass( cercaClasseInProgramma( programma, c))), memoria h)
-		in 
-			let 
+		in (* Riscende, e ad ogni passo in discesa: *)
+			let  
+				(* 1: espande l'oggetto con la classse corrente e inizializza i campi nell'heap con i valori di default*)
 				val (x1, y1) = alloc( programma, getObjFromVal x, c) 
 			in
+				(* 2: ricalcola il rightvalue di tutti i campi e lo riassegna. (Cambiando oggetto, cambia il this, cambiando il this può cambiare il tutto) *)
 				( valObj x1, initCampi( programma, x1, concatHeap(y, y1) ))
 			end
 		end
@@ -118,6 +121,14 @@ use "PrintToJava.sml";
 use "ProgrammiEsempio.sml";
 
 print (stampaProgramma esempioDispensa);
+print (let val (x,y ) =regolaRightExpr( esempioDispensa, ambiente [], new( nomeCl "A"), memoria []);
+in 
+	"Oggetto: " ^ stampaVal(x) ^"\nHeap: " ^ stampaHeap(y) ^ "\n"
+end);
+print (let val (x,y ) =regolaRightExpr( esempioDispensa, ambiente [], new( nomeCl "B"), memoria []);
+in 
+	"Oggetto: " ^ stampaVal(x) ^"\nHeap: " ^ stampaHeap(y) ^ "\n"
+end);
 print (let val (x,y ) =regolaRightExpr( esempioDispensa, ambiente [], new( nomeCl "weird"), memoria []);
 in 
 	"Oggetto: " ^ stampaVal(x) ^"\nHeap: " ^ stampaHeap(y) ^ "\n"

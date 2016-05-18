@@ -67,16 +67,16 @@ fun stampaListaNewLineApp( [], ind:string, midsep:string, endsep:string, metodo)
 
 fun stampaLoc ( locazione i) = "loc#" ^ (Int.toString i);
 
-fun stampaTriplaCampiObj( nomec, nomeca, loc ) = "( " ^ (stampaNomeClasse nomec) ^ " : " ^ ( stampaNomeCampo nomeca) ^ " : " ^ (stampaLoc loc) ^ " )";
-fun stampaObj( istanza( nomec , l) ) = "{ " ^ (stampaNomeClasse( nomec )) ^ ": " ^ (stampaListaInLine(l, "", ", ", "", stampaTriplaCampiObj )) ^ "}"  ;
+fun stampaTriplaCampiObj( nomec, nomeca, loc ) = "" ^ (stampaNomeClasse nomec) ^ ":" ^ ( stampaNomeCampo nomeca) ^ ":" ^ (stampaLoc loc) ^ "";
+fun stampaObj( istanza( nomec , l) ) = "{ Obj:" ^ (stampaNomeClasse( nomec )) ^ " - Campi: " ^ (stampaListaInLine(l, "[", ", ", "]", stampaTriplaCampiObj )) ^ " }"  ;
 
 fun stampaVal( valAssente ) = "*"
 	| stampaVal( valNull ) = "null"
 	| stampaVal( valObj( obj ) )  = stampaObj obj
-	| stampaVal( valInt i ) = Int.toString i
+	| stampaVal( valInt i ) = Int.toString i;
 
-fun stampaCoppiaVarVal( variabile, valore ) = "( " ^ (stampaVarPiu variabile) ^ " : " ^ ( stampaVal valore) ^ " )";
-fun stampaEnv( ambiente l) = stampaListaInLine(l, "", ", ", "", stampaCoppiaVarVal );
+fun stampaCoppiaVarVal( variabile, valore ) = "" ^ (stampaVarPiu variabile) ^ ":" ^ ( stampaVal valore) ^ "";
+fun stampaEnv( ambiente l) = stampaListaInLine(l, "[", ", ", "]", stampaCoppiaVarVal );
 
-fun stampaCoppiaLocVal( locaz, valore) = "(" ^ (stampaLoc locaz) ^ ":" ^ ( stampaVal valore) ^ ")";
+fun stampaCoppiaLocVal( locaz, valore) = "" ^ (stampaLoc locaz) ^ ":" ^ ( stampaVal valore) ^ "";
 fun stampaHeap( memoria l) = stampaListaInLine(l, "[", ", ", "]", stampaCoppiaLocVal );
