@@ -16,20 +16,41 @@ datatype Env = ambiente of ((Varpiu * Val) list); (* VALUTARE L'ASSOCIAIONE CON 
 datatype Heap = memoria of ((Loc * Val) list);
 
 
-fun cbody( programma,  nomec ) = let val ( defClass( _ , _ , campi, _ ) ) = cercaClasseInProgramma ( programma, nomec ) in campi end;
+(* GESTIONE AMBIENTE *)
+exception VarNotFoundInEnv
+exception ValIsNotObj
+exception ValIsNotInt
 
+fun getValEnv( ambiente [], var:Varpiu ) = raise VarNotFoundInEnv
+	| getValEnv( ambiente ((k,v)::l), var:Varpiu) = if (k = var)then (v) else (getValEnv(ambiente l,var)); 
 
-fun mbody (programma, Object, nomeM m, parametri) = raise MethodNotFound
-	|mbody (programma, nomeCl c, nomeM m, parametri) = cercaMetodo(programma, cercaClasseInProgramma(programma, nomeCl c) , nomeM m, parametri)
+(* FUNZIONI DI COMODO *)
+fun getSuperClasseOggetto(programma, istanza(c,(_)))=getExtendedClass(cercaClasseInProgramma ( programma, c ));
+
+fun getSuperCampi(programma, istanza ( n, l))= getSuperCampiAppoggio(programma,istanza ( n, l),istanza ( n, []))
 and
-	cercaMetodo(programma, defClass( n1, n2, campi, []), nomeM m, parametri) = mbody(programma, n2, nomeM m, parametri )
-	| cercaMetodo(programma, defClass( n1, n2, campi, (defMetodo(t,nomeM m,args,locals,cmds))::metodi), nomeM metodo, parametri) =
-			if( (m = metodo) andalso (parametriCompatibili(programma, args, parametri))) (* parametri deve contere tipi dal datatype types*)
-				then defMetodo(t,nomeM m,args,locals,cmds)
-				else cercaMetodo(programma, defClass (n1, n2 , campi , metodi), nomeM metodo, parametri );
+	 getSuperCampiAppoggio(programma, istanza (n1, []), istanza (n2, l))=l
+
+	 | getSuperCampiAppoggio(programma, istanza(n1, (nomec,nomef,loc)::l), istanza(n2,l2))= 
+	 if (nomec=n1)
+	 then getSuperCampiAppoggio(programma,istanza(n1,l),istanza(n2,l2))
+	 else getSuperCampiAppoggio(programma, istanza(n1,l), istanza(n2,((nomec,nomef,loc)::l2)) )
+and
+	getObjFromVal( valObj obj) = obj
+	| getObjFromVal( _ ) = raise ValIsNotObj;
+
+(*REGOLE*)
+fun regolaVariabile (programma, a, v, h) = (getValEnv(a, v),h);
 
 
 
+fun regolaSuper (programma, a, h) = (let val x = getObjFromVal (getValEnv(a, varThis)) 
+									in
+										(istanza (getSuperClasseOggetto(programma, x), getSuperCampi(programma, x)), h )
+									end);
 
-print (stampaProgramma esempio);
-print ( stampaMetodo( mbody(esempio, nomeCl "Classe1", nomeM "metodo3", [tyC(nomeCl "Classe2")] )) ^ "\n");
+fun regolaNull (programma, a, h) = (kw null, h);
+
+fun regolaInt (programma, a, valInt(n), h) = (valInt(n), h)
+| regolaInt (programma, a, _, h) = raise ValIsNotInt;
+
