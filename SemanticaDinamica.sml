@@ -1,10 +1,6 @@
 use "SintassiAstratta.sml";
 use "SemanticaStatica.sml";
 
-use "PrintToJava.sml";
-use "ProgrammiEsempio.sml";
-
-
 
 datatype  Loc = locazione of int ;
 val currentLocInt: int ref = ref 0; (* DA PROVARE UNIFICAZIONE CON LA FUNZIONE *)
@@ -42,18 +38,22 @@ and
 	getObjFromVal( valObj obj) = obj
 	| getObjFromVal( _ ) = raise ValIsNotObj;
 
-fun cbody( programma,  nomec ) = let val ( defClass( _ , _ , campi, _ ) ) = cercaClasseInProgramma ( programma, nomec ) 
-								in campi end;
-
 fun tipoDefault( intero ) = valInt 0
 	| tipoDefault( class _ ) =valNull ;
 
-fun aggiungiCampiAOggettoEHeap([], obj, memoria h) = (obj, memoria h)
-	| aggiungiCampiAOggettoEHeap( defCampo( t, nc, r)::l1, istanza(n, l2), memoria h)= (let val x = nextLoc() in
-			aggiungiCampiAOggettoEHeap( l1, istanza(n, (n,nc,x)::l2), memoria( (x, tipoDefault(t))::h)) end);
+fun cbody( programma,  nomec ) = let val ( defClass( _ , _ , campi, _ ) ) = cercaClasseInProgramma ( programma, nomec ) 
+								in campi end;
+
+fun aggiungiCampiAOggettoEHeap([], ncl, obj, memoria h) = (obj, memoria h)
+	| aggiungiCampiAOggettoEHeap( defCampo( t, nc, r)::l1, ncl, istanza(n, l2), memoria h)= 
+		(let val x = nextLoc() 
+		in
+			aggiungiCampiAOggettoEHeap( l1, ncl, istanza(n, (ncl,nc,x)::l2), memoria( (x, tipoDefault(t))::h)) 
+		end);
 
 (* Prende un ( oggetto, classe ) => ( obj, heap) dove obj = oggetto + campi in classe, con i valori nell'heap *)
-fun alloc (programma, obj, ncl) = aggiungiCampiAOggettoEHeap( cbody(programma, ncl), obj, memoria []);
+fun alloc (programma, obj, ncl) = aggiungiCampiAOggettoEHeap( cbody(programma, ncl), ncl, obj, memoria []);
+
 
 (*REGOLE PER VALUTARE RIGHT EXPRESSION *)
 fun regolaRightExpr (programma, ambiente a, isvariabile(v), memoria h) = (getValEnv(ambiente a, varNome v),memoria h)
@@ -71,6 +71,8 @@ fun regolaRightExpr (programma, ambiente a, isvariabile(v), memoria h) = (getVal
 
 	| regolaRightExpr (programma, ambiente a, new( Object), memoria h) = (valObj( istanza( Object, [])) , memoria h)
 
+	| regolaRightExpr (programma, ambiente a, new( c ), memoria h) = (valNull, memoria h);
+(*
 	| regolaRightExpr (programma, ambiente a, new( c ), memoria h) =  
 		let val (x, y) = regolaRightExpr (programma, ambiente a, new( getExtendedClass( cercaClasseInProgramma( programma, c))), memoria h)
 		in 
@@ -79,5 +81,13 @@ fun regolaRightExpr (programma, ambiente a, isvariabile(v), memoria h) = (getVal
 				( valObj x1, concatHeap(y, y1))
 			end
 		end;
+*)
 
-regolaRightExpr( esempioDispensa, ambiente [], new( nomeCl "B"), memoria []);
+use "PrintToJava.sml";
+use "ProgrammiEsempio.sml";
+
+print (stampaProgramma esempioDispensa);
+print (let val (x,y ) =regolaRightExpr( esempioDispensa, ambiente [], new( nomeCl "weird"), memoria []);
+in 
+	"Oggetto: " ^ stampaVal(x) ^"\nHeap: " ^ stampaHeap(y) ^ "\n"
+end);

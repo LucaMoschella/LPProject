@@ -64,7 +64,7 @@ val esempioDispensa = codice(
 
 	defClass(
         nomeCl "weird",
-        Object,
+         nomeCl "B",
         [],
         [
             defMetodo ( intero, nomeM "main", 

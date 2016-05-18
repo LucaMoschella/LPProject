@@ -54,9 +54,29 @@ fun stampaContesto ( tipiList []) = "\n"
 
 (***************** STAMPA SEMNATICA DINAMICA **********************)
 
-(** temporanea!!!! ***)
+(** DA SOTITUIRE CON QUELLE SOPRA **)
+fun stampaListaInLineApp( [],  midsep:string, endsep:string, metodo) = "" |
+	stampaListaInLineApp( l::[], midsep:string, endsep:string, metodo) =  (metodo l) ^ endsep |
+	stampaListaInLineApp( l::lista, midsep:string, endsep:string, metodo) =  (metodo l) ^ midsep ^ (stampaListaInLineApp (lista, midsep, endsep, metodo))
+and stampaListaInLine( l, ind:string, midsep:string, endsep:string, metodo) = ind ^ stampaListaInLineApp(  l, midsep:string, endsep:string, metodo)
+
+fun stampaListaNewLineApp( [], ind:string, midsep:string, endsep:string, metodo) = "" |
+	stampaListaNewLineApp( l::[], ind:string, midsep:string, endsep:string, metodo) =   "\n" ^ ind ^ (metodo l) ^ endsep |
+	stampaListaNewLineApp( l::lista, ind:string, midsep:string, endsep:string, metodo) =  "\n" ^ ind ^ (metodo l) ^ midsep ^ (stampaListaNewLineApp (lista, ind, midsep, endsep, metodo));
+
+
+fun stampaLoc ( locazione i) = "loc#" ^ (Int.toString i);
+
+fun stampaTriplaCampiObj( nomec, nomeca, loc ) = "( " ^ (stampaNomeClasse nomec) ^ " : " ^ ( stampaNomeCampo nomeca) ^ " : " ^ (stampaLoc loc) ^ " )";
+fun stampaObj( istanza( nomec , l) ) = "{ " ^ (stampaNomeClasse( nomec )) ^ ": " ^ (stampaListaInLine(l, "", ", ", "", stampaTriplaCampiObj )) ^ "}"  ;
 
 fun stampaVal( valAssente ) = "*"
 	| stampaVal( valNull ) = "null"
-	| stampaVal( valObj( istanza( nomeCl  n , l ) ))  = n
-	| stampaVal( valInt i ) = Int.toString i;
+	| stampaVal( valObj( obj ) )  = stampaObj obj
+	| stampaVal( valInt i ) = Int.toString i
+
+fun stampaCoppiaVarVal( variabile, valore ) = "( " ^ (stampaVarPiu variabile) ^ " : " ^ ( stampaVal valore) ^ " )";
+fun stampaEnv( ambiente l) = stampaListaInLine(l, "", ", ", "", stampaCoppiaVarVal );
+
+fun stampaCoppiaLocVal( locaz, valore) = "(" ^ (stampaLoc locaz) ^ ":" ^ ( stampaVal valore) ^ ")";
+fun stampaHeap( memoria l) = stampaListaInLine(l, "[", ", ", "]", stampaCoppiaLocVal );
