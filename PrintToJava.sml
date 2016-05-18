@@ -24,7 +24,7 @@ and
 		"\n{\n" ^ (stampaLista(locals,"    ", ";\n", stampaVariabile )) ^ "\n" ^ (stampaLista(commands,"    ", ";\n", stampaComando )) ^ "\n}"
 and
 	stampaClasse (defClass (n, nfrom, campi, metodi ) ) = 
-		(stampaNomeClasse n) ^ " extends " ^ (stampaNomeClasse nfrom) ^
+		"class " ^ (stampaNomeClasse n) ^ " extends " ^ (stampaNomeClasse nfrom) ^
 		"\n{\n" ^ (stampaLista(campi,"    ", ";\n", stampaCampo )) ^ "\n" ^ (stampaLista(metodi,"    ", "\n", stampaMetodo )) ^ "\n}\n"
 and
 	stampaComando  (assegnamentoVar (n,v)) = (stampaNomeVar n) ^ " = " ^ (stampaRightValue v)

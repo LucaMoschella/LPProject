@@ -1,5 +1,3 @@
-use "SintassiAstratta.sml";
-
 exception NonTypedVar
 exception NonTypedThis
 exception FieldNotFound
@@ -30,6 +28,13 @@ fun cercaClasseInProgramma ( programma, Object ) = defClass(Object, Object, [], 
 				if (nclasse = c) then defClass (nomeCl c, ce , lv , lm) else cercaClasseInProgramma( codice l, nomeCl nclasse)
 	| cercaClasseInProgramma ( codice (  (defClass (Object, ce , lv , lm)) ::l ), nomeCl nclasse ) =  
 				cercaClasseInProgramma( codice l, nomeCl nclasse);
+
+fun esisteClasseInProgramma ( programma, Object ) = true	
+	| esisteClasseInProgramma ( codice [], nomeCl nclasse ) = false
+	| esisteClasseInProgramma ( codice (  (defClass (nomeCl c, ce , lv , lm)) ::l ), nomeCl nclasse ) = 
+				if (nclasse = c) then true else esisteClasseInProgramma( codice l, nomeCl nclasse)
+	| esisteClasseInProgramma ( codice (  (defClass (Object, ce , lv , lm)) ::l ), nomeCl nclasse ) =  
+				esisteClasseInProgramma( codice l, nomeCl nclasse);
 
 (* %%%%%%%%%%%%%%%%% data la definizione di una classe, torna la classe che estende %%%%%%%%%%%%%%%%%%%%% *)
 fun getExtendedClass( defClass (nomeclasse, nomeclasseestesa , campi , metodi) ) = nomeclasseestesa;
@@ -74,6 +79,7 @@ fun compatibleTipoTypes (programma, intero, myInt ) = true
 	| compatibleTipoTypes (programma, class( nomeCl c1), tyC( nomeCl c2) ) = isSottoclasse(programma, nomeCl c1, nomeCl c2);
 
 fun compatibleTypesTypes (programma, tyC( nomeCl c1), tyC( nomeCl c2) ) = isSottoclasse(programma, nomeCl c1, nomeCl c2)
+	| compatibleTypesTypes (programma, tyC c, T) = true
 	| compatibleTypesTypes (programma, t1, t2) = (t1 = t2);
 
 
@@ -142,36 +148,68 @@ fun getContestExpanded( tipiList lc, [] ) = tipiList lc
 fun compatibleTipoTypes (programma, intero, myInt ) = 
 *)
 
-fun controllaTipoMetodo( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, [] )) = true
+fun controllaTipoMetodoApp( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, [] ) , ret) = ret
 
-| controllaTipoMetodo( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, (assegnamentoVar( nomeV v, right))::comandi )) = 
+| controllaTipoMetodoApp( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, (assegnamentoVar( nomeV v, right))::comandi ) , ret) = 
 	if( not ( compatibleTypesTypes( programma , 
 		cercaTipoRightValueInContesto( programma, getContestExpanded( getContestExpanded(contesto, args), locals),  isvariabile(nomeV v)  ) , 
 		cercaTipoRightValueInContesto( programma, getContestExpanded( getContestExpanded(contesto, args), locals),  right  ))))
 	then false
-	else controllaTipoMetodo( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, comandi ))
+	else controllaTipoMetodoApp( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, comandi ) , ret)
 
-| controllaTipoMetodo( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, (assegnamentoCampo( right1, nomeC c, right2))::comandi )) = 
+| controllaTipoMetodoApp( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, (assegnamentoCampo( right1, nomeC c, right2))::comandi ) , ret) = 
 	if( not ( compatibleTypesTypes( programma , 
 		cercaTipoRightValueInContesto( programma, getContestExpanded( getContestExpanded(contesto, args), locals),  accessocampo( right1, nomeC c)  ) , 
 		cercaTipoRightValueInContesto( programma, getContestExpanded( getContestExpanded(contesto, args), locals),  right2  ))))
 	then false
-	else controllaTipoMetodo( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, comandi ))
+	else controllaTipoMetodoApp( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, comandi ) , ret)
 
-| controllaTipoMetodo( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, (return d)::comandi )) = 
+| controllaTipoMetodoApp( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, (return d)::comandi ), ret) = 
 	if( not ( compatibleTipoTypes( programma ,  tipoSintattico , cercaTipoRightValueInContesto( programma, getContestExpanded( getContestExpanded(contesto, args), locals),  d  )  )))
 	then false 
-	else controllaTipoMetodo( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, comandi ));
+	else controllaTipoMetodoApp( programma, contesto, defMetodo(tipoSintattico, nomemetodo, args, locals, comandi ), true);
+
+fun controllaTipoMetodo( programma, contesto, metodo ) = controllaTipoMetodoApp( programma, contesto, metodo , false);
 
 
+(* classe = defClass of nomeClasse * nomeClasse * campo list * metodo list 
+and campo = defCampo of tipo * nomeCampo * rigthvalue
+*)
+
+(* Controlla tipo classe *)
+fun controllaListaCampi( programma, contesto, [] ) = true
+| controllaListaCampi( programma, contesto, ( defCampo( t, n, r))::l ) = if ( not (compatibleTipoTypes(programma, t, cercaTipoRightValueInContesto(programma, contesto, r)))) 
+																		then false 
+																		else controllaListaCampi( programma, contesto, l );
+
+fun controllaListaMetodi( programma, contesto, []) = true
+	| controllaListaMetodi( programma, contesto, m::l) = if ( not (controllaTipoMetodo( programma, contesto, m))) then false
+														else controllaListaMetodi(programma, contesto, l);
+
+
+fun  controllaTipoClasse( programma, defClass(nomeClasseCorrente, nomeClasseEstesa, campi, metodi)) = controllaListaCampi( programma, tipiList[(varThis,tyC(nomeClasseCorrente))], campi )
+																										andalso
+																										controllaListaMetodi( programma, tipiList[(varThis,tyC(nomeClasseCorrente))], metodi )
+																										andalso 
+																										esisteClasseInProgramma( programma, nomeClasseEstesa)
+																										;
+
+fun controllaTipoProgrammaApp(programma, codice [] ) = true
+	| controllaTipoProgrammaApp(programma, codice (c::l) ) = if (not(controllaTipoClasse(programma, c))) then false
+										else controllaTipoProgrammaApp(programma,codice l);
+
+fun controllaTipoProgramma( programma ) = controllaTipoProgrammaApp(programma, programma);
 
 (*and metodo = defMetodo of tipo * nomeMetodo *  variabile list * variabile list * comando list*)
 
-(* TEST *)
+(* TEST
 use "PrintToJava.sml";
 use "ProgrammiEsempio.sml";
 
-
+print (stampaProgramma esempio);
+ ( controllaTipoProgramma( esempio));
+ *)
+(*
 val chiama = chiamatametodo((new (nomeCl "Classe2")) ,
 							nomeM "metodo3",
 							[isvariabile ( nomeV "v")]
@@ -184,7 +222,7 @@ val metodo = defMetodo ( intero, nomeM "metodo2", [defvariabile (intero, nomeV "
 controllaTipoMetodo(esempio, tipiList [] , metodo );
 
 print (stampaMetodo metodo);
-(*
+
 val x=tipiList [(varNome (nomeV "i"), myInt), (varNome(nomeV "e"), myInt)];
 
 val y=tipiList [(varNome (nomeV "e"), T), (varNome(nomeV "g"), T)];
