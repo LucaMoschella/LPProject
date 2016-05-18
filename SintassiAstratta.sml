@@ -21,6 +21,7 @@ and comando =   assegnamentoVar of nomeVar * rigthvalue |
 and rigthvalue = isvariabile of nomeVar |
                 isint of int    |
                 kw of keyword |
+                
                 new of nomeClasse |
                 accessocampo of rigthvalue * nomeCampo |
                 chiamatametodo of rigthvalue * nomeMetodo  * rigthvalue list

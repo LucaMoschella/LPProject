@@ -16,13 +16,16 @@ datatype Env = ambiente of ((Varpiu * Val) list); (* VALUTARE L'ASSOCIAIONE CON 
 datatype Heap = memoria of ((Loc * Val) list);
 
 
-(* GESTIONE AMBIENTE *)
 exception VarNotFoundInEnv
 exception ValIsNotObj
 exception ValIsNotInt
+(* GESTIONE AMBIENTE *)
 
 fun getValEnv( ambiente [], var:Varpiu ) = raise VarNotFoundInEnv
 	| getValEnv( ambiente ((k,v)::l), var:Varpiu) = if (k = var)then (v) else (getValEnv(ambiente l,var)); 
+(* GESTIONE HEAP *)
+
+fun concatHeap( memoria h1, memoria h2) = memoria ( h1 @ h2) ;
 
 (* FUNZIONI DI COMODO *)
 fun getSuperClasseOggetto(programma, istanza(c,(_)))=getExtendedClass(cercaClasseInProgramma ( programma, c ));
@@ -39,18 +42,42 @@ and
 	getObjFromVal( valObj obj) = obj
 	| getObjFromVal( _ ) = raise ValIsNotObj;
 
-(*REGOLE*)
-fun regolaVariabile (programma, a, v, h) = (getValEnv(a, v),h);
+fun cbody( programma,  nomec ) = let val ( defClass( _ , _ , campi, _ ) ) = cercaClasseInProgramma ( programma, nomec ) 
+								in campi end;
 
+fun tipoDefault( intero ) = valInt 0
+	| tipoDefault( class _ ) =valNull ;
 
+fun aggiungiCampiAOggettoEHeap([], obj, memoria h) = (obj, memoria h)
+	| aggiungiCampiAOggettoEHeap( defCampo( t, nc, r)::l1, istanza(n, l2), memoria h)= (let val x = nextLoc() in
+			aggiungiCampiAOggettoEHeap( l1, istanza(n, (n,nc,x)::l2), memoria( (x, tipoDefault(t))::h)) end);
 
-fun regolaSuper (programma, a, h) = (let val x = getObjFromVal (getValEnv(a, varThis)) 
+(* Prende un ( oggetto, classe ) => ( obj, heap) dove obj = oggetto + campi in classe, con i valori nell'heap *)
+fun alloc (programma, obj, ncl) = aggiungiCampiAOggettoEHeap( cbody(programma, ncl), obj, memoria []);
+
+(*REGOLE PER VALUTARE RIGHT EXPRESSION *)
+fun regolaRightExpr (programma, ambiente a, isvariabile(v), memoria h) = (getValEnv(ambiente a, varNome v),memoria h)
+
+	| regolaRightExpr (programma, ambiente a, isint n, memoria h) = (valInt(n), memoria h)
+
+ 	| regolaRightExpr (programma, ambiente a, kw this, memoria h) = (getValEnv(ambiente a, varThis), memoria h)
+
+	| regolaRightExpr (programma, ambiente a, kw super, memoria h) = (let val x = getObjFromVal (getValEnv(ambiente a, varThis)) 
 									in
-										(istanza (getSuperClasseOggetto(programma, x), getSuperCampi(programma, x)), h )
-									end);
+										(valObj (istanza (getSuperClasseOggetto(programma, x), getSuperCampi(programma, x))), memoria h )
+									end)
 
-fun regolaNull (programma, a, h) = (kw null, h);
+	| regolaRightExpr (programma, ambiente a, kw null, memoria h) = (valNull, memoria h)
 
-fun regolaInt (programma, a, valInt(n), h) = (valInt(n), h)
-| regolaInt (programma, a, _, h) = raise ValIsNotInt;
+	| regolaRightExpr (programma, ambiente a, new( Object), memoria h) = (valObj( istanza( Object, [])) , memoria h)
 
+	| regolaRightExpr (programma, ambiente a, new( c ), memoria h) =  
+		let val (x, y) = regolaRightExpr (programma, ambiente a, new( getExtendedClass( cercaClasseInProgramma( programma, c))), memoria h)
+		in 
+			let val (x1, y1) = alloc( programma, getObjFromVal x, c) 
+			in
+				( valObj x1, concatHeap(y, y1))
+			end
+		end;
+
+regolaRightExpr( esempioDispensa, ambiente [], new( nomeCl "B"), memoria []);

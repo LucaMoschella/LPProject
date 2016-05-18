@@ -52,4 +52,11 @@ fun stampaContesto ( tipiList []) = "\n"
 	| stampaContesto ( tipiList( (v,t)::l)) = "( " ^ (stampaVarPiu v) ^ ":" ^ (stampaTypes t) ^ " ) ; " ^ (stampaContesto (tipiList l));
 
 
+(***************** STAMPA SEMNATICA DINAMICA **********************)
 
+(** temporanea!!!! ***)
+
+fun stampaVal( valAssente ) = "*"
+	| stampaVal( valNull ) = "null"
+	| stampaVal( valObj( istanza( nomeCl  n , l ) ))  = n
+	| stampaVal( valInt i ) = Int.toString i;
