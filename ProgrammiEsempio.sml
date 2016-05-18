@@ -44,7 +44,11 @@ val esempioDispensa = codice(
 	        nomeCl "A",
 	        Object,
 	        [
-	            defCampo ( intero, nomeC ("f"),chiamatametodo ((kw this) , nomeM "m" , []))
+	        (*    defCampo ( intero, nomeC ("f"),chiamatametodo ((kw this) , nomeM "m" , [])) *)
+	        	    defCampo ( class(nomeCl "A" ), nomeC ("f"), kw this)
+
+
+
 	        ],
 	        [
 	            defMetodo ( intero, nomeM "m", [], [], [return (isint 3)])
@@ -65,10 +69,10 @@ val esempioDispensa = codice(
 	defClass(
         nomeCl "weird",
          nomeCl "B",
-        [],
+        [ defCampo ( intero, nomeC ("g"), isint 42)],
         [
             defMetodo ( intero, nomeM "main", 
-            	[], (*args*)
+            	[	           ], (*args*)
             	[defvariabile( class( nomeCl "B"), nomeV "b")], (*locals*)
             	[ assegnamentoVar( nomeV "b", new( nomeCl "B")) ,return (accessocampo( isvariabile( nomeV "b"), nomeC "f"))]) (*cmds*)
         ]

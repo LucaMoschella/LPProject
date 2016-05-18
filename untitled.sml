@@ -20,3 +20,19 @@ print ( stampaMetodo( mbody(esempio, nomeCl "Classe1", nomeM "metodo3", [tyC(nom
 (*  REGOLE PER L'ESECUZIONE *)
 
 (* variabile *)
+
+fun initCampiApp( programma, obj, istanza( nomec, []),  memoria h  ) =  memoria h  
+
+	| initCampiApp( programma, obj, istanza( nomec, (classecampo, nomecampo, loccampo)::l), memoria h ) = 
+		initCampiApp( programma, 
+			obj, 
+			istanza( nomec, l), 
+			changeHeap( memoria h ,
+						loccampo , 
+						regolaRightExpr( programma, 
+										ambiente [(varThis, valObj obj )],
+										cercaInitCampo(programma, nomecampo, classecampo), 
+										memoria h) ) )
+		
+
+and initCampi( programma, obj, mem ) = initCampiApp( programma, obj, obj, mem);

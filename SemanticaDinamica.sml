@@ -13,15 +13,25 @@ datatype Heap = memoria of ((Loc * Val) list);
 
 
 exception VarNotFoundInEnv
+exception LocNotFoundInHeap
 exception ValIsNotObj
 exception ValIsNotInt
-(* GESTIONE AMBIENTE *)
+exception InitCampoNonTrovato
 
+(* GESTIONE AMBIENTE *)
 fun getValEnv( ambiente [], var:Varpiu ) = raise VarNotFoundInEnv
 	| getValEnv( ambiente ((k,v)::l), var:Varpiu) = if (k = var)then (v) else (getValEnv(ambiente l,var)); 
-(* GESTIONE HEAP *)
 
+(* GESTIONE HEAP *)
 fun concatHeap( memoria h1, memoria h2) = memoria ( h1 @ h2) ;
+
+fun changeHeapApp( memoria [], memoria newHeap, key, value  ) = memoria newHeap
+	| changeHeapApp( memoria ((keyh,v)::l), memoria newHeap, key, value  ) = 
+		if( keyh = key) then changeHeapApp(  memoria l, memoria ((keyh, value)::newHeap), key, value) else changeHeapApp(  memoria l, memoria ((keyh, v)::newHeap), key, value)
+and changeHeap( h, key, value  ) = changeHeapApp(h, memoria [], key, value);
+
+fun getValHeap( memoria [], loc ) = raise LocNotFoundInHeap
+	| getValHeap( memoria ((k,v)::l), loc) = if (k = loc)then (v) else (getValHeap(memoria l,loc)); 
 
 (* FUNZIONI DI COMODO *)
 fun getSuperClasseOggetto(programma, istanza(c,(_)))=getExtendedClass(cercaClasseInProgramma ( programma, c ));
@@ -52,11 +62,31 @@ fun aggiornaObjAndHeap([], ncl, istanza(n, l2), memoria h) = (istanza(ncl,l2), m
 (* Prende un ( oggetto, classe ) => ( obj, heap) dove obj = oggetto + campi in classe, con i valori nell'heap *)
 fun alloc (programma, obj, ncl) = aggiornaObjAndHeap( cbody(programma, ncl), ncl, obj, memoria []);
 
-(* Inizializza la locazione nell'heap conil corretto right value. *)
-fun initCampi( programma, obj, memoria h ) = QUI I CAMPI DEVONO ESSERE INZIIZALIZZATI RICHIAMANDO regolaRightExpr, CON UN AMBIENTE IN CUI è PRESENTE (THIS, OBJ)
+(* Inizializza la locazione nell'heap conil corretto right value.  
+QUI I CAMPI DEVONO ESSERE INZIIZALIZZATI RICHIAMANDO regolaRightExpr, CON UN AMBIENTE IN CUI è PRESENTE (THIS, OBJ) *)
+fun cercaInitCampoApp ( programma, [], nomeC campo ) = raise InitCampoNonTrovato
+	| cercaInitCampoApp ( programma, (defCampo( tipoca, nomeC nomeca, rightca))::campi , nomeC campo ) =
+			if( nomeca = campo ) then rightca else cercaInitCampoApp(programma, campi, nomeC campo )
+and cercaInitCampo( programma, nomec, nomecl) = cercaInitCampoApp(programma, cbody ( programma, nomecl ), nomec );
+
+fun initCampiApp( programma, obj, istanza( nomec, []),  memoria h  ) =  memoria h  
+
+	| initCampiApp( programma, obj, istanza( nomec, (classecampo, nomecampo, loccampo)::l), memoria h ) = 
+		let val (x,y) = regolaRightExpr( programma, 
+										ambiente [(varThis, valObj obj )],
+										cercaInitCampo(programma, nomecampo, classecampo), 
+										memoria h)
+		in
+			initCampiApp( programma, obj, istanza( nomec, l), changeHeap( memoria h , loccampo , x ))
+		end
+
+		
+
+and initCampi( programma, obj, mem ) = initCampiApp( programma, obj, obj, mem)
+(* fine emtodi per inziializzare i campi! *)
 
 (*REGOLE PER VALUTARE RIGHT EXPRESSION *)
-fun regolaRightExpr (programma, ambiente a, isvariabile(v), memoria h) = (getValEnv(ambiente a, varNome v),memoria h)
+and regolaRightExpr (programma, ambiente a, isvariabile(v), memoria h) = (getValEnv(ambiente a, varNome v),memoria h)
 
 	| regolaRightExpr (programma, ambiente a, isint n, memoria h) = (valInt(n), memoria h)
 
@@ -64,7 +94,10 @@ fun regolaRightExpr (programma, ambiente a, isvariabile(v), memoria h) = (getVal
 
 	| regolaRightExpr (programma, ambiente a, kw super, memoria h) = (let val x = getObjFromVal (getValEnv(ambiente a, varThis)) 
 									in
-										(valObj (istanza (getSuperClasseOggetto(programma, x), getSuperCampi(programma, x))), memoria h )
+										(
+										valObj ( istanza ( getSuperClasseOggetto(programma, x), getSuperCampi(programma, x))),
+										memoria h 
+										)
 									end)
 
 	| regolaRightExpr (programma, ambiente a, kw null, memoria h) = (valNull, memoria h)
@@ -77,13 +110,10 @@ fun regolaRightExpr (programma, ambiente a, isvariabile(v), memoria h) = (getVal
 			let 
 				val (x1, y1) = alloc( programma, getObjFromVal x, c) 
 			in
-				let 
-					val h = initCampi( programma, x1, concatHeap(y, y1) )
-				in
-					( valObj x1, h)
-				end
+				( valObj x1, initCampi( programma, x1, concatHeap(y, y1) ))
 			end
-		end;
+		end
+	| regolaRightExpr (programma, ambiente a, _ , memoria h) =( valInt 999, memoria h);  
 
 use "PrintToJava.sml";
 use "ProgrammiEsempio.sml";
@@ -93,3 +123,5 @@ print (let val (x,y ) =regolaRightExpr( esempioDispensa, ambiente [], new( nomeC
 in 
 	"Oggetto: " ^ stampaVal(x) ^"\nHeap: " ^ stampaHeap(y) ^ "\n"
 end);
+
+controllaTipoProgramma( esempioDispensa )
