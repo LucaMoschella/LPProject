@@ -54,13 +54,12 @@ fun tipoDefault( intero ) = valInt 0
 fun cbody( programma,  nomec ) = let val ( defClass( _ , _ , campi, _ ) ) = cercaClasseInProgramma ( programma, nomec ) 
 								in campi end;
 
+(* Prende un ( oggetto, classe ) => ( obj, heap) dove obj = oggetto + campi in classe, con i valori nell'heap *)
 fun aggiornaObjAndHeap([], ncl, istanza(n, l2), memoria h) = (istanza(ncl,l2), memoria h)
 	| aggiornaObjAndHeap( defCampo( t, nc, r)::l1, ncl, istanza(n, l2), memoria h)= (	let val x = nextLoc() 
 																						in aggiornaObjAndHeap( l1, ncl, istanza(n, (ncl,nc,x)::l2), memoria( (x, tipoDefault(t))::h)) 
-																						end);
-
-(* Prende un ( oggetto, classe ) => ( obj, heap) dove obj = oggetto + campi in classe, con i valori nell'heap *)
-fun alloc (programma, obj, ncl) = aggiornaObjAndHeap( cbody(programma, ncl), ncl, obj, memoria []);
+																						end)
+and alloc (programma, obj, ncl) = aggiornaObjAndHeap( cbody(programma, ncl), ncl, obj, memoria []);
 
 (* Inizializza la locazione nell'heap conil corretto right value.  
 QUI I CAMPI DEVONO ESSERE INZIIZALIZZATI RICHIAMANDO regolaRightExpr, CON UN AMBIENTE IN CUI è PRESENTE (THIS, OBJ) *)
