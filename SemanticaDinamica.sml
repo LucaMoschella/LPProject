@@ -59,7 +59,22 @@ fun aggiornaObjAndHeap([], ncl, istanza(n, l2), memoria h) = (istanza(ncl,l2), m
 	| aggiornaObjAndHeap( defCampo( t, nc, r)::l1, ncl, istanza(n, l2), memoria h)= (	let val x = nextLoc() 
 																						in aggiornaObjAndHeap( l1, ncl, istanza(n, (ncl,nc,x)::l2), memoria( (x, tipoDefault(t))::h)) 
 																						end)
-and alloc (programma, obj, ncl) = aggiornaObjAndHeap( cbody(programma, ncl), ncl, obj, memoria []);
+	
+and alloc (programma, obj, ncl) = aggiornaObjAndHeap( cbody(programma, ncl), ncl, obj, memoria [])
+
+and allocaOggetto( programma, new (Object), memoria h ) = ( istanza( Object, []) , memoria h)
+	| allocaOggetto( programma, new ( c ), memoria h ) =
+		(* Sale verso Object*)
+			let val (x, y) = allocaOggetto (programma, new( getExtendedClass( cercaClasseInProgramma( programma, c))), memoria h)
+			in (* Riscende, e ad ogni passo in discesa: *)
+				let  
+					(* 1: espande l'oggetto con la classse corrente e inizializza i campi nell'heap con i valori di default*)
+					val (x1, y1) = alloc( programma,  x, c) 
+				in
+					(* 2: Torna l'oggetto creato, espandendo l'heap con i campi aggiunti *)
+					( x1,  concatHeap(y, y1) )
+				end
+			end;
 
 (* Inizializza la locazione nell'heap conil corretto right value.  
 QUI I CAMPI DEVONO ESSERE INZIIZALIZZATI RICHIAMANDO regolaRightExpr, CON UN AMBIENTE IN CUI è PRESENTE (THIS, OBJ) *)
@@ -71,16 +86,13 @@ and cercaInitCampo( programma, nomec, nomecl) = cercaInitCampoApp(programma, cbo
 fun initCampiApp( programma, obj, istanza( nomec, []),  memoria h  ) =  memoria h  
 
 	| initCampiApp( programma, obj, istanza( nomec, (classecampo, nomecampo, loccampo)::l), memoria h ) = 
-		let val (x,y) = regolaRightExpr( programma, 
+		let val (x, _) = regolaRightExpr( programma, 
 										ambiente [(varThis, valObj obj )],
 										cercaInitCampo(programma, nomecampo, classecampo), 
 										memoria h)
 		in
 			initCampiApp( programma, obj, istanza( nomec, l), changeHeap( memoria h , loccampo , x ))
 		end
-
-		
-
 and initCampi( programma, obj, mem ) = initCampiApp( programma, obj, obj, mem)
 (* fine emtodi per inziializzare i campi! *)
 
@@ -101,19 +113,12 @@ and regolaRightExpr (programma, ambiente a, isvariabile(v), memoria h) = (getVal
 
 	| regolaRightExpr (programma, ambiente a, kw null, memoria h) = (valNull, memoria h)
 
-	| regolaRightExpr (programma, ambiente a, new( Object), memoria h) = (valObj( istanza( Object, [])) , memoria h)
-
-	| regolaRightExpr (programma, ambiente a, new( c ), memoria h) =  
-		(* Sale verso Object*)
-		let val (x, y) = regolaRightExpr (programma, ambiente a, new( getExtendedClass( cercaClasseInProgramma( programma, c))), memoria h)
-		in (* Riscende, e ad ogni passo in discesa: *)
-			let  
-				(* 1: espande l'oggetto con la classse corrente e inizializza i campi nell'heap con i valori di default*)
-				val (x1, y1) = alloc( programma, getObjFromVal x, c) 
-			in
-				(* 2: ricalcola il rightvalue di tutti i campi e lo riassegna. (Cambiando oggetto, cambia il this, cambiando il this può cambiare il tutto) *)
-				( valObj x1, initCampi( programma, x1, concatHeap(y, y1) ))
-			end
+	| regolaRightExpr (programma, ambiente a, new newObj, memoria h) =  
+		(* Alloca l'intero oggetto*)
+		let val (x, y) = allocaOggetto (programma, new newObj, memoria h)
+		in 
+			(* 2: calcola il rightvalue di tutti i campi dell'oggetto e li assegna.  *)
+			( valObj x, initCampi( programma, x, y ))
 		end
 	| regolaRightExpr (programma, ambiente a, _ , memoria h) =( valInt 999, memoria h);  
 
