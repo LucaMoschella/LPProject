@@ -264,20 +264,20 @@ fun programmaToTipatoApp(programmaSintattico, codiceS [] ) = codiceT []
 
 fun programmaToTipato( programmaSintattico ) = 
 	programmaToTipatoApp(programmaSintattico, programmaSintattico)
-	handle  VarNameNotValid x => ( print ("\nERRORE: Il nome: " ^ x ^ ", non è un nome di variabile è valido.\n"); codiceT [] )
-			| UnknownVar x => ( print ("\nERRORE: La variabile: " ^ x ^ ", non è stata definita.\n"); codiceT [] )
+	handle  VarNameNotValid x => ( print ("ERRORE: Il nome: " ^ x ^ ", non è un nome di variabile è valido.\n\n"); codiceT [] )
+			| UnknownVar x => ( print ("ERRORE: La variabile: " ^ x ^ ", non è stata definita.\n\n"); codiceT [] )
 
-			| FieldNotFound x => ( print ("\nERRORE: Il campo: " ^ x ^ ", non è stato trovato.\n"); codiceT [] )
-			| MethodNotFound x => ( print ("\nERRORE: Il metodo: " ^ x ^ ", non è stato trovato.\n"); codiceT [] )
-			| ClassNotFound x => ( print ("\nERRORE: La classe: " ^ x ^ ", non è stata trovata.\n"); codiceT [] )
-			| ReturnNotFound x => ( print ("\nERRORE: Il metodo: " ^ x ^ ", non contiene un comando di return.\n"); codiceT [] )
+			| FieldNotFound x => ( print ("ERRORE: Il campo: " ^ x ^ ", non è stato trovato.\n\n"); codiceT [] )
+			| MethodNotFound x => ( print ("ERRORE: Il metodo: " ^ x ^ ", non è stato trovato.\n\n"); codiceT [] )
+			| ClassNotFound x => ( print ("ERRORE: La classe: " ^ x ^ ", non è stata trovata.\n\n"); codiceT [] )
+			| ReturnNotFound x => ( print ("ERRORE: Il metodo: " ^ x ^ ", non contiene un comando di return.\n\n"); codiceT [] )
 
-			| TypeIsNotAClass => ( print ("\nERRORE: Impossibile convertire l'espressione in una classe.\n"); codiceT [] )
+			| TypeIsNotAClass => ( print ("ERRORE: Impossibile convertire l'espressione in una classe.\n\n"); codiceT [] )
 
-			| TypeErrorField x => ( print ("\nERRORE: I tipi non sono compatibili durante l'inizializzazione del campo: " ^ x ^ ".\n"); codiceT [] )
-			| TypeErrorReturn x => ( print ("\nERRORE: Il tipo di return non è compatibile con il tipo di ritorno dichiarato nel metodo: " ^ x ^ ".\n"); codiceT [] )
-			| TypeErrorAssignVar x => ( print ("\nERRORE: Il tipo del valore nell'assegnamento non è compatibile con il tipo della variabile, nel metodo: " ^ x ^ ".\n"); codiceT [] )
-			| TypeErrorAssignField x => ( print ("\nERRORE: Il tipo del valore nell'assegnamento non è compatibile con il tipo del campo, nel metodo: " ^ x ^ ".\n"); codiceT [] );
+			| TypeErrorField x => ( print ("ERRORE: I tipi non sono compatibili durante l'inizializzazione del campo: " ^ x ^ ".\n\n"); codiceT [] )
+			| TypeErrorReturn x => ( print ("ERRORE: Il tipo di return non è compatibile con il tipo di ritorno dichiarato nel metodo: " ^ x ^ ".\n\n"); codiceT [] )
+			| TypeErrorAssignVar x => ( print ("ERRORE: Il tipo del valore nell'assegnamento non è compatibile con il tipo della variabile, nel metodo: " ^ x ^ ".\n\n"); codiceT [] )
+			| TypeErrorAssignField x => ( print ("ERRORE: Il tipo del valore nell'assegnamento non è compatibile con il tipo del campo, nel metodo: " ^ x ^ ".\n\n"); codiceT [] );
 
 
 use "ProgrammiEsempio.sml";
