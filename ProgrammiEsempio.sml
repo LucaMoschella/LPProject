@@ -1,35 +1,35 @@
-val esempio = codice( [
-defClass(
+val esempio = codiceS( [
+defClasseS(
         nomeCl "Classe1",
         Object,
         [
-            defCampo ( intero, nomeC ("a"), isint 5 ),
-            defCampo ( class Object, nomeC ("b"), kw null ) 
+            defCampoS ( intS, nomeC ("a"), intExprS 5 ),
+            defCampoS ( classeS Object, nomeC ("b"),  nullS ) 
         ],
         [
 
 
-            defMetodo ( intero, nomeM "metodo1", [defvariabile (intero, nomeV "input")], [], [assegnamentoVar(nomeV "input", isint 5), return (isvariabile (nomeV "input"))]) 
+            defMetodoS ( intS, nomeM "metodo1", [defVarS (intS, nomeV "input")], [], [assegnamentoVarS(nomeV "input", intExprS 5), returnS (varExprS (nomeV "input"))]) 
             ,
-           defMetodo ( class (nomeCl "Classe1"), nomeM "metodo3", [defvariabile (class (nomeCl "Classe2"), nomeV "input")], [], [assegnamentoVar(nomeV "input", kw null),return (isvariabile (nomeV "input"))]) 
+           defMetodoS ( classeS (nomeCl "Classe1"), nomeM "metodo3", [defVarS (classeS (nomeCl "Classe2"), nomeV "input")], [], [assegnamentoVarS(nomeV "input",  nullS),returnS (varExprS (nomeV "input"))]) 
 
      
         ]
         )
 
 ,
-defClass(
+defClasseS(
         nomeCl "Classe2",
         nomeCl "Classe1",
         [
           
-            defCampo ( class (nomeCl "Classe1"), nomeC ("a"), new ( nomeCl "Classe1") ) ,
-            defCampo ( intero, nomeC ("c"), isint 55 ),
-            defCampo ( class (nomeCl "Classe1"), nomeC ("obj1"), new ( nomeCl "Classe1") ) 
+            defCampoS ( classeS (nomeCl "Classe1"), nomeC ("a"), newS ( nomeCl "Classe1") ) ,
+            defCampoS ( intS, nomeC ("c"), intExprS 55 ),
+            defCampoS ( classeS (nomeCl "Classe1"), nomeC ("obj1"), newS ( nomeCl "Classe1") ) 
         ],
         [
-         defMetodo ( class (nomeCl "Classe1"), nomeM "metodo3", [defvariabile (class (nomeCl "Classe2"), nomeV "input")], [], [assegnamentoVar(nomeV "input", kw null), return (isvariabile (nomeV "input"))]) ,
-         defMetodo ( intero, nomeM "metodo3", [defvariabile (class (nomeCl "Classe1"), nomeV "input")], [], [assegnamentoVar(nomeV "input", kw null), return ( isint 5)]) 
+         defMetodoS ( classeS (nomeCl "Classe1"), nomeM "metodo3", [defVarS (classeS (nomeCl "Classe2"), nomeV "input")], [], [assegnamentoVarS(nomeV "input",  nullS), returnS (varExprS (nomeV "input"))]) ,
+         defMetodoS ( intS, nomeM "metodo3", [defVarS (classeS (nomeCl "Classe1"), nomeV "input")], [], [assegnamentoVarS(nomeV "input",  nullS), returnS ( intExprS 5)]) 
 
         ]
         ) 
@@ -38,43 +38,43 @@ defClass(
 ]
 );
 
-val esempioDispensa = codice( 
+val esempioDispensa = codiceS( 
 [
-	defClass(
+	defClasseS(
 	        nomeCl "A",
 	        Object,
 	        [
-	        (*    defCampo ( intero, nomeC ("f"),chiamatametodo ((kw this) , nomeM "m" , [])) *)
-	        	    defCampo ( class(nomeCl "A" ), nomeC ("f"), kw this)
+	        (*    defCampoS ( intS, nomeC ("f"),chiamataMetodoS (( thisS) , nomeM "m" , [])) *)
+	        	    defCampoS ( classeS(nomeCl "A" ), nomeC ("f"),  thisS)
 
 
 
 	        ],
 	        [
-	            defMetodo ( intero, nomeM "m", [], [], [return (isint 3)])
+	            defMetodoS ( intS, nomeM "m", [], [], [returnS (intExprS 3)])
 	        ]
 	        ),
 
-	defClass(
+	defClasseS(
 	        nomeCl "B",
 	        nomeCl "A",
 	        [
-	            defCampo ( intero, nomeC ("g"),chiamatametodo ((kw this) , nomeM "m" , []))
+	            defCampoS ( intS, nomeC ("g"),chiamataMetodoS (( thisS) , nomeM "m" , []))
 	        ],
 	        [
-	            defMetodo ( intero, nomeM "m", [], [], [return (accessocampo( kw this, nomeC "g"))])
+	            defMetodoS ( intS, nomeM "m", [], [], [returnS (accessoCampoS(  thisS, nomeC "g"))])
 	        ]
 	        ),
 
-	defClass(
+	defClasseS(
         nomeCl "weird",
          nomeCl "B",
-        [ defCampo ( intero, nomeC ("g"), isint 42)],
+        [ defCampoS ( intS, nomeC ("g"), intExprS 42)],
         [
-            defMetodo ( intero, nomeM "main", 
+            defMetodoS ( intS, nomeM "main", 
             	[	           ], (*args*)
-            	[defvariabile( class( nomeCl "B"), nomeV "b")], (*locals*)
-            	[ assegnamentoVar( nomeV "b", new( nomeCl "B")) ,return (accessocampo( isvariabile( nomeV "b"), nomeC "f"))]) (*cmds*)
+            	[defVarS( classeS( nomeCl "B"), nomeV "b")], (*locals*)
+            	[ assegnamentoVarS( nomeV "b", newS( nomeCl "B")) ,returnS (accessoCampoS( varExprS( nomeV "b"), nomeC "f"))]) (*cmds*)
         ]
         )
 ]

@@ -1,38 +1,38 @@
 (*
-fun cbody( programma,  nomec ) = let val ( defClass( _ , _ , campi, _ ) ) = cercaClasseInProgramma ( programma, nomec ) in campi end;
+fun cbody( programmaSintattico,  nomec ) = let val ( defClasseS( _ , _ , campi, _ ) ) = cercaClasseInProgramma ( programmaSintattico, nomec ) in campi end;
 
 
-fun mbody (programma, Object, nomeM m, parametri) = raise MethodNotFound
-	|mbody (programma, nomeCl c, nomeM m, parametri) = cercaMetodo(programma, cercaClasseInProgramma(programma, nomeCl c) , nomeM m, parametri)
+fun mbody (programmaSintattico, Object, nomeM m, parametri) = raise MethodNotFound
+	|mbody (programmaSintattico, nomeCl c, nomeM m, parametri) = cercaMetodo(programmaSintattico, cercaClasseInProgramma(programmaSintattico, nomeCl c) , nomeM m, parametri)
 and
-	cercaMetodo(programma, defClass( n1, n2, campi, []), nomeM m, parametri) = mbody(programma, n2, nomeM m, parametri )
-	| cercaMetodo(programma, defClass( n1, n2, campi, (defMetodo(t,nomeM m,args,locals,cmds))::metodi), nomeM metodo, parametri) =
-			if( (m = metodo) andalso (parametriCompatibili(programma, args, parametri))) (* parametri deve contere tipi dal datatype types
-				then defMetodo(t,nomeM m,args,locals,cmds)
-				else cercaMetodo(programma, defClass (n1, n2 , campi , metodi), nomeM metodo, parametri );
+	cercaMetodo(programmaSintattico, defClasseS( n1, n2, campi, []), nomeM m, parametri) = mbody(programmaSintattico, n2, nomeM m, parametri )
+	| cercaMetodo(programmaSintattico, defClasseS( n1, n2, campi, (defMetodoS(t,nomeM m,args,locals,cmds))::metodi), nomeM metodoSintattico, parametri) =
+			if( (m = metodoSintattico) andalso (parametriCompatibili(programmaSintattico, args, parametri))) (* parametri deve contere tipi dal datatype types
+				then defMetodoS(t,nomeM m,args,locals,cmds)
+				else cercaMetodo(programmaSintattico, defClasseS (n1, n2 , campi , metodi), nomeM metodoSintattico, parametri );
 
 
 
 
 print (stampaProgramma esempio);
-print ( stampaMetodo( mbody(esempio, nomeCl "Classe1", nomeM "metodo3", [tyC(nomeCl "Classe2")] )) ^ "\n");*)
+print ( stampaMetodo( mbody(esempio, nomeCl "Classe1", nomeM "metodo3", [classeT(nomeCl "Classe2")] )) ^ "\n");*)
 
 (*  REGOLE PER L'ESECUZIONE *)
 
-(* variabile *)
+(* variabileSintattica *)
 
-fun initCampiApp( programma, obj, istanza( nomec, []),  memoria h  ) =  memoria h  
+fun initCampiApp( programmaSintattico, obj, istanza( nomec, []),  buildHeap h  ) =  buildHeap h  
 
-	| initCampiApp( programma, obj, istanza( nomec, (classecampo, nomecampo, loccampo)::l), memoria h ) = 
-		initCampiApp( programma, 
+	| initCampiApp( programmaSintattico, obj, istanza( nomec, (classecampo, nomecampo, loccampo)::l), buildHeap h ) = 
+		initCampiApp( programmaSintattico, 
 			obj, 
 			istanza( nomec, l), 
-			changeHeap( memoria h ,
+			changeHeap( buildHeap h ,
 						loccampo , 
-						regolaRightExpr( programma, 
-										ambiente [(varThis, valObj obj )],
-										cercaInitCampo(programma, nomecampo, classecampo), 
-										memoria h) ) )
+						regolaRightExpr( programmaSintattico, 
+										buildEnv [(thisT, objV obj )],
+										cercaInitCampo(programmaSintattico, nomecampo, classecampo), 
+										buildHeap h) ) )
 		
 
-and initCampi( programma, obj, mem ) = initCampiApp( programma, obj, obj, mem);
+and initCampi( programmaSintattico, obj, mem ) = initCampiApp( programmaSintattico, obj, obj, mem);

@@ -2,13 +2,13 @@ Ci devono essere:
 -variabili
 -costanti
 -espressioni stile IMP -> costanti | true | false
--programmi stile ALL: if, while, assegnazione a variabile, dichiarazione di variabile 
+-programmi stile ALL: if, while, assegnazione a variabileSintattica, dichiarazione di variabileSintattica 
 
--classi e oggetti: classi, definizioni di attributi e metodi, istanziazione classe, chiamata o.metodo, accesso attributo, 
+-classi e oggetti: classi, definizioni di attributi e metodi, istanziazione classeSintattica, chiamata o.metodoSintattico, accesso attributo, 
 
 
 Cose in forse:
-	- chiamate a metodi con il super (chiama il metodo superiore)
+	- chiamate a metodi con il superS (chiama il metodoSintattico superiore)
 	- extends
 	- astratte ( non servono )
 	- Generici
@@ -20,8 +20,8 @@ Cose in forse:
 Ambienti: contengono variabili associati a locazioni
 Store: associano locazioni a valori oppure riferimenti 
 a oggetti
-Heap: associano riferimenti a oggetti agli oggetti
+heap: associano riferimenti a oggetti agli oggetti
 
-Heap e store si possono unificar eper semplicità.
+heap e store si possono unificar eper semplicità.
 
 var x =                                    

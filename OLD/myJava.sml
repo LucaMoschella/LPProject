@@ -1,8 +1,8 @@
-datatype variabile = var of string;
+datatype variabileSintattica = var of string;
 
-datatype costante = const of int | vero | falso | null;
+datatype costante = const of int | vero | falso | nullS;
 
-datatype leftExpression = lexpVar of variabile;
+datatype leftExpression = lexpVar of variabileSintattica;
 
 datatype rightExpression = rexpConst of costante |
 						rexpLexp of leftExpression |
@@ -15,13 +15,13 @@ datatype program = skip |
 				ifThenElse of rightExpression * program * program |
 				whileDo of rightExpression * program |
 				assign of leftExpression * rightExpression | 
-				declare of variabile * rightExpression * program |
-				proc of variabile * variabile * program * program |
+				declare of variabileSintattica * rightExpression * program |
+				proc of variabileSintattica * variabileSintattica * program * program |
 				call of program * rightExpression;
 
-datatype metodo = metodo of variabile * program;
+datatype metodoSintattico = metodoSintattico of variabileSintattica * program;
 
-datatype classeDef = empty of unit | campo of variabile | met of metodo | aggiungi of classeDef * classeDef;
-datatype classe = def of variabile * classeDef;
+datatype classeDef = empty of unit | campoSintattico of variabileSintattica | met of metodoSintattico | aggiungi of classeDef * classeDef;
+datatype classeSintattica = def of variabileSintattica * classeDef;
 
-datatype oggettoDef = istanzia of classe | call of 
+datatype oggettoDef = istanzia of classeSintattica | call of 
