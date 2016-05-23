@@ -1,4 +1,4 @@
-(********** ECCEZZIONI **********)
+(********** ECCEZIONI **********)
 (********** tipi **********)
 exception NonTypedVar
 exception NonTypedThis
