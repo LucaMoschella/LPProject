@@ -8,7 +8,7 @@ use "SemanticaStatica.sml";
 
 
 (* GESTIONE AMBIENTE *)
-fun getValEnv( buildEnv [], var:varPiu ) = raise VarNotFoundInEnv
+fun getValEnv( buildEnv [], var:varPiu ) = raise RuntimeErrorVarNotFoundInEnv
 	| getValEnv( buildEnv ((k,v)::l), var:varPiu) = if (k = var)then (v) else (getValEnv(buildEnv l,var)); 
 
 (* GESTIONE HEAP *)
@@ -19,7 +19,7 @@ fun changeHeapApp( buildHeap [], buildHeap newHeap, key, value  ) = buildHeap ne
 		if( keyh = key) then changeHeapApp(  buildHeap l, buildHeap ((keyh, value)::newHeap), key, value) else changeHeapApp(  buildHeap l, buildHeap ((keyh, v)::newHeap), key, value)
 and changeHeap( h, key, value  ) = changeHeapApp(h, buildHeap [], key, value);
 
-fun getValHeap( buildHeap [], lo ) = raise LocNotFoundInHeap
+fun getValHeap( buildHeap [], lo ) = raise RuntimeErrorLocNotFoundInHeap
 	| getValHeap( buildHeap ((k,v)::l), lo) = if (k = lo)then (v) else (getValHeap(buildHeap l,lo)); 
 
 (* FUNZIONI DI COMODO *)
@@ -35,7 +35,7 @@ and
 	 else getSuperCampiAppoggio(programmaSintattico, istanza(n1,l), istanza(n2,((nomec,nomef,lo)::l2)) )
 and
 	getObjFromVal( objV obj) = obj
-	| getObjFromVal( _ ) = raise ValIsNotObj;
+	| getObjFromVal( _ ) = raise RuntimeErrorValIsNotObj;
 
 fun tipoDefault( intS ) = intV 0
 	| tipoDefault( classeS _ ) =nullV ;
@@ -67,7 +67,7 @@ and allocaOggetto( programmaSintattico, newS (Object), buildHeap h ) = ( istanza
 
 (* Inizializza la buildLoc nell'buildHeap conil corretto right value.  
 QUI I CAMPI DEVONO ESSERE INZIIZALIZZATI RICHIAMANDO regolaRightExpr, CON UN AMBIENTE IN CUI è PRESENTE (THIS, OBJ) *)
-fun cercaInitCampoApp ( programmaSintattico, [], nomeC campoSintattico ) = raise InitCampoNonTrovato
+fun cercaInitCampoApp ( programmaSintattico, [], nomeC campoSintattico ) = raise RuntimeErrorInitCampoNonTrovato
 	| cercaInitCampoApp ( programmaSintattico, (defCampoS( tipoca, nomeC nomeca, rightca))::campi , nomeC campoSintattico ) =
 			if( nomeca = campoSintattico ) then rightca else cercaInitCampoApp(programmaSintattico, campi, nomeC campoSintattico )
 and cercaInitCampo( programmaSintattico, nomec, nomecl) = cercaInitCampoApp(programmaSintattico, cbody ( programmaSintattico, nomecl ), nomec );
@@ -76,7 +76,7 @@ fun initCampiApp( programmaSintattico, obj, istanza( nomec, []),  buildHeap h  )
 
 	| initCampiApp( programmaSintattico, obj, istanza( nomec, (classecampo, nomecampo, loccampo)::l), buildHeap h ) = 
 		let val (x, _) = regolaRightExpr( programmaSintattico, 
-										buildEnv [(thisT, objV obj )],
+										buildEnv [(this, objV obj )],
 										cercaInitCampo(programmaSintattico, nomecampo, classecampo), 
 										buildHeap h)
 		in
@@ -90,9 +90,9 @@ and regolaRightExpr (programmaSintattico, buildEnv a, varExprS(v), buildHeap h) 
 
 	| regolaRightExpr (programmaSintattico, buildEnv a, intExprS n, buildHeap h) = (intV(n), buildHeap h)
 
- 	| regolaRightExpr (programmaSintattico, buildEnv a,  thisS, buildHeap h) = (getValEnv(buildEnv a, thisT), buildHeap h)
+ 	| regolaRightExpr (programmaSintattico, buildEnv a,  thisS, buildHeap h) = (getValEnv(buildEnv a, this), buildHeap h)
 
-	| regolaRightExpr (programmaSintattico, buildEnv a,  superS, buildHeap h) = (let val x = getObjFromVal (getValEnv(buildEnv a, thisT)) 
+	| regolaRightExpr (programmaSintattico, buildEnv a,  superS, buildHeap h) = (let val x = getObjFromVal (getValEnv(buildEnv a, this)) 
 									in
 										(
 										objV ( istanza ( getSuperClasseOggetto(programmaSintattico, x), getSuperCampi(programmaSintattico, x))),

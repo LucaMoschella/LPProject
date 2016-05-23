@@ -47,7 +47,7 @@ fun stampaTypes (classeT s) = stampaNomeClasse( s )
 	| stampaTypes ( intT) = "int"
 	| stampaTypes (T) = "T";
 fun stampaVarPiu ( varNome n ) = stampaNomeVar n
-	| stampaVarPiu (thisT) = "thisS";
+	| stampaVarPiu (this) = "this";
 fun stampaContesto ( buildContesto []) = "\n"
 	| stampaContesto ( buildContesto( (v,t)::l)) = "( " ^ (stampaVarPiu v) ^ ":" ^ (stampaTypes t) ^ " ) ; " ^ (stampaContesto (buildContesto l));
 

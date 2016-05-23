@@ -90,7 +90,7 @@ fun mtype( programmaSintattico, nomem, nomecl, tipi) = cercaTipoMetodoInClasse(p
 
 (*  REGOLA 1 - cerca var *)
 fun equalVarpiuAndVar ( varNome( nomeV v ), nomeV s ) = ( v = s )
-	| equalVarpiuAndVar (  this, _ ) = raise ThisIsNotAVariable;
+	| equalVarpiuAndVar (  this, _ ) = raise VarNameNotValid;
 
 fun cercaTipoVariabileInContesto ( buildContesto [],nomeV s ) = raise NonTypedVar
 	| cercaTipoVariabileInContesto ( buildContesto ((n1,t1)::l), nomeV s ) = 

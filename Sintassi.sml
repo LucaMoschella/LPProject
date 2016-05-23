@@ -5,18 +5,18 @@ exception NonTypedThis
 exception FieldNotFound
 exception MethodNotFound
 exception ClassNotFound
+
 exception TypeIsNotAClass
 exception NoReturnType
-
-exception ThisIsNotAVariable
+exception VarNameNotValid
 
 
 (********** esecuzione **********)
-exception VarNotFoundInEnv
-exception LocNotFoundInHeap
-exception ValIsNotObj
-exception ValIsNotInt
-exception InitCampoNonTrovato
+exception RuntimeErrorVarNotFoundInEnv
+exception RuntimeErrorLocNotFoundInHeap
+exception RuntimeErrorValIsNotObj
+exception RuntimeErrorValIsNotInt
+exception RuntimeErrorInitCampoNonTrovato
 
 
 (********** NOMI **********)
