@@ -1,73 +1,92 @@
-(* FUNZIONI PER STAMPARE SINTASSI *)
+fun stampaListaInLineApp( [], ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) = ender |
+	stampaListaInLineApp( l::[], ind:string, midsep:string, endsep:string, ender:string,metodoSintattico) =  (metodoSintattico (ind,l)) ^ endsep ^ ender |
+	stampaListaInLineApp( l::lista, ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) =  
+		(metodoSintattico (ind,l)) ^ midsep ^ (stampaListaInLineApp (lista, ind, midsep, endsep, ender, metodoSintattico))
+
+and stampaListaInLine( [], ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, metodoSintattico) = starter ^ ender
+	|stampaListaInLine( l, ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, metodoSintattico) = 
+		starter ^ presep ^ (stampaListaInLineApp(  l, "", midsep:string, endsep:string, ender, metodoSintattico));
+
+fun stampaListaNewLineApp( [], ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) = ender |
+	stampaListaNewLineApp( l::[], ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) =   
+		"\n" ^  (metodoSintattico (ind,l)) ^ endsep ^ ender |
+	stampaListaNewLineApp( l::lista, ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) =  
+		"\n" ^  (metodoSintattico (ind,l)) ^ midsep ^ (stampaListaNewLineApp (lista, ind, midsep, endsep, ender, metodoSintattico))
+
+and stampaListaNewLine( [], ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, metodoSintattico) = starter ^ ender
+	|stampaListaNewLine( l, ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, metodoSintattico) = 
+		starter ^ presep ^ (stampaListaNewLineApp(  l, ind, midsep:string, endsep:string, ender, metodoSintattico));
 
 
-fun stampaLista( [],  ind:string, sepchar:string, metodoSintattico) = "" |
-	stampaLista( l::[], ind:string, sepchar:string, metodoSintattico) = ind ^ (metodoSintattico l) |
-	stampaLista( l::lista, ind:string, sepchar:string, metodoSintattico) = ind ^ (metodoSintattico l) ^ sepchar ^ (stampaLista (lista, ind, sepchar, metodoSintattico));
+val DEF_IND = "    ";
 
-
+(********************************* FUNZIONI PER STAMPARE SINTASSI ASTRATTA ************************************************)
 fun stampaNomeCampo (nomeC s) = s;
 fun stampaNomeVar (nomeV s) = s;
 fun stampaNomeMetodo (nomeM s) = s;
 fun stampaNomeClasse (nomeCl s) = s |
 	stampaNomeClasse Object = "Object";
+fun stampaNomeTipo (intS) = "int"
+	| stampaNomeTipo (classeS a) = stampaNomeClasse a;
 
 
-fun stampaTipo intS = "int"
-	| stampaTipo (classeS a) = stampaNomeClasse a
-and
-	stampaVariabile ( defVarS (t,n)) = (stampaTipo t ) ^ " " ^ (stampaNomeVar n)
-and
-	stampaCampo ( defCampoS (t, n, v )) = (stampaTipo t ) ^ " " ^ (stampaNomeCampo n) ^ " = " ^ (stampaRightValue v)
-and
-	stampaMetodo ( defMetodoS (t,n, args, locals, commands )) = 	(stampaTipo t ) ^ " " ^ (stampaNomeMetodo n) ^ "( " ^ (stampaLista(args,"", ", ", stampaVariabile )) ^ " ) " ^
-		"\n{\n" ^ (stampaLista(locals,"    ", ";\n", stampaVariabile )) ^ "\n" ^ (stampaLista(commands,"    ", ";\n", stampaComando )) ^ "\n}"
-and
-	stampaClasse (defClasseS (n, nfrom, campi, metodi ) ) = 
-		"classeS " ^ (stampaNomeClasse n) ^ " extends " ^ (stampaNomeClasse nfrom) ^
-		"\n{\n" ^ (stampaLista(campi,"    ", ";\n", stampaCampo )) ^ "\n" ^ (stampaLista(metodi,"    ", "\n", stampaMetodo )) ^ "\n}\n"
-and
-	stampaComando  (assegnamentoVarS (n,v)) = (stampaNomeVar n) ^ " = " ^ (stampaRightValue v)
-	| stampaComando ( assegnamentoCampoS ( left , n, right )) = ( stampaRightValue left) ^ "." ^ (stampaNomeCampo n ) ^ " = " ^ (stampaRightValue right)
-	| stampaComando ( returnS r) = "returnS " ^ (stampaRightValue r)	
-and 
-	stampaRightValue ( varExprS n) = stampaNomeVar n 
-	| stampaRightValue ( intExprS i) = Int.toString i
-	| stampaRightValue ( thisS) = "thisS"
-	| stampaRightValue ( superS)  = "superS"
-	| stampaRightValue ( nullS) = "nullS"
-	| stampaRightValue (newS c) = "newS " ^ (stampaNomeClasse c) ^ "()"
-	| stampaRightValue (accessoCampoS (v, nomeC c)) = (stampaRightValue v) ^ "." ^ (c)
-	| stampaRightValue (chiamataMetodoS (v,n, args)) = (stampaRightValue v) ^ "." ^ (stampaNomeMetodo n ) ^ "( " ^ (stampaLista(args, "",  ", ", stampaRightValue )) ^" )"
-and
-	stampaProgramma ( codiceS l ) = stampaLista( l, "", "\n", stampaClasse); 
+fun stampaDefVariabile (ind, defVarS (t,n)) = ind ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeVar n)
+
+and	stampaDefCampo (ind, defCampoS (t, n, v )) = ind ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeCampo n) ^ " = " ^ (stampaRightValue ("",v))
+
+and stampaComando  (ind, assegnamentoVarS (n,v)) = 
+		ind ^ (stampaNomeVar n) ^ " = " ^ (stampaRightValue ("",v))
+
+	| stampaComando (ind, assegnamentoCampoS ( left , n, right )) = 
+		ind ^  ( stampaRightValue ("",left)) ^ "." ^ (stampaNomeCampo n ) ^ " = " ^ (stampaRightValue ("",right))
+
+	| stampaComando (ind, returnS r) = 
+		ind ^  "return " ^ (stampaRightValue ("",r))	
+
+and stampaMetodo ( ind:string, defMetodoS (t, n, args, locals, commands )) = 
+		ind ^ "public " ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeMetodo n) ^  (stampaListaInLine(args, "", "(", "",", ", "",")",  stampaDefVariabile )) ^ "\n" ^
+		ind ^ "{" ^ 	(stampaListaNewLine(locals, ind ^ DEF_IND, "", "", ";", ";\n","",  stampaDefVariabile )) ^ 
+						(stampaListaNewLine(commands, ind ^ DEF_IND,"", "", ";", ";", "", stampaComando )) ^ "\n" ^
+		ind ^ "}\n"			
+
+and stampaClasse ( ind:string, defClasseS (n, nfrom, campi, metodi ) ) = 
+		ind ^ "public class " ^ (stampaNomeClasse n) ^ " extends " ^ (stampaNomeClasse nfrom) ^ "\n" ^
+		ind ^ "{" ^ 	(stampaListaNewLine(campi, ind ^ DEF_IND, "", "", ";", ";\n", "", stampaDefCampo )) ^ 
+						(stampaListaNewLine(metodi, ind ^ DEF_IND, "",  "", "", "", "", stampaMetodo ))  ^
+		ind ^ "}\n"
+
+and stampaRightValue (ind,  varExprS n) = ind ^ (stampaNomeVar n )
+	| stampaRightValue (ind,  intExprS i) = ind ^ (Int.toString i)
+	| stampaRightValue (ind,  thisS) = ind ^ ("this")
+	| stampaRightValue (ind,  superS)  = ind ^ ("super")
+	| stampaRightValue (ind,  nullS) = ind ^ ("null")
+	| stampaRightValue (ind, newS c) = ind ^ ("new " ^ (stampaNomeClasse c) ^ "()")
+	| stampaRightValue (ind, accessoCampoS (v, nomeC c)) = ind ^ ((stampaRightValue ("",v)) ^ "." ^ (c))
+	| stampaRightValue (ind, chiamataMetodoS (v,n, args)) = ind ^ ((stampaRightValue ("",v)) ^ "." ^ (stampaNomeMetodo n )  ^ (stampaListaInLine(args, "", "(", "",  ", ", "", ")",  stampaRightValue )))
+
+and stampaProgramma ( codiceS l ) = 
+	stampaListaNewLine( l, DEF_IND, "Programma Java:","", "", "","",  stampaClasse); 
 
 (* FUNZIONI PER STAMPARE SEMANTICA STATICA *)
 fun stampaTypes (classeT s) = stampaNomeClasse( s )
 	| stampaTypes ( intT) = "int"
 	| stampaTypes (T) = "T";
+
 fun stampaVarPiu ( varNome n ) = stampaNomeVar n
 	| stampaVarPiu (this) = "this";
-fun stampaContesto ( buildContesto []) = "\n"
-	| stampaContesto ( buildContesto( (v,t)::l)) = "( " ^ (stampaVarPiu v) ^ ":" ^ (stampaTypes t) ^ " ) ; " ^ (stampaContesto (buildContesto l));
+
+fun stampaCoppiaVarPiuType( ind, (v, t)) = ind ^ "(" ^ (stampaVarPiu v) ^ ":" ^ (stampaTypes t) ^ ")"
+and stampaContesto ( buildContesto l) = stampaListaInLine(l, "", "[", "", "; ", "", "]\n", stampaCoppiaVarPiuType);
 
 
 (***************** STAMPA SEMNATICA DINAMICA **********************)
 
 (** DA SOTITUIRE CON QUELLE SOPRA **)
-fun stampaListaInLineApp( [],  midsep:string, endsep:string, metodoSintattico) = "" |
-	stampaListaInLineApp( l::[], midsep:string, endsep:string, metodoSintattico) =  (metodoSintattico l) ^ endsep |
-	stampaListaInLineApp( l::lista, midsep:string, endsep:string, metodoSintattico) =  (metodoSintattico l) ^ midsep ^ (stampaListaInLineApp (lista, midsep, endsep, metodoSintattico))
-and stampaListaInLine( l, ind:string, midsep:string, endsep:string, metodoSintattico) = ind ^ stampaListaInLineApp(  l, midsep:string, endsep:string, metodoSintattico)
 
-fun stampaListaNewLineApp( [], ind:string, midsep:string, endsep:string, metodoSintattico) = "" |
-	stampaListaNewLineApp( l::[], ind:string, midsep:string, endsep:string, metodoSintattico) =   "\n" ^ ind ^ (metodoSintattico l) ^ endsep |
-	stampaListaNewLineApp( l::lista, ind:string, midsep:string, endsep:string, metodoSintattico) =  "\n" ^ ind ^ (metodoSintattico l) ^ midsep ^ (stampaListaNewLineApp (lista, ind, midsep, endsep, metodoSintattico));
-
-
+(*
 fun stampaLoc ( buildLoc i) = "buildLoc#" ^ (Int.toString i);
 
-fun stampaTriplaCampiObj( nomec, nomeca, lo ) = "" ^ (stampaNomeClasse nomec) ^ ":" ^ ( stampaNomeCampo nomeca) ^ ":" ^ (stampaLoc lo) ^ "";
+fun stampaTriplaCampiObj( ind, nomec, nomeca, lo ) = ind ^ "" ^ (stampaNomeClasse nomec) ^ ":" ^ ( stampaNomeCampo nomeca) ^ ":" ^ (stampaLoc lo) ^ "";
 fun stampaObj( istanza( nomec , l) ) = "{ obj:" ^ (stampaNomeClasse( nomec )) ^ " - Campi: " ^ (stampaListaInLine(l, "[", ", ", "]", stampaTriplaCampiObj )) ^ " }"  ;
 
 fun stampaVal( noV ) = "*"
@@ -80,3 +99,4 @@ fun stampaEnv( buildEnv l) = stampaListaInLine(l, "[", ", ", "]", stampaCoppiaVa
 
 fun stampaCoppiaLocVal( locaz, v) = "" ^ (stampaLoc locaz) ^ ":" ^ ( stampaVal v) ^ "";
 fun stampaHeap( buildHeap l) = stampaListaInLine(l, "[", ", ", "]", stampaCoppiaLocVal );
+	*)

@@ -189,8 +189,15 @@ use "PrintToJava.sml";
 use "ProgrammiEsempio.sml";
 
 print (stampaProgramma esempioDispensa);
- ( controllaTipoProgramma( esempio));
-  ( controllaTipoProgramma( esempioDispensa));
+
+val x=buildContesto [(varNome (nomeV "i"), intT), (varNome(nomeV "e"), intT)];
+
+val y=buildContesto [(varNome (nomeV "e"), T), (varNome(nomeV "g"), T)];
+
+
+print (stampaContesto x);
+print (stampaContesto y);
+((concatenaContesto (x,y)));
 
 (*
 val chiama = chiamataMetodoS((newS (nomeCl "Classe2")) ,

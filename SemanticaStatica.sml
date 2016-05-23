@@ -5,7 +5,7 @@ use "Sintassi.sml";
 fun tipoSintatticoToSemantico ( intS   ) = intT
 	| tipoSintatticoToSemantico ( classeS c ) = classeT c;
 
-fun concatenaContesto ( buildContesto l1 , buildContesto l2) = buildContesto ( l1 @ l2);
+fun concatenaContesto ( (buildContesto l1) , buildContesto l2) = buildContesto ( l1 @ l2);
 
 (* aggiungi al buildContesto una lista di variabili*)
 fun addVarsToContesto( buildContesto lc, [] ) = buildContesto lc 
@@ -281,7 +281,10 @@ fun programmaToTipato( programmaSintattico ) =
 
 
 use "ProgrammiEsempio.sml";
+use "PrintToJava.sml";
 
+print (stampaProgramma esempio);
 programmaToTipato esempio;
+
+print (stampaProgramma esempioDispensa);
 programmaToTipato esempioDispensa;
-programmaToTipato esempio;

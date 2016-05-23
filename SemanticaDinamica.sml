@@ -2,11 +2,6 @@ use "Sintassi.sml";
 use "SemanticaStatica.sml";
 
 
-
-
-
-
-
 (* GESTIONE AMBIENTE *)
 fun getValEnv( buildEnv [], var:varPiu ) = raise RuntimeErrorVarNotFoundInEnv
 	| getValEnv( buildEnv ((k,v)::l), var:varPiu) = if (k = var)then (v) else (getValEnv(buildEnv l,var)); 
