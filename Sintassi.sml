@@ -1,15 +1,19 @@
 (********** ECCEZIONI **********)
 (********** tipi **********)
-exception NonTypedVar
-exception NonTypedThis
-exception FieldNotFound
-exception MethodNotFound
-exception ClassNotFound
+exception VarNameNotValid  of string;
+exception UnknownVar of string;
 
-exception TypeIsNotAClass
-exception NoReturnType
-exception VarNameNotValid
+exception FieldNotFound of string;
+exception MethodNotFound of string;
+exception ClassNotFound of string;
+exception ReturnNotFound of string;
 
+exception TypeIsNotAClass;
+
+exception TypeErrorField of string;
+exception TypeErrorReturn of string;
+exception TypeErrorAssignVar of string;
+exception TypeErrorAssignField of string;
 
 (********** esecuzione **********)
 exception RuntimeErrorVarNotFoundInEnv
