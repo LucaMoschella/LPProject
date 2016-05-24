@@ -296,3 +296,7 @@ print (stampaProgrammaT p);
 print (stampaProgrammaS programmaInizializzazione3);
 val p = programmaToTipato programmaInizializzazione3;
 print (stampaProgrammaT p);
+
+print (stampaProgrammaS programmaCampo1);
+val p = programmaToTipato programmaCampo1;
+print (stampaProgrammaT p);
