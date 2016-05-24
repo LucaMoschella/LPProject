@@ -42,27 +42,28 @@ and stampaComando  (ind, assegnamentoVarS (n,v)) =
 
 and stampaMetodo ( ind:string, defMetodoS (t, n, args, locals, commands )) = 
 		ind ^ "public " ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeMetodo n) ^  (stampaListaInLine(args, "", "(", "",", ", "",")",  stampaDefVariabile )) ^ "\n" ^
-		ind ^ "{" ^ 	(stampaListaNewLine(locals, ind ^ DEF_IND, "", "", ";", ";\n","",  stampaDefVariabile )) ^ 
-						(stampaListaNewLine(commands, ind ^ DEF_IND,"", "", ";", ";", "", stampaComando )) ^ "\n" ^
-		ind ^ "}\n"			
+		ind ^ "{" ^ (stampaListaNewLine(locals, ind ^ DEF_IND, "", "", ";", ";\n","",  stampaDefVariabile )) ^ 
+					(stampaListaNewLine(commands, ind ^ DEF_IND,"", "", ";", ";", "", stampaComando )) ^ "\n" ^
+		ind ^ "}"			
 
 and stampaClasse ( ind:string, defClasseS (n, nfrom, campi, metodi ) ) = 
 		ind ^ "public class " ^ (stampaNomeClasse n) ^ " extends " ^ (stampaNomeClasse nfrom) ^ "\n" ^
-		ind ^ "{" ^ 	(stampaListaNewLine(campi, ind ^ DEF_IND, "", "", ";", ";\n", "", stampaDefCampo )) ^ 
-						(stampaListaNewLine(metodi, ind ^ DEF_IND, "",  "", "", "", "", stampaMetodo ))  ^
-		ind ^ "}\n"
+		ind ^ "{" ^ (stampaListaNewLine(campi, ind ^ DEF_IND, "", "", ";", ";\n", "", stampaDefCampo )) ^ 
+					(stampaListaNewLine(metodi, ind ^ DEF_IND, "",  "", "", "", "", stampaMetodo )) ^ "\n" ^
+		ind ^ "}"
 
-and stampaRightValue (ind,  varExprS n) = ind ^ (stampaNomeVar n )
-	| stampaRightValue (ind,  intExprS i) = ind ^ (Int.toString i)
-	| stampaRightValue (ind,  thisS) = ind ^ ("this")
-	| stampaRightValue (ind,  superS)  = ind ^ ("super")
-	| stampaRightValue (ind,  nullS) = ind ^ ("null")
+and stampaRightValue (ind, varExprS n) = ind ^ (stampaNomeVar n )
+	| stampaRightValue (ind, intExprS i) = ind ^ (Int.toString i)
+	| stampaRightValue (ind, thisS) = ind ^ ("this")
+	| stampaRightValue (ind, superS)  = ind ^ ("super")
+	| stampaRightValue (ind, nullS) = ind ^ ("null")
 	| stampaRightValue (ind, newS c) = ind ^ ("new " ^ (stampaNomeClasse c) ^ "()")
 	| stampaRightValue (ind, accessoCampoS (v, nomeC c)) = ind ^ ((stampaRightValue ("",v)) ^ "." ^ (c))
-	| stampaRightValue (ind, chiamataMetodoS (v,n, args)) = ind ^ ((stampaRightValue ("",v)) ^ "." ^ (stampaNomeMetodo n )  ^ (stampaListaInLine(args, "", "(", "",  ", ", "", ")",  stampaRightValue )))
+	| stampaRightValue (ind, chiamataMetodoS (v,n, args)) = 
+		ind ^ ((stampaRightValue ("",v)) ^ "." ^ (stampaNomeMetodo n )  ^ (stampaListaInLine(args, "", "(", "",  ", ", "", ")",  stampaRightValue )))
 
 and stampaProgramma ( codiceS l ) = 
-	stampaListaNewLine( l, DEF_IND, "Programma Java:","", "", "","",  stampaClasse); 
+	stampaListaNewLine( l, DEF_IND, "\nProgramma Java:", "", "\n", "", "\n",  stampaClasse); 
 
 (* FUNZIONI PER STAMPARE SEMANTICA STATICA *)
 fun stampaTypes (classeT s) = stampaNomeClasse( s )
