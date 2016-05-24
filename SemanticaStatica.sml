@@ -5,7 +5,7 @@ use "Sintassi.sml";
 fun tipoSintatticoToSemantico ( intS   ) = intT
 	| tipoSintatticoToSemantico ( classeS c ) = classeT c;
 
-fun concatenaContesto ( (buildContesto l1) , buildContesto l2) = buildContesto ( l1 @ l2);
+fun concatenaContesto ( (buildContesto l1), buildContesto l2) = buildContesto ( l1 @ l2);
 
 (* aggiungi al buildContesto una lista di variabili*)
 fun addVarsToContesto( buildContesto lc, [] ) = buildContesto lc 
@@ -25,33 +25,21 @@ fun cercaVarPiuInContesto ( buildContesto [],v ) =
 fun getNomeClasseDaTipoT( classeT n) = n
  	| getNomeClasseDaTipoT( _ ) = raise TypeIsNotAClass;
 
-fun getExtendedClass( defClasseS (nomeclasse, nomeclasseestesa , campi , metodi) ) = nomeclasseestesa;
+fun getExtendedClass( defClasseS (nomeclasse, nomeclasseestesa, campi, metodi) ) = nomeclasseestesa;
 
 fun cercaClasseInProgramma ( programmaSintattico, Object ) = defClasseS(Object, Object, [], [])	
 	| cercaClasseInProgramma ( codiceS [], nomeCl nclasse ) = raise ClassNotFound(nclasse)
-	| cercaClasseInProgramma ( codiceS (  (defClasseS (nomeCl c, ce , lv , lm)) ::l ), nomeCl nclasse ) = 
-				if (nclasse = c) then defClasseS (nomeCl c, ce , lv , lm) else cercaClasseInProgramma( codiceS l, nomeCl nclasse)
-	| cercaClasseInProgramma ( codiceS (  (defClasseS (Object, ce , lv , lm)) ::l ), nomeCl nclasse ) =  
+	| cercaClasseInProgramma ( codiceS (  (defClasseS (nomeCl c, ce, lv, lm)) ::l ), nomeCl nclasse ) = 
+				if (nclasse = c) then defClasseS (nomeCl c, ce, lv, lm) else cercaClasseInProgramma( codiceS l, nomeCl nclasse)
+	| cercaClasseInProgramma ( codiceS (  (defClasseS (Object, ce, lv, lm)) ::l ), nomeCl nclasse ) =  
 				cercaClasseInProgramma( codiceS l, nomeCl nclasse);
 
 fun esisteClasseInProgramma ( programmaSintattico, Object ) = true	
 	| esisteClasseInProgramma ( codiceS [], nomeCl nclasse ) = false
-	| esisteClasseInProgramma ( codiceS (  (defClasseS (nomeCl c, ce , lv , lm)) ::l ), nomeCl nclasse ) = 
+	| esisteClasseInProgramma ( codiceS (  (defClasseS (nomeCl c, ce, lv, lm)) ::l ), nomeCl nclasse ) = 
 				if (nclasse = c) then true else esisteClasseInProgramma( codiceS l, nomeCl nclasse)
-	| esisteClasseInProgramma ( codiceS (  (defClasseS (Object, ce , lv , lm)) ::l ), nomeCl nclasse ) =  
+	| esisteClasseInProgramma ( codiceS (  (defClasseS (Object, ce, lv, lm)) ::l ), nomeCl nclasse ) =  
 				esisteClasseInProgramma( codiceS l, nomeCl nclasse);
-
-
-
-(* -> unificate con cerca var piu in contesto
-fun cercaVarInContesto ( buildContesto [],nomeV s ) = raise NonTypedVar
-	| cercaVarInContesto ( buildContesto ((n1,t1)::l), nomeV s ) = 
-		if (equalVarPiuVar(n1, nomeV s)) then t1 else cercaVarInContesto( buildContesto l, nomeV s);
-
-fun cercaThisInContesto ( buildContesto [] ) = raise NonTypedThis
-	| cercaThisInContesto ( buildContesto ((this,t1)::l) ) = t1
-	|  cercaThisInContesto ( buildContesto ((_,t1)::l) ) =cercaThisInContesto( buildContesto l );
-*)
 
 (* c1 è più in alto nella gerarchia di c2 *)
 fun isSottoClasse( programmaSintattico, Object, Object) = true
@@ -84,30 +72,27 @@ fun parametriCompatibili(programmaSintattico, [], [] ) = true
 
 
 (********** tipo semantico da un nome di campo sintattico **********)
-fun cercaTipoCampoinClasse ( programmaSintattico, defClasseS (Object, _ , _ , _), nomeC campoSintattico ) = raise FieldNotFound(campoSintattico)
-	| cercaTipoCampoinClasse (programmaSintattico,  defClasseS (nomeCl _, classeEstesa , [] , _), nomeC campoSintattico ) = cercaTipoCampoinClasse( programmaSintattico, cercaClasseInProgramma(programmaSintattico,classeEstesa ), nomeC campoSintattico)
-	| cercaTipoCampoinClasse ( programmaSintattico, defClasseS (nomeCl classeSintattica, ext , (defCampoS( t, nomeC nc, r))::campi , metodi), nomeC campoSintattico ) =
-			if( nc = campoSintattico ) then tipoSintatticoToSemantico ( t ) else cercaTipoCampoinClasse(programmaSintattico, defClasseS (nomeCl classeSintattica, ext , campi , metodi), nomeC campoSintattico );
+fun cercaTipoCampoinClasse ( programmaSintattico, defClasseS (Object, _, _, _), nomeC campoSintattico ) = raise FieldNotFound(campoSintattico)
+	| cercaTipoCampoinClasse (programmaSintattico,  defClasseS (nomeCl _, classeEstesa, [], _), nomeC campoSintattico ) = cercaTipoCampoinClasse( programmaSintattico, cercaClasseInProgramma(programmaSintattico,classeEstesa ), nomeC campoSintattico)
+	| cercaTipoCampoinClasse ( programmaSintattico, defClasseS (nomeCl classeSintattica, ext, (defCampoS( t, nomeC nc, r))::campi, metodi), nomeC campoSintattico ) =
+			if( nc = campoSintattico ) then tipoSintatticoToSemantico ( t ) else cercaTipoCampoinClasse(programmaSintattico, defClasseS (nomeCl classeSintattica, ext, campi, metodi), nomeC campoSintattico );
 
 fun ftype( programmaSintattico, nomec, nomecl) = cercaTipoCampoinClasse(programmaSintattico, cercaClasseInProgramma ( programmaSintattico, nomecl ), nomec );
 
 (********** tipo semantico da un nome di metodo sintattico **********)
 
-fun cercaTipoMetodoInClasse(programmaSintattico, defClasseS (Object, _ , _ , _), nomeM metodoSintattico, parametri ) = raise MethodNotFound(metodoSintattico)
+fun cercaTipoMetodoInClasse(programmaSintattico, defClasseS (Object, _, _, _), nomeM metodoSintattico, parametri ) = raise MethodNotFound(metodoSintattico)
 
-	| cercaTipoMetodoInClasse(programmaSintattico,  defClasseS (nomeCl _, classeEstesa , _ , []), nomeM metodoSintattico, parametri ) = 
+	| cercaTipoMetodoInClasse(programmaSintattico,  defClasseS (nomeCl _, classeEstesa, _, []), nomeM metodoSintattico, parametri ) = 
 			cercaTipoMetodoInClasse( programmaSintattico, cercaClasseInProgramma(programmaSintattico,classeEstesa ), nomeM metodoSintattico, parametri)
 
-	| cercaTipoMetodoInClasse ( programmaSintattico, defClasseS (nomeCl classeSintattica, ext , campi , (defMetodoS(t,nomeM m,args,locals,cmds))::metodi), nomeM metodoSintattico,parametri ) =
+	| cercaTipoMetodoInClasse ( programmaSintattico, defClasseS (nomeCl classeSintattica, ext, campi, (defMetodoS(t,nomeM m,args,locals,cmds))::metodi), nomeM metodoSintattico,parametri ) =
 			if( (m = metodoSintattico) andalso (parametriCompatibili(programmaSintattico, args, parametri))) (* parametri deve contere tipi dal datatype types*)
 				then tipoSintatticoToSemantico ( t ) 
-				else cercaTipoMetodoInClasse(programmaSintattico, defClasseS (nomeCl classeSintattica, ext , campi , metodi), nomeM metodoSintattico, parametri );
+				else cercaTipoMetodoInClasse(programmaSintattico, defClasseS (nomeCl classeSintattica, ext, campi, metodi), nomeM metodoSintattico, parametri );
 
 
 fun mtype( programmaSintattico, nomem, nomecl, tipi) = cercaTipoMetodoInClasse(programmaSintattico, cercaClasseInProgramma ( programmaSintattico, nomecl ), nomem, tipi );
-
-
-(* %%%%%%%%%%%%%%%%% REGOLE PER LA TRADUZIONE IN PROGRAMMA TIPATO %%%%%%%%%%%%%%%%%%%%% *)
 
 fun estraiTipoSemantico( varExprT ( _, x)) = x
 	|estraiTipoSemantico( intExprT ( _, x )) = x
@@ -116,7 +101,10 @@ fun estraiTipoSemantico( varExprT ( _, x)) = x
 	|estraiTipoSemantico( nullT ( x )) = x
 	|estraiTipoSemantico( newT ( _, x )) = x
 	|estraiTipoSemantico( accessoCampoT ( _, _, x )) = x
-	|estraiTipoSemantico( chiamataMetodoT ( _, _ , _, x)) = x;
+	|estraiTipoSemantico( chiamataMetodoT ( _, _, _, x)) = x;
+
+
+(* %%%%%%%%%%%%%%%%% REGOLE PER LA TRADUZIONE IN PROGRAMMA TIPATO %%%%%%%%%%%%%%%%%%%%% *)
 
 fun getListaTipiArgs (programmaSintattico, cont, [] ) = []
 	| getListaTipiArgs ( programmaSintattico, cont,r::l ) = 
@@ -149,6 +137,7 @@ and	espressioneToTipata( programmaSintattico, cont, varExprS(nomeV v)  ) =
 		in
 			accessoCampoT( expTyped, c, ftype(programmaSintattico, c, getNomeClasseDaTipoT( estraiTipoSemantico expTyped)))
 		end
+		
 	| espressioneToTipata( programmaSintattico, cont, chiamataMetodoS( v, m, args) ) = 
 		let val expTyped = espressioneToTipata( programmaSintattico, cont, v)
 		in
@@ -170,52 +159,52 @@ fun variabileListToTipata( [] ) = []
 
 
 fun metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico, nomeM nomemetodo, args, locals, [] ), metodoT, ret) = 
-	if( ret ) then metodoT else raise ReturnNotFound(nomemetodo)
+		if( ret ) then metodoT else raise ReturnNotFound(nomemetodo)
 
-| metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, (assegnamentoVarS( nomevar, v))::comandi ), 
-												defMetodoT(ti, no, ar, lo, cmds), ret) = 
-	let 
-		val left = espressioneToTipata( programmaSintattico, addVarsToContesto( addVarsToContesto(cont, args), locals), varExprS nomevar  )
-		val right = espressioneToTipata( programmaSintattico, addVarsToContesto( addVarsToContesto(cont, args), locals),  v  )
-	in
-		if( compatibleTipoSemSem( programmaSintattico , estraiTipoSemantico left, estraiTipoSemantico right) )
-		then  
-			metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, comandi ), 
-														defMetodoT(ti, no, ar, lo, cmds @ [assegnamentoVarT( nomevar, right )]) , ret)
-		else 
-			raise TypeErrorAssignVar(nomemetodo)
-	end
+	| metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, (assegnamentoVarS( nomevar, v))::comandi ), 
+													defMetodoT(ti, no, ar, lo, cmds), ret) = 
+		let 
+			val left = espressioneToTipata( programmaSintattico, cont, varExprS nomevar  )
+			val right = espressioneToTipata( programmaSintattico, cont,  v  )
+		in
+			if( compatibleTipoSemSem( programmaSintattico, estraiTipoSemantico left, estraiTipoSemantico right) )
+			then  
+				metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, comandi ), 
+															defMetodoT(ti, no, ar, lo, cmds @ [assegnamentoVarT( nomevar, right )]), ret)
+			else 
+				raise TypeErrorAssignVar(nomemetodo)
+		end
 
-| metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, (assegnamentoCampoS( right1, nomecampo, right2))::comandi ), 
-												defMetodoT(ti, no, ar, lo, cmds), ret) = 
-	let 
-		val left = espressioneToTipata( programmaSintattico, addVarsToContesto( addVarsToContesto(cont, args), locals), right1 )
-		val field = espressioneToTipata( programmaSintattico, addVarsToContesto( addVarsToContesto(cont, args), locals),  accessoCampoS( right1, nomecampo)  )
-		val right = espressioneToTipata( programmaSintattico, addVarsToContesto( addVarsToContesto(cont, args), locals),  right2  )
-	in
-		if( compatibleTipoSemSem( programmaSintattico, estraiTipoSemantico field, estraiTipoSemantico right ))
-		then 
-			metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, comandi ), 
-														defMetodoT(ti, no, ar, lo, cmds @ [assegnamentoCampoT(left, nomecampo, right)]) , ret)
-		else
-			raise TypeErrorAssignField(nomemetodo)
-	end
+	| metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, (assegnamentoCampoS( right1, nomecampo, right2))::comandi ), 
+													defMetodoT(ti, no, ar, lo, cmds), ret) = 
+		let 
+			val left = espressioneToTipata( programmaSintattico, cont, right1 )
+			val field = espressioneToTipata( programmaSintattico, cont,  accessoCampoS( right1, nomecampo)  )
+			val right = espressioneToTipata( programmaSintattico, cont,  right2  )
+		in
+			if( compatibleTipoSemSem( programmaSintattico, estraiTipoSemantico field, estraiTipoSemantico right ))
+			then 
+				metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, comandi ), 
+															defMetodoT(ti, no, ar, lo, cmds @ [assegnamentoCampoT(left, nomecampo, right)]), ret)
+			else
+				raise TypeErrorAssignField(nomemetodo)
+		end
 
-| metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, (returnS d)::comandi ), 
-												defMetodoT(ti, no, ar, lo, cmds), ret) = 
-	let 
-		val right = espressioneToTipata(  programmaSintattico, addVarsToContesto( addVarsToContesto(cont, args), locals),  d  )
-	in
-		if( compatibleTipoSintSem( programmaSintattico ,  tipoSintattico , estraiTipoSemantico right ))
-		then metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, comandi ), 
-														defMetodoT(ti, no, ar, lo, cmds @ [returnT(right)]) , true)
-		else
-			raise TypeErrorReturn(nomemetodo)
-	end
+	| metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, (returnS d)::comandi ), 
+													defMetodoT(ti, no, ar, lo, cmds), ret) = 
+		let 
+			val right = espressioneToTipata(  programmaSintattico, cont,  d  )
+		in
+			if( compatibleTipoSintSem( programmaSintattico,  tipoSintattico, estraiTipoSemantico right ))
+			then metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, comandi ), 
+															defMetodoT(ti, no, ar, lo, cmds @ [returnT(right)]), true)
+			else
+				raise TypeErrorReturn(nomemetodo)
+		end
 
 and metodoToTipato( programmaSintattico, cont, defMetodoS( t, n, args, locals, comandi ) ) = 
 			metodoToTipatoApp( programmaSintattico, 
-								cont, 
+								addVarsToContesto( addVarsToContesto(cont, args), locals), 
 								defMetodoS( t, n, args, locals, comandi ),
 								defMetodoT( t, n, variabileListToTipata( args ), variabileListToTipata(locals), [] ),
 								false
@@ -223,16 +212,16 @@ and metodoToTipato( programmaSintattico, cont, defMetodoS( t, n, args, locals, c
 
 
 fun campoListToTipato( programmaSintattico, cont, [] ) = []
-| campoListToTipato( programmaSintattico, cont, ( defCampoS( t, nomeC n, r))::l ) = 
-	let 
-		val right = espressioneToTipata(programmaSintattico, cont, r)
-	in
-		if ( compatibleTipoSintSem(programmaSintattico, t, estraiTipoSemantico right )) 
-		then 
-			defCampoT(t, nomeC n, right, tipoSintatticoToSemantico t) :: (campoListToTipato( programmaSintattico, cont, l ))
-		else
-			raise TypeErrorField(n)
-	end 
+	| campoListToTipato( programmaSintattico, cont, ( defCampoS( t, nomeC n, r))::l ) = 
+		let 
+			val right = espressioneToTipata(programmaSintattico, cont, r)
+		in
+			if ( compatibleTipoSintSem(programmaSintattico, t, estraiTipoSemantico right )) 
+			then 
+				defCampoT(t, nomeC n, right, tipoSintatticoToSemantico t) :: (campoListToTipato( programmaSintattico, cont, l ))
+			else
+				raise TypeErrorField(n)
+		end; 
 
 fun metodoListToTipato( programmaSintattico, cont, []) = []
 	| metodoListToTipato( programmaSintattico, cont, m::l) = 
