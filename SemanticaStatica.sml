@@ -25,12 +25,6 @@ fun cercaVarPiuInContesto ( buildContesto [],v ) =
 fun getNomeClasseDaTipoT( classeT n) = n
  	| getNomeClasseDaTipoT( _ ) = raise TypeIsNotAClass;
 
-fun getNomeVarDaExprS( varExprS v ) = v
-	| getNomeVarDaExprS( _ ) = raise ExprIsNotAVar;
-
-fun getNomeVarDaExprT( varExprT (v, _)) = v
-	| getNomeVarDaExprT( _ ) = raise ExprIsNotAVar;
-
 fun getExtendedClass( defClasseS (nomeclasse, nomeclasseestesa , campi , metodi) ) = nomeclasseestesa;
 
 fun cercaClasseInProgramma ( programmaSintattico, Object ) = defClasseS(Object, Object, [], [])	
@@ -181,13 +175,13 @@ fun metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico, nom
 | metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, (assegnamentoVarS( nomevar, v))::comandi ), 
 												defMetodoT(ti, no, ar, lo, cmds), ret) = 
 	let 
-		val left = espressioneToTipata( programmaSintattico, addVarsToContesto( addVarsToContesto(cont, args), locals),  nomevar  )
+		val left = espressioneToTipata( programmaSintattico, addVarsToContesto( addVarsToContesto(cont, args), locals), varExprS nomevar  )
 		val right = espressioneToTipata( programmaSintattico, addVarsToContesto( addVarsToContesto(cont, args), locals),  v  )
 	in
 		if( compatibleTipoSemSem( programmaSintattico , estraiTipoSemantico left, estraiTipoSemantico right) )
 		then  
 			metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, comandi ), 
-														defMetodoT(ti, no, ar, lo, cmds @ [assegnamentoVarT(varExprT(getNomeVarDaExprT left, estraiTipoSemantico left), right )]) , ret)
+														defMetodoT(ti, no, ar, lo, cmds @ [assegnamentoVarT( nomevar, right )]) , ret)
 		else 
 			raise TypeErrorAssignVar(nomemetodo)
 	end
@@ -278,7 +272,6 @@ fun programmaToTipato( programmaSintattico ) =
 			| ReturnNotFound x => ( print ("ERRORE: Il metodo: " ^ x ^ ", non contiene un comando di return.\n\n"); codiceT [] )
 
 			| TypeIsNotAClass => ( print ("ERRORE: Impossibile convertire l'espressione in una classe.\n\n"); codiceT [] )
-			| ExprIsNotAVar => ( print ("ERRORE: Impossibile convertire l'espressione in una variabile.\n\n"); codiceT [] )
 
 			| TypeErrorField x => ( print ("ERRORE: I tipi non sono compatibili durante l'inizializzazione del campo: " ^ x ^ ".\n\n"); codiceT [] )
 			| TypeErrorReturn x => ( print ("ERRORE: Il tipo di return non è compatibile con il tipo di ritorno dichiarato nel metodo: " ^ x ^ ".\n\n"); codiceT [] )
@@ -293,9 +286,6 @@ print (stampaProgrammaS programmaOverride4);
 val p = programmaToTipato programmaOverride4;
 print (stampaProgrammaT p);
 
-print (stampaProgrammaS programmaInizializzazione3);
-val p = programmaToTipato programmaInizializzazione3;
-print (stampaProgrammaT p);
 
 print (stampaProgrammaS programmaCampo1);
 val p = programmaToTipato programmaCampo1;

@@ -50,7 +50,7 @@ and stampaEspressioneS (ind, varExprS n) = ind ^ (stampaNomeVar n )
 		ind ^ ((stampaEspressioneS ("",v)) ^ "." ^ (stampaNomeMetodo n )  ^ (stampaListaInLine(args, "", "(", "",  ", ", "", ")",  stampaEspressioneS )))
 
 and stampaComandoS  (ind, assegnamentoVarS (n,v)) = 
-		ind ^ (stampaEspressioneS ("",n)) ^ " = " ^ (stampaEspressioneS ("",v))
+		ind ^ (stampaNomeVar n) ^ " = " ^ (stampaEspressioneS ("",v))
 
 	| stampaComandoS (ind, assegnamentoCampoS ( left , n, right )) = 
 		ind ^  ( stampaEspressioneS ("",left)) ^ "." ^ (stampaNomeCampo n ) ^ " = " ^ (stampaEspressioneS ("",right))
@@ -98,7 +98,7 @@ and stampaEspressioneT (ind, varExprT (n,t)) = ind ^ (stampaCoppia(stampaNomeVar
 		ind ^ (stampaCoppia( ((stampaEspressioneT ("",v)) ^ "." ^ (stampaNomeMetodo n )  ^ (stampaListaInLine(args, "", "(", "",  ", ", "", ")",  stampaEspressioneT ))), stampaNomeTipoT t ))  
 
 and stampaComandoT  (ind, assegnamentoVarT (n,v)) = 
-		ind ^ (stampaEspressioneT ("",n)) ^ " = " ^ (stampaEspressioneT ("",v))
+		ind ^ (stampaNomeVar n) ^ " = " ^ (stampaEspressioneT ("",v))
 
 	| stampaComandoT (ind, assegnamentoCampoT ( left , n, right )) = 
 		ind ^  ( stampaEspressioneT ("",left)) ^ "." ^ (stampaNomeCampo n ) ^ " = " ^ (stampaEspressioneT ("",right))
