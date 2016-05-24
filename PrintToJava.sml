@@ -100,8 +100,8 @@ and stampaEspressioneT (ind, varExprT (n,t)) = ind ^ (stampaCoppia(stampaNomeVar
 and stampaComandoT  (ind, assegnamentoVarT (n,v)) = 
 		ind ^ (stampaEspressioneT ("",n)) ^ " = " ^ (stampaEspressioneT ("",v))
 
-	| stampaComandoT (ind, assegnamentoCampoT ( left , n, right, t )) = 
-		ind ^  (stampaCoppia( (stampaEspressioneT ("",left)) ^ "." ^ (stampaNomeCampo n ), stampaNomeTipoT t)) ^ " = " ^ (stampaEspressioneT ("",right))
+	| stampaComandoT (ind, assegnamentoCampoT ( left , n, right )) = 
+		ind ^  ( stampaEspressioneT ("",left)) ^ "." ^ (stampaNomeCampo n ) ^ " = " ^ (stampaEspressioneT ("",right))
 
 	| stampaComandoT (ind, returnT r) = 
 		ind ^  "return " ^ (stampaEspressioneT ("",r))	
