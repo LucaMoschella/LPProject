@@ -37,14 +37,6 @@ and variabileSintattica = defVarS of tipoSintattico * nomeVariabile
 
 and campoSintattico = defCampoS of tipoSintattico * nomeCampo * espressioneSintattica
 
-and metodoSintattico = defMetodoS of tipoSintattico * nomeMetodo *  variabileSintattica list * variabileSintattica list * comandoSintattico list
-
-and classeSintattica = defClasseS of nomeClasse * nomeClasse * campoSintattico list * metodoSintattico list
-
-and comandoSintattico = assegnamentoVarS of nomeVariabile * espressioneSintattica |
-          			  	assegnamentoCampoS of espressioneSintattica * nomeCampo * espressioneSintattica|
-            			returnS of espressioneSintattica
-
 and espressioneSintattica = varExprS of nomeVariabile |
 			                intExprS of int    |
 			                thisS |
@@ -53,6 +45,14 @@ and espressioneSintattica = varExprS of nomeVariabile |
 			                newS of nomeClasse |
 			                accessoCampoS of espressioneSintattica * nomeCampo |
 			                chiamataMetodoS of espressioneSintattica * nomeMetodo  * espressioneSintattica list
+
+and comandoSintattico = assegnamentoVarS of nomeVariabile * espressioneSintattica |
+          			  	assegnamentoCampoS of espressioneSintattica * nomeCampo * espressioneSintattica|
+            			returnS of espressioneSintattica
+
+and metodoSintattico = defMetodoS of tipoSintattico * nomeMetodo *  variabileSintattica list * variabileSintattica list * comandoSintattico list
+
+and classeSintattica = defClasseS of nomeClasse * nomeClasse * campoSintattico list * metodoSintattico list
 
 and programmaSintattico = codiceS of classeSintattica list; (* main andrà in semantica *)
 
@@ -68,14 +68,6 @@ datatype variabileTipata = defVarT of tipoSintattico * nomeVariabile * tipoSeman
 
 and campoTipato = defCampoT of tipoSintattico * nomeCampo * espressioneTipata * tipoSemantico 
 
-and metodoTipato = defMetodoT of tipoSintattico * nomeMetodo *  variabileTipata list * variabileTipata list * comandoTipato list
-
-and classeTipata = defClasseT of nomeClasse * nomeClasse * campoTipato list * metodoTipato list
-
-and comandoTipato =  	assegnamentoVarT of nomeVariabile * espressioneTipata |
-      			  		assegnamentoCampoT of espressioneTipata * nomeCampo * espressioneTipata|
-        				returnT of espressioneTipata
-
 and espressioneTipata = 	varExprT of nomeVariabile * tipoSemantico |
 			                intExprT of int * tipoSemantico  |
 			                thisT of tipoSemantico |
@@ -84,6 +76,14 @@ and espressioneTipata = 	varExprT of nomeVariabile * tipoSemantico |
 			                newT of nomeClasse * tipoSemantico | 
 			                accessoCampoT of espressioneTipata * nomeCampo * tipoSemantico  |
 			                chiamataMetodoT of espressioneTipata * nomeMetodo  * espressioneTipata list * tipoSemantico
+
+and comandoTipato =  	assegnamentoVarT of nomeVariabile * espressioneTipata |
+      			  		assegnamentoCampoT of espressioneTipata * nomeCampo * espressioneTipata|
+        				returnT of espressioneTipata
+        				
+and metodoTipato = defMetodoT of tipoSintattico * nomeMetodo *  variabileTipata list * variabileTipata list * comandoTipato list
+
+and classeTipata = defClasseT of nomeClasse * nomeClasse * campoTipato list * metodoTipato list
 
 and programmaTipato = codiceT of classeTipata list; 
 

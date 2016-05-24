@@ -109,7 +109,7 @@ and regolaRightExpr (programmaSintattico, buildEnv a, varExprS(v), buildHeap h) 
 use "PrintToJava.sml";
 use "ProgrammiEsempio.sml";
 
-print (stampaProgramma esempioDispensa);
+print (stampaProgrammaS esempioDispensa);
 print (let val (x,y ) =regolaRightExpr( esempioDispensa, buildEnv [], newS( nomeCl "A"), buildHeap []);
 in 
 	"Oggetto: " ^ stampaVal(x) ^"\nHeap: " ^ stampaHeap(y) ^ "\n"

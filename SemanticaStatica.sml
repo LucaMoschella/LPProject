@@ -283,5 +283,6 @@ fun programmaToTipato( programmaSintattico ) =
 use "ProgrammiEsempio.sml";
 use "PrintToJava.sml";
 
-print (stampaProgramma programmaOverride4);
-programmaToTipato programmaOverride4;
+print (stampaProgrammaS programmaOverride4);
+val p = programmaToTipato programmaOverride4;
+print (stampaProgrammaT p);

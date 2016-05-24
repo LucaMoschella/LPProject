@@ -188,7 +188,7 @@ and campoSintattico = defCampoS of tipoSintattico * nomeCampo * espressioneSinta
 use "PrintToJava.sml";
 use "ProgrammiEsempio.sml";
 
-print (stampaProgramma esempioDispensa);
+print (stampaProgrammaS esempioDispensa);
 
 val x=buildContesto [(varNome (nomeV "i"), intT), (varNome(nomeV "e"), intT)];
 
@@ -204,14 +204,14 @@ val chiama = chiamataMetodoS((newS (nomeCl "Classe2")) ,
 							nomeM "metodo3",
 							[varExprS ( nomeV "v")]
 							);
-print (stampaProgramma esempio);
+print (stampaProgrammaS esempio);
 print (stampaTypes( cercaTipoRightValueInContesto(esempio, buildContesto [(varNome(nomeV "v"), classeT(nomeCl "Classe2"))], chiama )) ^ "\n");
 
 val metodoSintattico = defMetodoS ( intS, nomeM "metodo2", [defVarS (intS, nomeV "input")], [], [assegnamentoVarS(nomeV "input", intExprS 5), returnS (varExprS (nomeV "input"))]);
 
 controllaTipoMetodo(esempio, buildContesto [] , metodoSintattico );
 
-print (stampaMetodo metodoSintattico);
+print (stampaMetodoS metodoSintattico);
 
 val x=buildContesto [(varNome (nomeV "i"), intT), (varNome(nomeV "e"), intT)];
 
@@ -236,6 +236,6 @@ and heap = heapList of (locazione * Valori) list;
 *)
 (*
 print (stampaTipo(ftype( esempio, nomeC "a", nomeCl "Classe1")) ^ "\n");
-print (stampaProgramma esempio);
+print (stampaProgrammaS esempio);
 *)
 

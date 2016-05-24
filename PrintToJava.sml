@@ -16,56 +16,58 @@ fun stampaListaNewLine( l, ind:string, starter:string, presep:string, midsep:str
 
 val DEF_IND = "    ";
 
-(********************************* FUNZIONI PER STAMPARE SINTASSI ASTRATTA ************************************************)
+(********************************* FUNZIONI PER STAMPARE NOMI ************************************************)
 fun stampaNomeCampo (nomeC s) = s;
 fun stampaNomeVar (nomeV s) = s;
 fun stampaNomeMetodo (nomeM s) = s;
 fun stampaNomeClasse (nomeCl s) = s |
 	stampaNomeClasse Object = "Object";
+
 fun stampaNomeTipo (intS) = "int"
 	| stampaNomeTipo (classeS a) = stampaNomeClasse a;
 
-(*********************************)
+(********************************* FUNZIONI PER STAMPARE SINTASSI ASTRATTA ************************************************)
+fun stampaDefVariabileS (ind, defVarS (t,n)) = ind ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeVar n)
 
-fun stampaDefVariabile (ind, defVarS (t,n)) = ind ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeVar n)
+and	stampaDefCampoS (ind, defCampoS (t, n, v )) = ind ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeCampo n) ^ " = " ^ (stampaEspressioneS ("",v))
 
-and	stampaDefCampo (ind, defCampoS (t, n, v )) = ind ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeCampo n) ^ " = " ^ (stampaRightValue ("",v))
+and stampaEspressioneS (ind, varExprS n) = ind ^ (stampaNomeVar n )
+	| stampaEspressioneS (ind, intExprS i) = ind ^ (Int.toString i)
+	| stampaEspressioneS (ind, thisS) = ind ^ ("this")
+	| stampaEspressioneS (ind, superS)  = ind ^ ("super")
+	| stampaEspressioneS (ind, nullS) = ind ^ ("null")
+	| stampaEspressioneS (ind, newS c) = ind ^ ("new " ^ (stampaNomeClasse c) ^ "()")
+	| stampaEspressioneS (ind, accessoCampoS (v, nomeC c)) = ind ^ ((stampaEspressioneS ("",v)) ^ "." ^ (c))
+	| stampaEspressioneS (ind, chiamataMetodoS (v,n, args)) = 
+		ind ^ ((stampaEspressioneS ("",v)) ^ "." ^ (stampaNomeMetodo n )  ^ (stampaListaInLine(args, "", "(", "",  ", ", "", ")",  stampaEspressioneS )))
 
-and stampaComando  (ind, assegnamentoVarS (n,v)) = 
-		ind ^ (stampaNomeVar n) ^ " = " ^ (stampaRightValue ("",v))
+and stampaComandoS  (ind, assegnamentoVarS (n,v)) = 
+		ind ^ (stampaNomeVar n) ^ " = " ^ (stampaEspressioneS ("",v))
 
-	| stampaComando (ind, assegnamentoCampoS ( left , n, right )) = 
-		ind ^  ( stampaRightValue ("",left)) ^ "." ^ (stampaNomeCampo n ) ^ " = " ^ (stampaRightValue ("",right))
+	| stampaComandoS (ind, assegnamentoCampoS ( left , n, right )) = 
+		ind ^  ( stampaEspressioneS ("",left)) ^ "." ^ (stampaNomeCampo n ) ^ " = " ^ (stampaEspressioneS ("",right))
 
-	| stampaComando (ind, returnS r) = 
-		ind ^  "return " ^ (stampaRightValue ("",r))	
+	| stampaComandoS (ind, returnS r) = 
+		ind ^  "return " ^ (stampaEspressioneS ("",r))	
 
-and stampaMetodo ( ind:string, defMetodoS (t, n, args, locals, commands )) = 
-		ind ^ "public " ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeMetodo n) ^  (stampaListaInLine(args, "", "(", "",", ", "",")",  stampaDefVariabile )) ^ "\n" ^
-		ind ^ "{" ^ (stampaListaNewLine(locals, ind ^ DEF_IND, "", "", ";", ";\n","",  stampaDefVariabile )) ^ 
-					(stampaListaNewLine(commands, ind ^ DEF_IND,"", "", ";", ";", "", stampaComando )) ^ "\n" ^
+and stampaMetodoS ( ind:string, defMetodoS (t, n, args, locals, commands )) = 
+		ind ^ "public " ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeMetodo n) ^  (stampaListaInLine(args, "", "(", "",", ", "",")",  stampaDefVariabileS )) ^ "\n" ^
+		ind ^ "{" ^ (stampaListaNewLine(locals, ind ^ DEF_IND, "", "", ";", ";\n","",  stampaDefVariabileS )) ^ 
+					(stampaListaNewLine(commands, ind ^ DEF_IND,"", "", ";", ";", "", stampaComandoS )) ^ "\n" ^
 		ind ^ "}"			
 
-and stampaClasse ( ind:string, defClasseS (n, nfrom, campi, metodi ) ) = 
+and stampaClasseS ( ind:string, defClasseS (n, nfrom, campi, metodi ) ) = 
 		ind ^ "public class " ^ (stampaNomeClasse n) ^ " extends " ^ (stampaNomeClasse nfrom) ^ "\n" ^
-		ind ^ "{" ^ (stampaListaNewLine(campi, ind ^ DEF_IND, "", "", ";", ";\n", "", stampaDefCampo )) ^ 
-					(stampaListaNewLine(metodi, ind ^ DEF_IND, "",  "", "", "", "", stampaMetodo )) ^ "\n" ^
+		ind ^ "{" ^ (stampaListaNewLine(campi, ind ^ DEF_IND, "", "", ";", ";\n", "", stampaDefCampoS )) ^ 
+					(stampaListaNewLine(metodi, ind ^ DEF_IND, "",  "", "\n", "", "", stampaMetodoS )) ^ "\n" ^
 		ind ^ "}"
 
-and stampaRightValue (ind, varExprS n) = ind ^ (stampaNomeVar n )
-	| stampaRightValue (ind, intExprS i) = ind ^ (Int.toString i)
-	| stampaRightValue (ind, thisS) = ind ^ ("this")
-	| stampaRightValue (ind, superS)  = ind ^ ("super")
-	| stampaRightValue (ind, nullS) = ind ^ ("null")
-	| stampaRightValue (ind, newS c) = ind ^ ("new " ^ (stampaNomeClasse c) ^ "()")
-	| stampaRightValue (ind, accessoCampoS (v, nomeC c)) = ind ^ ((stampaRightValue ("",v)) ^ "." ^ (c))
-	| stampaRightValue (ind, chiamataMetodoS (v,n, args)) = 
-		ind ^ ((stampaRightValue ("",v)) ^ "." ^ (stampaNomeMetodo n )  ^ (stampaListaInLine(args, "", "(", "",  ", ", "", ")",  stampaRightValue )))
+and stampaProgrammaS ( codiceS l ) = 
+	stampaListaNewLine( l, DEF_IND, "\nProgramma Java:", "", "\n", "", "\n",  stampaClasseS); 
 
-and stampaProgramma ( codiceS l ) = 
-	stampaListaNewLine( l, DEF_IND, "\nProgramma Java:", "", "\n", "", "\n",  stampaClasse); 
 
-(* FUNZIONI PER STAMPARE SEMANTICA STATICA *)
+
+(********************************* FUNZIONI PER STAMPARE SINTASSI ASTRATTA TIPATA ************************************************)
 fun stampaTypes (classeT s) = stampaNomeClasse( s )
 	| stampaTypes ( intT) = "int"
 	| stampaTypes (T) = "T";
@@ -76,6 +78,45 @@ fun stampaVarPiu ( varNome n ) = stampaNomeVar n
 fun stampaCoppiaVarPiuType( ind, (v, t)) = ind ^ "(" ^ (stampaVarPiu v) ^ ":" ^ (stampaTypes t) ^ ")"
 and stampaContesto ( buildContesto l) = stampaListaInLine(l, "", "[", "", "; ", "", "]\n", stampaCoppiaVarPiuType);
 
+fun stampaCoppia( x1:string, x2:string) = "((" ^ x1 ^ "):" ^ x2 ^ ")";
+
+fun stampaDefVariabileT (ind, defVarT (t,n, ts)) = ind ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeVar n)  ^ " : " ^ ( stampaTypes ts)
+
+and	stampaDefCampoT (ind, defCampoT (t, n, v, ts )) = ind ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeCampo n) ^ " = " ^ (stampaEspressioneT ("",v)) ^ " : " ^ ( stampaTypes ts)
+
+and stampaEspressioneT (ind, varExprT (n,t)) = ind ^ (stampaCoppia(stampaNomeVar n, stampaTypes t ))
+	| stampaEspressioneT (ind, intExprT (i,t)) = ind ^ (stampaCoppia( (Int.toString i), stampaTypes t )) 
+	| stampaEspressioneT (ind, thisT t) = ind ^ (stampaCoppia( ("this"), stampaTypes t )) 
+	| stampaEspressioneT (ind, superT t)  = ind ^ (stampaCoppia( ("super"), stampaTypes t ))  
+	| stampaEspressioneT (ind, nullT t) = ind ^ (stampaCoppia( ("null"), stampaTypes t )) 
+	| stampaEspressioneT (ind, newT (c, t)) = ind ^ (stampaCoppia(  ("new " ^ (stampaNomeClasse c) ^ "()"), stampaTypes t ))
+	| stampaEspressioneT (ind, accessoCampoT (v, nomeC c, t)) = ind ^ (stampaCoppia( ((stampaEspressioneT ("",v)) ^ "." ^ (c)), stampaTypes t )) 
+	| stampaEspressioneT (ind, chiamataMetodoT (v, n, args, t)) = 
+		ind ^ (stampaCoppia( ((stampaEspressioneT ("",v)) ^ "." ^ (stampaNomeMetodo n )  ^ (stampaListaInLine(args, "", "(", "",  ", ", "", ")",  stampaEspressioneT ))), stampaTypes t ))  
+
+and stampaComandoT  (ind, assegnamentoVarT (n,v)) = 
+		ind ^ (stampaNomeVar n) ^ " = " ^ (stampaEspressioneT ("",v))
+
+	| stampaComandoT (ind, assegnamentoCampoT ( left , n, right )) = 
+		ind ^  ( stampaEspressioneT ("",left)) ^ "." ^ (stampaNomeCampo n ) ^ " = " ^ (stampaEspressioneT ("",right))
+
+	| stampaComandoT (ind, returnT r) = 
+		ind ^  "return " ^ (stampaEspressioneT ("",r))	
+
+and stampaMetodoT ( ind:string, defMetodoT (t, n, args, locals, commands )) = 
+		ind ^ "public " ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeMetodo n) ^  (stampaListaInLine(args, "", "(", "",", ", "",")",  stampaDefVariabileT )) ^ "\n" ^
+		ind ^ "{" ^ (stampaListaNewLine(locals, ind ^ DEF_IND, "", "", ";", ";\n","",  stampaDefVariabileT )) ^ 
+					(stampaListaNewLine(commands, ind ^ DEF_IND,"", "", ";", ";", "", stampaComandoT )) ^ "\n" ^
+		ind ^ "}"			
+
+and stampaClasseT ( ind:string, defClasseT (n, nfrom, campi, metodi ) ) = 
+		ind ^ "public class " ^ (stampaNomeClasse n) ^ " extends " ^ (stampaNomeClasse nfrom) ^ "\n" ^
+		ind ^ "{" ^ (stampaListaNewLine(campi, ind ^ DEF_IND, "", "", ";", ";\n", "", stampaDefCampoT )) ^ 
+					(stampaListaNewLine(metodi, ind ^ DEF_IND, "",  "", "\n", "", "", stampaMetodoT )) ^ "\n" ^
+		ind ^ "}"
+
+and stampaProgrammaT ( codiceT l ) = 
+	stampaListaNewLine( l, DEF_IND, "\nProgramma Java tipato:", "", "\n", "", "\n",  stampaClasseT); 
 
 (***************** STAMPA SEMNATICA DINAMICA **********************)
 
