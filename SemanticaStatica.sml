@@ -22,9 +22,14 @@ fun cercaVarPiuInContesto ( buildContesto [],v ) =
 	| cercaVarPiuInContesto ( buildContesto ((n1,t1)::l), v ) = 
 		if ((n1 = v)) then t1 else cercaVarPiuInContesto( buildContesto l, v);
 
-fun getNomeClasseDaTipo( intT ) =  raise TypeIsNotAClass
- 	| getNomeClasseDaTipo( T ) = raise TypeIsNotAClass
-	| getNomeClasseDaTipo( classeT n) = n;
+fun getNomeClasseDaTipoT( classeT n) = n
+ 	| getNomeClasseDaTipoT( _ ) = raise TypeIsNotAClass;
+
+fun getNomeVarDaExprS( varExprS v ) = v
+	| getNomeVarDaExprS( _ ) = raise ExprIsNotAVar;
+
+fun getNomeVarDaExprT( varExprT (v, _)) = v
+	| getNomeVarDaExprT( _ ) = raise ExprIsNotAVar;
 
 fun getExtendedClass( defClasseS (nomeclasse, nomeclasseestesa , campi , metodi) ) = nomeclasseestesa;
 
@@ -143,12 +148,12 @@ and	espressioneToTipata( programmaSintattico, cont, varExprS(nomeV v)  ) =
 		 thisT( cercaVarPiuInContesto(cont, this))
 
 	| espressioneToTipata( programmaSintattico, cont, ( superS )) = 
-		superT(classeT (getExtendedClass( cercaClasseInProgramma(programmaSintattico, getNomeClasseDaTipo( cercaVarPiuInContesto(cont, this))))))
+		superT(classeT (getExtendedClass( cercaClasseInProgramma(programmaSintattico, getNomeClasseDaTipoT( cercaVarPiuInContesto(cont, this))))))
 
 	| espressioneToTipata( programmaSintattico, cont, accessoCampoS( v, c) ) = 
 		let val expTyped = espressioneToTipata( programmaSintattico, cont, v)
 		in
-			accessoCampoT( expTyped, c, ftype(programmaSintattico, c, getNomeClasseDaTipo( estraiTipoSemantico expTyped)))
+			accessoCampoT( expTyped, c, ftype(programmaSintattico, c, getNomeClasseDaTipoT( estraiTipoSemantico expTyped)))
 		end
 	| espressioneToTipata( programmaSintattico, cont, chiamataMetodoS( v, m, args) ) = 
 		let val expTyped = espressioneToTipata( programmaSintattico, cont, v)
@@ -158,7 +163,7 @@ and	espressioneToTipata( programmaSintattico, cont, varExprS(nomeV v)  ) =
 							espressioneListToTipata (programmaSintattico, cont, args),
 							mtype(	programmaSintattico, 
 									m, 
-									getNomeClasseDaTipo( estraiTipoSemantico(expTyped) ),
+									getNomeClasseDaTipoT( estraiTipoSemantico(expTyped) ),
 									getListaTipiArgs (programmaSintattico, cont, args )
 								)
 				)
@@ -176,13 +181,13 @@ fun metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico, nom
 | metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, (assegnamentoVarS( nomevar, v))::comandi ), 
 												defMetodoT(ti, no, ar, lo, cmds), ret) = 
 	let 
-		val left = espressioneToTipata( programmaSintattico, addVarsToContesto( addVarsToContesto(cont, args), locals),  varExprS(nomevar)  )
+		val left = espressioneToTipata( programmaSintattico, addVarsToContesto( addVarsToContesto(cont, args), locals),  nomevar  )
 		val right = espressioneToTipata( programmaSintattico, addVarsToContesto( addVarsToContesto(cont, args), locals),  v  )
 	in
 		if( compatibleTipoSemSem( programmaSintattico , estraiTipoSemantico left, estraiTipoSemantico right) )
 		then  
 			metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, comandi ), 
-														defMetodoT(ti, no, ar, lo, cmds @ [assegnamentoVarT(nomevar, right )]) , ret)
+														defMetodoT(ti, no, ar, lo, cmds @ [assegnamentoVarT(varExprT(getNomeVarDaExprT left, estraiTipoSemantico left), right )]) , ret)
 		else 
 			raise TypeErrorAssignVar(nomemetodo)
 	end
@@ -273,6 +278,7 @@ fun programmaToTipato( programmaSintattico ) =
 			| ReturnNotFound x => ( print ("ERRORE: Il metodo: " ^ x ^ ", non contiene un comando di return.\n\n"); codiceT [] )
 
 			| TypeIsNotAClass => ( print ("ERRORE: Impossibile convertire l'espressione in una classe.\n\n"); codiceT [] )
+			| ExprIsNotAVar => ( print ("ERRORE: Impossibile convertire l'espressione in una variabile.\n\n"); codiceT [] )
 
 			| TypeErrorField x => ( print ("ERRORE: I tipi non sono compatibili durante l'inizializzazione del campo: " ^ x ^ ".\n\n"); codiceT [] )
 			| TypeErrorReturn x => ( print ("ERRORE: Il tipo di return non è compatibile con il tipo di ritorno dichiarato nel metodo: " ^ x ^ ".\n\n"); codiceT [] )
@@ -285,4 +291,8 @@ use "PrintToJava.sml";
 
 print (stampaProgrammaS programmaOverride4);
 val p = programmaToTipato programmaOverride4;
+print (stampaProgrammaT p);
+
+print (stampaProgrammaS programmaInizializzazione3);
+val p = programmaToTipato programmaInizializzazione3;
 print (stampaProgrammaT p);

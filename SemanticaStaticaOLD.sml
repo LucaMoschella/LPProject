@@ -104,9 +104,9 @@ fun equalType ( intS, intS ) = true
 				| cercaThisInContesto ( buildContesto ((this,t1)::l) ) = t1
 				|  cercaThisInContesto ( buildContesto ((_,t1)::l) ) =cercaThisInContesto( buildContesto l );
 *)
-(* OK *)fun getNomeClasseDaTipo( intT ) =  raise ex
-			 	| getNomeClasseDaTipo( T ) = raise ex
-				| getNomeClasseDaTipo( classeT n) = n;
+(* OK *)fun getNomeClasseDaTipoT( intT ) =  raise ex
+			 	| getNomeClasseDaTipoT( T ) = raise ex
+				| getNomeClasseDaTipoT( classeT n) = n;
 
 (* OK *)fun getListaTipiArgs (programmaSintattico, cont, [] ) = []
 				| getListaTipiArgs ( programmaSintattico, cont,r::l ) = (cercaTipoRightValueInContesto(programmaSintattico, cont, r)) :: (getListaTipiArgs (  programmaSintattico, cont,l ))
@@ -116,9 +116,9 @@ fun equalType ( intS, intS ) = true
 				| cercaTipoRightValueInContesto( programmaSintattico, cont, newS( c)) = classeT c
 				| cercaTipoRightValueInContesto( programmaSintattico, cont, ( nullS )) = T 
 				| cercaTipoRightValueInContesto( programmaSintattico, cont, ( thisS )) = cercaVarPiuInContesto(cont, this)
-				| cercaTipoRightValueInContesto( programmaSintattico, cont, ( superS )) = classeT (getExtendedClass( cercaClasseInProgramma(programmaSintattico, getNomeClasseDaTipo( cercaVarPiuInContesto(cont, this))) ) )
-				| cercaTipoRightValueInContesto( programmaSintattico, cont, accessoCampoS( right, c) ) = ftype( programmaSintattico, c, getNomeClasseDaTipo( cercaTipoRightValueInContesto(programmaSintattico,cont, right)))
-				| cercaTipoRightValueInContesto( programmaSintattico, cont, chiamataMetodoS( right, m, args) ) = mtype(programmaSintattico, m, getNomeClasseDaTipo( cercaTipoRightValueInContesto( programmaSintattico, cont, right) ) , getListaTipiArgs (programmaSintattico, cont, args )) ;
+				| cercaTipoRightValueInContesto( programmaSintattico, cont, ( superS )) = classeT (getExtendedClass( cercaClasseInProgramma(programmaSintattico, getNomeClasseDaTipoT( cercaVarPiuInContesto(cont, this))) ) )
+				| cercaTipoRightValueInContesto( programmaSintattico, cont, accessoCampoS( right, c) ) = ftype( programmaSintattico, c, getNomeClasseDaTipoT( cercaTipoRightValueInContesto(programmaSintattico,cont, right)))
+				| cercaTipoRightValueInContesto( programmaSintattico, cont, chiamataMetodoS( right, m, args) ) = mtype(programmaSintattico, m, getNomeClasseDaTipoT( cercaTipoRightValueInContesto( programmaSintattico, cont, right) ) , getListaTipiArgs (programmaSintattico, cont, args )) ;
 
 
 (* aggiungi al buildContesto una lista di variabili*)
@@ -205,7 +205,7 @@ val chiama = chiamataMetodoS((newS (nomeCl "Classe2")) ,
 							[varExprS ( nomeV "v")]
 							);
 print (stampaProgrammaS esempio);
-print (stampaTypes( cercaTipoRightValueInContesto(esempio, buildContesto [(varNome(nomeV "v"), classeT(nomeCl "Classe2"))], chiama )) ^ "\n");
+print (stampaNomeTipoT( cercaTipoRightValueInContesto(esempio, buildContesto [(varNome(nomeV "v"), classeT(nomeCl "Classe2"))], chiama )) ^ "\n");
 
 val metodoSintattico = defMetodoS ( intS, nomeM "metodo2", [defVarS (intS, nomeV "input")], [], [assegnamentoVarS(nomeV "input", intExprS 5), returnS (varExprS (nomeV "input"))]);
 
@@ -222,7 +222,7 @@ print (stampaContesto x);
 print (stampaContesto y);
 print (stampaContesto (concatenaContesto (x,y)));
 print (stampaContesto ( concatenaContesto (x,y)));
-print( "Cerca tipoSintattico variabileSintattica: " ^ (stampaTypes (cercaVarInContesto (concatenaContesto (x,y), nomeV "g"))) ^ "\n");
+print( "Cerca tipoSintattico variabileSintattica: " ^ (stampaNomeTipoT (cercaVarInContesto (concatenaContesto (x,y), nomeV "g"))) ^ "\n");
 *)
 
 (* SEMANTICA DINAMICA - ESECUZIONE *)

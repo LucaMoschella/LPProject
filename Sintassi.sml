@@ -9,6 +9,7 @@ exception ClassNotFound of string;
 exception ReturnNotFound of string;
 
 exception TypeIsNotAClass;
+exception ExprIsNotAVar;
 
 exception TypeErrorField of string;
 exception TypeErrorReturn of string;
@@ -46,7 +47,7 @@ and espressioneSintattica = varExprS of nomeVariabile |
 			                accessoCampoS of espressioneSintattica * nomeCampo |
 			                chiamataMetodoS of espressioneSintattica * nomeMetodo  * espressioneSintattica list
 
-and comandoSintattico = assegnamentoVarS of nomeVariabile * espressioneSintattica |
+and comandoSintattico = assegnamentoVarS of espressioneSintattica * espressioneSintattica |
           			  	assegnamentoCampoS of espressioneSintattica * nomeCampo * espressioneSintattica|
             			returnS of espressioneSintattica
 
@@ -77,7 +78,7 @@ and espressioneTipata = 	varExprT of nomeVariabile * tipoSemantico |
 			                accessoCampoT of espressioneTipata * nomeCampo * tipoSemantico  |
 			                chiamataMetodoT of espressioneTipata * nomeMetodo  * espressioneTipata list * tipoSemantico
 
-and comandoTipato =  	assegnamentoVarT of nomeVariabile * espressioneTipata |
+and comandoTipato =  	assegnamentoVarT of espressioneTipata * espressioneTipata |
       			  		assegnamentoCampoT of espressioneTipata * nomeCampo * espressioneTipata|
         				returnT of espressioneTipata
         				
