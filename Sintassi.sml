@@ -79,7 +79,7 @@ and espressioneTipata = 	varExprT of nomeVariabile * tipoSemantico |
 			                chiamataMetodoT of espressioneTipata * nomeMetodo  * espressioneTipata list * tipoSemantico
 
 and comandoTipato =  	assegnamentoVarT of espressioneTipata * espressioneTipata |
-      			  		assegnamentoCampoT of espressioneTipata * nomeCampo * espressioneTipata|
+      			  		assegnamentoCampoT of espressioneTipata * nomeCampo * espressioneTipata * tipoSemantico|
         				returnT of espressioneTipata
         				
 and metodoTipato = defMetodoT of tipoSintattico * nomeMetodo *  variabileTipata list * variabileTipata list * comandoTipato list

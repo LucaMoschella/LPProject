@@ -588,3 +588,38 @@ val programmaCast3 = codiceS(
 ]
 );
 
+val programmaCampo1 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	           defCampoS ( intS, nomeC ("f"), intExprS 1) 
+
+
+
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "m", [], [], [
+	            	assegnamentoCampoS(thisS, nomeC "f", intExprS 32),
+	            	assegnamentoCampoS(thisS, nomeC "f", accessoCampoS(thisS, nomeC "f")),
+
+	            	returnS (accessoCampoS(thisS, nomeC "f"))])
+	        ]
+	        ),
+
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[], (*locals*)
+	            	[returnS (chiamataMetodoS( newS( nomeCl "A"), nomeM "m", []))]) (*cmds*)
+	        ]
+	        )
+]
+);
+

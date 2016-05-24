@@ -202,7 +202,7 @@ fun metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico, nom
 		if( compatibleTipoSemSem( programmaSintattico, estraiTipoSemantico field, estraiTipoSemantico right ))
 		then 
 			metodoToTipatoApp( programmaSintattico, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, comandi ), 
-														defMetodoT(ti, no, ar, lo, cmds @ [assegnamentoCampoT(left, nomecampo, right)]) , ret)
+														defMetodoT(ti, no, ar, lo, cmds @ [assegnamentoCampoT(left, nomecampo, right, estraiTipoSemantico field)]) , ret)
 		else
 			raise TypeErrorAssignField(nomemetodo)
 	end
@@ -295,4 +295,8 @@ print (stampaProgrammaT p);
 
 print (stampaProgrammaS programmaInizializzazione3);
 val p = programmaToTipato programmaInizializzazione3;
+print (stampaProgrammaT p);
+
+print (stampaProgrammaS programmaCampo1);
+val p = programmaToTipato programmaCampo1;
 print (stampaProgrammaT p);
