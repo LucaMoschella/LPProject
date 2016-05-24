@@ -283,8 +283,5 @@ fun programmaToTipato( programmaSintattico ) =
 use "ProgrammiEsempio.sml";
 use "PrintToJava.sml";
 
-print (stampaProgramma esempio);
-programmaToTipato esempio;
-
-print (stampaProgramma esempioDispensa);
-programmaToTipato esempioDispensa;
+print (stampaProgramma programmaOverride4);
+programmaToTipato programmaOverride4;

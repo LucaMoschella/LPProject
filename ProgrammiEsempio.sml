@@ -1,51 +1,61 @@
-val esempio = codiceS( [
-defClasseS(
-        nomeCl "Classe1",
-        Object,
-        [
-            defCampoS ( intS, nomeC ("a"), intExprS 5 ),
-            defCampoS ( classeS Object, nomeC ("b"),  nullS ) 
-        ],
-        [
+(**************************** DISPENSE ***********************************)
 
-
-            defMetodoS ( intS, nomeM "metodo1", [defVarS (intS, nomeV "input")], [], [assegnamentoVarS(nomeV "input", intExprS 5), returnS (varExprS (nomeV "input"))]) 
-            ,
-           defMetodoS ( classeS (nomeCl "Classe1"), nomeM "metodo3", [defVarS (classeS (nomeCl "Classe2"), nomeV "input")], [], [assegnamentoVarS(nomeV "input",  nullS),returnS (varExprS (nomeV "input"))]) 
-
-     
-        ]
-        )
-
-,
-defClasseS(
-        nomeCl "Classe2",
-        nomeCl "Classe1",
-        [
-          
-            defCampoS ( classeS (nomeCl "Classe1"), nomeC ("a"), newS ( nomeCl "Classe1") ) ,
-            defCampoS ( intS, nomeC ("c"), intExprS 55 ),
-            defCampoS ( classeS (nomeCl "Classe1"), nomeC ("obj1"), newS ( nomeCl "Classe1") ) 
-        ],
-        [
-         defMetodoS ( classeS (nomeCl "Classe1"), nomeM "metodo3", [defVarS (classeS (nomeCl "Classe2"), nomeV "input")], [], [assegnamentoVarS(nomeV "input",  nullS), returnS (varExprS (nomeV "input"))]) ,
-         defMetodoS ( intS, nomeM "metodo3", [defVarS (classeS (nomeCl "Classe1"), nomeV "input")], [], [assegnamentoVarS(nomeV "input",  nullS), returnS ( intExprS 5)]) 
-
-        ]
-        ) 
-
-
-]
-);
-
-val esempioDispensa = codiceS( 
+val programmaStatDin = codiceS( 
 [
 	defClasseS(
 	        nomeCl "A",
 	        Object,
 	        [
-	        (*    defCampoS ( intS, nomeC ("f"),chiamataMetodoS (( thisS) , nomeM "m" , [])) *)
-	        	    defCampoS ( classeS(nomeCl "A" ), nomeC ("f"),  thisS)
+	           defCampoS ( intS, nomeC ("f"), intExprS 1) 
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	            defCampoS ( intS, nomeC ("f"), intExprS 2)
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), nomeV "b"),
+	            		defVarS( intS, nomeV "res1"),
+	            		defVarS( intS, nomeV "res2")
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( nomeV "res1", accessoCampoS( varExprS( nomeV "b"), nomeC "f")),
+	            		assegnamentoVarS( nomeV "res2", chiamataMetodoS (varExprS( nomeV "b") , nomeM "get_f" , [])),
+
+	            		returnS ( intExprS 0)
+	            	]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+
+
+val programmaWeird = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	           defCampoS ( intS, nomeC ("f"), chiamataMetodoS (( thisS) , nomeM "m" , [])) 
 
 
 
@@ -67,15 +77,485 @@ val esempioDispensa = codiceS(
 	        ),
 
 	defClasseS(
-        nomeCl "weird",
-         nomeCl "B",
-        [ defCampoS ( intS, nomeC ("g"), intExprS 42)],
-        [
-            defMetodoS ( intS, nomeM "main", 
-            	[	           ], (*args*)
-            	[defVarS( classeS( nomeCl "B"), nomeV "b")], (*locals*)
-            	[ assegnamentoVarS( nomeV "b", newS( nomeCl "B")) ,returnS (accessoCampoS( varExprS( nomeV "b"), nomeC "f"))]) (*cmds*)
-        ]
-        )
+	        nomeCl "weird",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[defVarS( classeS( nomeCl "B"), nomeV "b")], (*locals*)
+	            	[ assegnamentoVarS( nomeV "b", newS( nomeCl "B")) ,returnS (accessoCampoS( varExprS( nomeV "b"), nomeC "f"))]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+(**************************** VARIE ***********************************)
+
+val programmaOverride1 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [	        	
+	        	defMetodoS ( intS, nomeM "get_f", [], [], [returnS (intExprS 1)])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        ],
+	        [
+	        	defMetodoS ( classeS( nomeCl "A"), nomeM "get_f", [], [], [returnS (newS( nomeCl "B"))])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), nomeV "a"),
+	            		defVarS( classeS( nomeCl "B"), nomeV "b"),
+	            		defVarS( intS, nomeV "resA"),
+	            		defVarS( classeS( nomeCl "A"), nomeV "resB")
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( nomeV "a", newS( nomeCl "B")),
+	            		assegnamentoVarS( nomeV "b", newS( nomeCl "B")),
+
+	            		assegnamentoVarS( nomeV "resA", chiamataMetodoS (varExprS( nomeV "a") , nomeM "get_f" , [])),
+	            		assegnamentoVarS( nomeV "resB", chiamataMetodoS (varExprS( nomeV "b") , nomeM "get_f" , [])),
+
+	            		returnS ( intExprS 0)
+					]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+val programmaOverride2 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [	        	
+	        	defMetodoS ( intS, nomeM "get_f", [], [], [returnS (intExprS 1)])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        ],
+	        [
+	        	defMetodoS ( classeS( nomeCl "A"), nomeM "get_f", [], [], [returnS (newS( nomeCl "B"))])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), nomeV "a"),
+	            		defVarS( classeS( nomeCl "B"), nomeV "b"),
+	            		defVarS( intS, nomeV "resA"),
+	            		defVarS( classeS( nomeCl "A"), nomeV "resB")
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( nomeV "a", newS( nomeCl "B")),
+	            		assegnamentoVarS( nomeV "b", newS( nomeCl "B")),
+
+	            		assegnamentoVarS( nomeV "resA", chiamataMetodoS (varExprS( nomeV "b") , nomeM "get_f" , [])),
+	            		assegnamentoVarS( nomeV "resB", chiamataMetodoS (varExprS( nomeV "a") , nomeM "get_f" , [])),
+
+	            		returnS ( intExprS 0)
+					]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+val programmaOverride3 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [	        	
+	        	defMetodoS ( intS, nomeM "get_f", [], [], [returnS (intExprS 1)])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        ],
+	        [
+	        	defMetodoS ( classeS( nomeCl "A"), nomeM "get_f", [], [], [returnS (newS( nomeCl "B"))])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), nomeV "a"),
+	            		defVarS( classeS( nomeCl "B"), nomeV "b"),
+	            		defVarS( intS, nomeV "resA"),
+	            		defVarS( intS, nomeV "resB")
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( nomeV "a", newS( nomeCl "B")),
+	            		assegnamentoVarS( nomeV "b", newS( nomeCl "B")),
+
+	            		assegnamentoVarS( nomeV "resA", chiamataMetodoS (varExprS( nomeV "b") , nomeM "get_f" , [])),
+	            		assegnamentoVarS( nomeV "resB", chiamataMetodoS (varExprS( nomeV "a") , nomeM "get_f" , [])),
+
+	            		returnS ( intExprS 0)
+					]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+val programmaOverride4 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [	        	
+	        	defMetodoS ( intS, nomeM "get_f", [], [], [returnS (intExprS 1)])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        ],
+	        [
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), nomeV "a"),
+	            		defVarS( classeS( nomeCl "B"), nomeV "b"),
+	            		defVarS( intS, nomeV "resA"),
+	            		defVarS( intS, nomeV "resB")
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( nomeV "a", newS( nomeCl "B")),
+	            		assegnamentoVarS( nomeV "b", newS( nomeCl "B")),
+
+	            		assegnamentoVarS( nomeV "resA", chiamataMetodoS (varExprS( nomeV "b") , nomeM "get_f" , [])),
+	            		assegnamentoVarS( nomeV "resB", chiamataMetodoS (varExprS( nomeV "a") , nomeM "get_f" , [])),
+
+	            		returnS ( intExprS 0)
+					]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+val programmaInizializzazione1 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	            defCampoS ( intS, nomeC ("f"), intExprS 2)
+	        ],
+	        [
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), nomeV "a")
+	            	], (*locals*)
+	            	[ 
+	            		returnS ( accessoCampoS( varExprS( nomeV "a"), nomeC "f"))
+	            	]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+val programmaInizializzazione2 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [
+	    		defMetodoS ( intS, nomeM "get_f", [], [], [returnS (intExprS 1)])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), nomeV "a")
+	            	], (*locals*)
+	            	[ 
+	            		returnS ( chiamataMetodoS (varExprS( nomeV "a") , nomeM "get_f" , []) )
+	            	]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+
+val programmaVisibilita1 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	            defCampoS ( intS, nomeC ("f"), intExprS 2)
+	        ],
+	        [
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), nomeV "a")
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( nomeV "a", newS( nomeCl "B")),
+	            		returnS ( accessoCampoS( varExprS( nomeV "a"), nomeC "f"))
+	            	]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+val programmaVisibilita2 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        ],
+	        [
+	        	defMetodoS ( intS, nomeM "get_f", [], [], [returnS (intExprS 1)])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), nomeV "a")
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( nomeV "a", newS( nomeCl "B")),
+	            		returnS ( chiamataMetodoS (varExprS( nomeV "a") , nomeM "get_f" , []) )
+	            	]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+val programmaCast1 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	            defCampoS ( intS, nomeC ("f"), intExprS 2)
+	        ],
+	        [
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), nomeV "a"),
+	            		defVarS( classeS( nomeCl "B"), nomeV "b")
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( nomeV "a", newS( nomeCl "B")),
+	            		assegnamentoVarS( nomeV "b", varExprS( nomeV "a")),
+
+	            		returnS ( accessoCampoS( varExprS( nomeV "a"), nomeC "f"))
+	            	]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+val programmaCast2 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        ],
+	        [
+	        	defMetodoS ( intS, nomeM "get_f", [], [], [returnS (intExprS 1)])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), nomeV "a"),
+	            		defVarS( classeS( nomeCl "B"), nomeV "b")
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( nomeV "a", newS( nomeCl "B")),
+	            		assegnamentoVarS( nomeV "b", varExprS( nomeV "a")),
+
+	            		returnS ( chiamataMetodoS (varExprS( nomeV "a") , nomeM "get_f" , []) )
+	            	]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+val programmaCast3 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        ],
+	        [
+	        	defMetodoS ( intS, nomeM "get_f", [], [], [returnS (intExprS 1)])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), nomeV "a"),
+	            		defVarS( classeS( nomeCl "B"), nomeV "b"),
+
+	            		defVarS( intS, nomeV "res")
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( nomeV "b", newS( nomeCl "B")),
+	            		assegnamentoVarS( nomeV "res", chiamataMetodoS (varExprS( nomeV "b") , nomeM "get_f" , [])),
+	            		assegnamentoVarS( nomeV "a", varExprS ( nomeV "b")),
+	            		assegnamentoVarS( nomeV "res", chiamataMetodoS (varExprS( nomeV "a") , nomeM "get_f" , [])),
+	            		returnS ( intExprS 0 )
+	            	]) (*cmds*)
+	        ]
+	        )
 ]
 );
