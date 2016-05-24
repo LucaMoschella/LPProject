@@ -1,21 +1,15 @@
-fun stampaListaInLineApp( [], ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) = ender |
-	stampaListaInLineApp( l::[], ind:string, midsep:string, endsep:string, ender:string,metodoSintattico) =  (metodoSintattico (ind,l)) ^ endsep ^ ender |
-	stampaListaInLineApp( l::lista, ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) =  
-		(metodoSintattico (ind,l)) ^ midsep ^ (stampaListaInLineApp (lista, ind, midsep, endsep, ender, metodoSintattico))
+fun stampaLista( [], newline:string, ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) = ender |
+	stampaLista( l::[], newline:string, ind:string, midsep:string, endsep:string, ender:string,metodoSintattico) =  newline ^ (metodoSintattico (ind,l)) ^ endsep ^ ender |
+	stampaLista( l::lista, newline:string, ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) =  
+		newline ^ (metodoSintattico (ind,l)) ^ midsep ^ (stampaLista (lista,newline, ind, midsep, endsep, ender, metodoSintattico))
 
 and stampaListaInLine( [], ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, metodoSintattico) = starter ^ ender
 	|stampaListaInLine( l, ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, metodoSintattico) = 
-		starter ^ presep ^ (stampaListaInLineApp(  l, "", midsep:string, endsep:string, ender, metodoSintattico));
-
-fun stampaListaNewLineApp( [], ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) = ender |
-	stampaListaNewLineApp( l::[], ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) =   
-		"\n" ^  (metodoSintattico (ind,l)) ^ endsep ^ ender |
-	stampaListaNewLineApp( l::lista, ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) =  
-		"\n" ^  (metodoSintattico (ind,l)) ^ midsep ^ (stampaListaNewLineApp (lista, ind, midsep, endsep, ender, metodoSintattico))
+		starter ^ presep ^ (stampaLista(  l, "", ind, midsep:string, endsep:string, ender, metodoSintattico))
 
 and stampaListaNewLine( [], ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, metodoSintattico) = starter ^ ender
 	|stampaListaNewLine( l, ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, metodoSintattico) = 
-		starter ^ presep ^ (stampaListaNewLineApp(  l, ind, midsep:string, endsep:string, ender, metodoSintattico));
+		starter ^ presep ^ (stampaLista(  l, "\n", ind, midsep:string, endsep:string, ender, metodoSintattico));
 
 
 val DEF_IND = "    ";
@@ -29,6 +23,7 @@ fun stampaNomeClasse (nomeCl s) = s |
 fun stampaNomeTipo (intS) = "int"
 	| stampaNomeTipo (classeS a) = stampaNomeClasse a;
 
+(*********************************)
 
 fun stampaDefVariabile (ind, defVarS (t,n)) = ind ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeVar n)
 
