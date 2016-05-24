@@ -78,7 +78,7 @@ fun stampaVarPiu ( varNome n ) = stampaNomeVar n
 fun stampaCoppiaVarPiuType( ind, (v, t)) = ind ^ "(" ^ (stampaVarPiu v) ^ ":" ^ (stampaTypes t) ^ ")"
 and stampaContesto ( buildContesto l) = stampaListaInLine(l, "", "[", "", "; ", "", "]\n", stampaCoppiaVarPiuType);
 
-fun stampaCoppia( x1:string, x2:string) = "((" ^ x1 ^ "):" ^ x2 ^ ")";
+fun stampaCoppia( x1:string, x2:string) = "(" ^ x1 ^ " : " ^ x2 ^ ")";
 
 fun stampaDefVariabileT (ind, defVarT (t,n, ts)) = ind ^ (stampaNomeTipo t ) ^ " " ^ (stampaNomeVar n)  ^ " : " ^ ( stampaTypes ts)
 
