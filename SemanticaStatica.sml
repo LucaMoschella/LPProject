@@ -279,3 +279,7 @@ print (stampaProgrammaT p);
 print (stampaProgrammaS programmaCampo1);
 val p = programmaToTipato programmaCampo1;
 print (stampaProgrammaT p);
+
+print (stampaProgrammaS programmaOverride2);
+val p = programmaToTipato programmaOverride2;
+print (stampaProgrammaT p);
