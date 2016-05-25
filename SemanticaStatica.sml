@@ -99,13 +99,13 @@ fun mtype( programmaSintattico, nomem, nomecl, tipi) =
 
 
 fun estraiTipoSemantico( varExprT ( _, x)) = x
-	|estraiTipoSemantico( intExprT ( _, x )) = x
-	|estraiTipoSemantico( thisT ( x)) = x
-	|estraiTipoSemantico( superT ( x )) = x
-	|estraiTipoSemantico( nullT ( x )) = x
-	|estraiTipoSemantico( newT ( _, x )) = x
-	|estraiTipoSemantico( accessoCampoT ( _, _, x )) = x
-	|estraiTipoSemantico( chiamataMetodoT ( _, _, _, x)) = x;
+	| estraiTipoSemantico( intExprT ( _, x )) = x
+	| estraiTipoSemantico( thisT ( x)) = x
+	| estraiTipoSemantico( superT ( x )) = x
+	| estraiTipoSemantico( nullT ( x )) = x
+	| estraiTipoSemantico( newT ( _, x )) = x
+	| estraiTipoSemantico( accessoCampoT ( _, _, x )) = x
+	| estraiTipoSemantico( chiamataMetodoT ( _, _, _, x)) = x;
 
 fun getNomeVarDaExpT( varExprT( nomeV v, _)) = v
 	| getNomeVarDaExpT( _ ) = raise ExpIsNotAVar;
@@ -362,7 +362,6 @@ fun programmaStoT( programmaSintattico ) =
 				( print ("ERRORE: Impossibile assegnare alla variabile <" ^ (getNomeVarDaExpT e1) ^ "> di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e1 ))^ ">, nel metodo <" 
 					^ (stampaNomeMetodo n) ^ ">, un espressione di tipo <"^ (stampaNomeTipoT( estraiTipoSemantico e2 )) ^"> .\n\n"); codiceT [] )
 			
-			
 			| TypeErrorAssignField (n, e1, e2, e3) => 
 				( print ("ERRORE: Il tipo del valore nell'assegnamento non è compatibile con il tipo del campo, nel metodo <" ^ (stampaNomeMetodo n) ^ ">.\n\n"); codiceT [] )
 
@@ -372,10 +371,3 @@ fun programmaStoT( programmaSintattico ) =
 			| MultipleMothodDef ( n, cla ) =>
 				( print ("ERRORE: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
 					"> è definito più volte.\n\n"); codiceT [] );
-
-
-use "ProgrammiEsempio.sml";
-
-print (stampaProgrammaS programmaOverload);
-val p = programmaStoT programmaOverload;
-print (stampaProgrammaT p);
