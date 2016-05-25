@@ -93,6 +93,60 @@ val programmaWeird = codiceS(
 
 (**************************** VARIE ***********************************)
 
+val programmaOverride0 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [	        	
+	        	defMetodoS ( classeS( nomeCl "A"), nomeM "get_f", [], [], [returnS (nullS)])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        ],
+	        [
+	        	defMetodoS ( classeS( nomeCl "B"), nomeM "get_f", [], [], [returnS (newS( nomeCl "B"))])
+	        ]
+	        )
+(*
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], 
+	            	[
+	            		defVarS( classeS( nomeCl "A"), (nomeV "a")),
+	            		defVarS( classeS( nomeCl "B"), (nomeV "b")),
+	            		defVarS( classeS( nomeCl "A"), (nomeV "c")),
+
+	            		defVarS( classeS( nomeCl "A"), (nomeV "resA")),
+	            		defVarS( classeS( nomeCl "B"), (nomeV "resB")),
+	            		defVarS( classeS( nomeCl "B"), (nomeV "resC"))
+	            	], 
+	            	[ 
+	            		assegnamentoVarS( (nomeV "a"), newS( nomeCl "A")),
+	            		assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")),
+	            		assegnamentoVarS( (nomeV "c"), newS( nomeCl "A")),
+
+	            		assegnamentoVarS( (nomeV "resA"), chiamataMetodoS (varExprS( (nomeV "a")) , nomeM "get_f" , [])),
+	            		assegnamentoVarS( (nomeV "resB"), chiamataMetodoS (varExprS( (nomeV "b")) , nomeM "get_f" , [])),
+	            		assegnamentoVarS( (nomeV "resC"), chiamataMetodoS (varExprS( (nomeV "c")) , nomeM "get_f" , [])),
+
+	            		returnS ( intExprS 0)
+					]) 
+	        ]
+	        )
+*)
+]
+);
 val programmaOverride1 = codiceS( 
 [
 	defClasseS(
@@ -335,6 +389,61 @@ val programmaOverride5 = codiceS(
 	            	]) (*cmds*)
 	        ]
 	        )
+]
+);
+
+val programmaOverride6 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [	        	
+	        	defMetodoS ( classeS( nomeCl "A"), nomeM "m", [], [], [returnS (nullS)])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        ],
+	        [
+	        	defMetodoS ( classeS( nomeCl "B"), nomeM "m", [], [], [returnS (nullS)])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "C",
+	        nomeCl "B",
+	        [
+	        ],
+	        [
+	        	defMetodoS ( classeS( nomeCl "C"), nomeM "m", [], [], [returnS (nullS)])
+	        ]
+	        ),
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], 
+	            	[
+	            		defVarS( classeS( nomeCl "B"), (nomeV "res")),
+	            		defVarS( classeS( nomeCl "B"), (nomeV "a"))
+	            	], 
+	            	[ 
+
+
+	            		assegnamentoVarS( (nomeV "res"), chiamataMetodoS (varExprS( (nomeV "a")) , nomeM "m" , [])),
+
+	            		returnS ( intExprS 0)
+					]) 
+	        ]
+	        )
+
 ]
 );
 

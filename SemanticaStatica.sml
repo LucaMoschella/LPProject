@@ -62,6 +62,10 @@ fun compatibleTipoSemSem (programmaSintattico, classeT( nomeCl c1), classeT( nom
 	| compatibleTipoSemSem (programmaSintattico, classeT c, T) = true
 	| compatibleTipoSemSem (programmaSintattico, t1, t2) = (t1 = t2);
 
+fun compatibleTipoSintSint( programmaSintattico, classeS( nomeCl c1), (classeS (nomeCl c2))) = 
+		isSottoClasse(programmaSintattico, nomeCl c1, nomeCl c2)
+	| compatibleTipoSintSint (programmaSintattico, t1, t2) = (t1 = t2);
+
 fun equalList ([],[])=true
 	| equalList (_,[])=false
 	| equalList ([],_)=false
@@ -207,7 +211,7 @@ fun controlloOverride (programmaSintattico, defMetodoS (ts,  nomeM n, args, loca
 				let 
 					val (defMetodoS(ts2, _, _, _,_)) = cercaMetodoInClasse(programmaSintattico, defclasseestesa,  nomeM n, listatipi)
 				in
-					if (ts2=ts)
+					if ( compatibleTipoSintSint(programmaSintattico, ts2,ts) )
 					then 
 						controlloOverride( programmaSintattico,defMetodoS(ts, nomeM n,args,locals,commands), nomeclasseestesa) 
 					else 
@@ -318,16 +322,18 @@ fun metodoListStoT( programmaSintattico, cont, nomeclasse, []) = []
 		metodoStoT( programmaSintattico, cont, nomeclasse, m) :: (metodoListStoT(programmaSintattico, cont, nomeclasse, l));
 
 fun classeStoT(programmaSintattico, defClasseS(nomeClasseCorrente, nomeClasseEstesa, campi, metodi)) =
-	if( esisteClasseInProgramma( programmaSintattico, nomeClasseEstesa))
-	then 
-		defClasseT( nomeClasseCorrente, 
-					nomeClasseEstesa, 
-					campoListStoT( programmaSintattico, 
-									buildContesto[(this,classeT(nomeClasseCorrente))], campi),
-					metodoListStoT( programmaSintattico, 
-									buildContesto[(this,classeT(nomeClasseCorrente))], nomeClasseCorrente, metodi))		
+	if(nomeClasseCorrente = nomeClasseEstesa) then raise ClassExtNotValid( nomeClasseCorrente)
 	else
-		raise ClassNotFound(nomeClasseCorrente);
+		if( esisteClasseInProgramma( programmaSintattico, nomeClasseEstesa))
+		then 
+			defClasseT( nomeClasseCorrente, 
+						nomeClasseEstesa, 
+						campoListStoT( programmaSintattico, 
+										buildContesto[(this,classeT(nomeClasseCorrente))], campi),
+						metodoListStoT( programmaSintattico, 
+										buildContesto[(this,classeT(nomeClasseCorrente))], nomeClasseCorrente, metodi))		
+		else
+			raise ClassNotFound(nomeClasseCorrente);
 
 	
 fun programmaStoTApp(programmaSintattico, codiceS [] ) = codiceT []
@@ -340,7 +346,9 @@ fun programmaStoTApp(programmaSintattico, codiceS [] ) = codiceT []
 
 fun programmaStoT( programmaSintattico ) = 
 	programmaStoTApp(programmaSintattico, programmaSintattico)
-	handle  VarNameNotValid x => ( print ("ERRORE: Il nome <" ^ (stampaNomeVar x) ^ "> non è un nome di variabile è valido.\n\n"); codiceT [] )
+	handle    VarNameNotValid x => ( print ("ERRORE: Il nome <" ^ (stampaNomeVar x) ^ "> non è un nome di variabile è valido.\n\n"); codiceT [] )
+			| ClassExtNotValid x => ( print ("ERRORE: La classe <" ^ (stampaNomeClasse x) ^ "> non non può estendere sé stessa.\n\n"); codiceT [] )
+
 			| UnknownVar x => ( print ("ERRORE: La variabile <" ^ (stampaNomeVarPiu x) ^ "> non è stata definita.\n\n"); codiceT [] )
 
 			| FieldNotFound x => ( print ("ERRORE: Il campo <" ^ (stampaNomeCampo x) ^ "> non è stato trovato.\n\n"); codiceT [] )
@@ -367,7 +375,14 @@ fun programmaStoT( programmaSintattico ) =
 
 			| OverrideMismatch ( n, ts, cla ) =>
 				( print ("ERRORE: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
-					"> effettua un Override cambiando il tipo di ritorno, in <" ^ (stampaNomeTipoS ts) ^ ">.\n\n"); codiceT [] )
+					"> effettua un Override cambiando il tipo di ritorno in <" ^ (stampaNomeTipoS ts) ^ ">, non compatibile con quello definito.\n\n"); codiceT [] )
 			| MultipleMothodDef ( n, cla ) =>
 				( print ("ERRORE: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
 					"> è definito più volte.\n\n"); codiceT [] );
+
+use "ProgrammiEsempio.sml";
+
+print( stampaProgrammaS( programmaOverride6));
+programmaStoT( programmaOverride6);
+print( stampaProgrammaT( programmaStoT( programmaOverride6)));
+

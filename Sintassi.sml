@@ -78,6 +78,8 @@ datatype heap = buildHeap of ((locazione * valore) list);
 (********** ECCEZIONI **********)
 (********** tipi **********)
 exception VarNameNotValid  of nomeVariabile;
+exception ClassExtNotValid  of nomeClasse;
+
 exception UnknownVar of varPiu;
 
 exception FieldNotFound of nomeCampo;
