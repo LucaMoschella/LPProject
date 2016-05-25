@@ -100,7 +100,7 @@ fun cercaTipoMetodoInGerarchiaClasse(programmaSintattico, defClasseS (Object, _,
 
 fun mtype( programmaSintattico, nomem, nomecl, tipi) = 
 	cercaTipoMetodoInGerarchiaClasse(programmaSintattico, cercaClasseInProgramma ( programmaSintattico, nomecl ), nomem, tipi );
-
+(*************************************************************)
 
 fun estraiTipoSemantico( varExprT ( _, x)) = x
 	| estraiTipoSemantico( intExprT ( _, x )) = x
@@ -174,7 +174,7 @@ fun variabileListStoT( [] ) = []
 	| variabileListStoT( (defVarS( t, n))::l) = 
 	(defVarT(t,n,tipoSintatticoToSemantico t))::(variabileListStoT(l));
 
-(********** controllo override **********)
+(********** controllo override OK**********) 
 
 fun cercaMetodoInClasse(programmaSintattico, defClasseS (Object, _, _, _), nomeM metodoSintattico, parametri ) = raise MethodNotFound(nomeM metodoSintattico)
 
@@ -182,7 +182,7 @@ fun cercaMetodoInClasse(programmaSintattico, defClasseS (Object, _, _, _), nomeM
 
 	| cercaMetodoInClasse ( programmaSintattico, defClasseS (nomeCl classeSintattica, ext, campi, (defMetodoS(t, nomeM m, args, locals, cmds))::metodi),  
 																									nomeM metodoSintattico, parametri ) =
-			if( (m = metodoSintattico) andalso (equalList(getListaTipiArgs(args), parametri) ) )  (* parametri deve contere tipi dal datatype types*)
+			if( (m = metodoSintattico) andalso (equalList(getListaTipiArgs(args), parametri) ) ) 
 				then 
 					defMetodoS(t, nomeM m, args, locals, cmds)
 				else 
@@ -195,10 +195,10 @@ fun esisteMetodoInClasse(programmaSintattico, defClasseS (Object, _, _, _), nome
 
 	| esisteMetodoInClasse ( programmaSintattico, defClasseS (nomeCl classeSintattica, ext, campi, (defMetodoS(t, nomeM m, args, locals, cmds))::metodi),  
 																									nomeM metodoSintattico, parametri ) =
-			( (m = metodoSintattico) andalso (equalList(getListaTipiArgs(args), parametri))); (* parametri deve contere tipi dal datatype types*)
-				
+			( (m = metodoSintattico) andalso (equalList(getListaTipiArgs(args), parametri))); 
 
-fun controlloOverride (programmaSintattico, defMetodoS (ts,  nomeM n, args, locals, commands), Object ) = true
+
+fun controlloOverride (programmaSintattico, _, Object ) = true
 
 	| controlloOverride (programmaSintattico, defMetodoS (ts,  nomeM n, args, locals, commands), nomeclasse ) = 
 		let
