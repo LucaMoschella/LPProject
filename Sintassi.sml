@@ -1,28 +1,3 @@
-(********** ECCEZIONI **********)
-(********** tipi **********)
-exception VarNameNotValid  of string;
-exception UnknownVar of string;
-
-exception FieldNotFound of string;
-exception MethodNotFound of string;
-exception ClassNotFound of string;
-exception ReturnNotFound of string;
-
-exception TypeIsNotAClass;
-
-exception TypeErrorField of string;
-exception TypeErrorReturn of string;
-exception TypeErrorAssignVar of string;
-exception TypeErrorAssignField of string;
-
-(********** esecuzione **********)
-exception RuntimeErrorVarNotFoundInEnv
-exception RuntimeErrorLocNotFoundInHeap
-exception RuntimeErrorValIsNotObj
-exception RuntimeErrorValIsNotInt
-exception RuntimeErrorInitCampoNonTrovato
-
-
 (********** NOMI **********)
 datatype nomeCampo = nomeC of string;
 datatype nomeVariabile = nomeV of string;
@@ -100,5 +75,33 @@ datatype env = buildEnv of ((varPiu * valore) list); (* VALUTARE L'ASSOCIAIONE C
 datatype heap = buildHeap of ((locazione * valore) list);
 
 
+(********** ECCEZIONI **********)
+(********** tipi **********)
+exception VarNameNotValid  of nomeVariabile;
+exception UnknownVar of varPiu;
+
+exception FieldNotFound of nomeCampo;
+exception MethodNotFound of nomeMetodo;
+exception ClassNotFound of nomeClasse;
+exception ReturnNotFound of nomeMetodo;
+
+exception TypeIsNotAClass;
+exception ExpIsNotAVar;
+
+exception TypeErrorDefField of tipoSintattico * nomeCampo * espressioneTipata;
+exception TypeErrorReturn of nomeMetodo * tipoSintattico * espressioneTipata;
+exception TypeErrorAssignVar of nomeMetodo * espressioneTipata * espressioneTipata;
+exception TypeErrorAssignField of nomeMetodo *espressioneTipata *espressioneTipata *espressioneTipata;
+
+exception OverrideMismatch of nomeMetodo * tipoSintattico  * nomeClasse
+exception MultipleMothodDef of nomeMetodo * nomeClasse
+
+(********** esecuzione **********)
+exception RuntimeErrorVarNotFoundInEnv;
+exception RuntimeErrorLocNotFoundInHeap;
+exception RuntimeErrorValIsNotObj;
+exception RuntimeErrorValIsNotInt;
+exception RuntimeErrorInitCampoNonTrovato;
 
 
+use "PrintToJava.sml";

@@ -108,8 +108,8 @@ fun equalType ( intS, intS ) = true
 			 	| getNomeClasseDaTipoT( T ) = raise ex
 				| getNomeClasseDaTipoT( classeT n) = n;
 
-(* OK *)fun getListaTipiArgs (programmaSintattico, cont, [] ) = []
-				| getListaTipiArgs ( programmaSintattico, cont,r::l ) = (cercaTipoRightValueInContesto(programmaSintattico, cont, r)) :: (getListaTipiArgs (  programmaSintattico, cont,l ))
+(* OK *)fun getListaTipiExpr (programmaSintattico, cont, [] ) = []
+				| getListaTipiExpr ( programmaSintattico, cont,r::l ) = (cercaTipoRightValueInContesto(programmaSintattico, cont, r)) :: (getListaTipiExpr (  programmaSintattico, cont,l ))
 
 (* OK *)and	cercaTipoRightValueInContesto( programmaSintattico, cont, varExprS(nomeV v)  ) = cercaVarPiuInContesto( cont, varNome (nomeV v))
 				| cercaTipoRightValueInContesto( programmaSintattico, cont, intExprS n) = intT
@@ -118,7 +118,7 @@ fun equalType ( intS, intS ) = true
 				| cercaTipoRightValueInContesto( programmaSintattico, cont, ( thisS )) = cercaVarPiuInContesto(cont, this)
 				| cercaTipoRightValueInContesto( programmaSintattico, cont, ( superS )) = classeT (getExtendedClass( cercaClasseInProgramma(programmaSintattico, getNomeClasseDaTipoT( cercaVarPiuInContesto(cont, this))) ) )
 				| cercaTipoRightValueInContesto( programmaSintattico, cont, accessoCampoS( right, c) ) = ftype( programmaSintattico, c, getNomeClasseDaTipoT( cercaTipoRightValueInContesto(programmaSintattico,cont, right)))
-				| cercaTipoRightValueInContesto( programmaSintattico, cont, chiamataMetodoS( right, m, args) ) = mtype(programmaSintattico, m, getNomeClasseDaTipoT( cercaTipoRightValueInContesto( programmaSintattico, cont, right) ) , getListaTipiArgs (programmaSintattico, cont, args )) ;
+				| cercaTipoRightValueInContesto( programmaSintattico, cont, chiamataMetodoS( right, m, args) ) = mtype(programmaSintattico, m, getNomeClasseDaTipoT( cercaTipoRightValueInContesto( programmaSintattico, cont, right) ) , getListaTipiExpr (programmaSintattico, cont, args )) ;
 
 
 (* aggiungi al buildContesto una lista di variabili*)
