@@ -33,13 +33,12 @@ and programmaSintattico = codiceS of classeSintattica list; (* main andrà in se
 
 
 (********** TIPI E SINTASSI ASTRATTA TIPATA **********)
-datatype contestoDeiTipi = buildContesto of (varPiu * tipoSemantico) list
-and varPiu = varNome of nomeVariabile | this
-and tipoSemantico = classeT of nomeClasse | intT | T;
 
 
 (* il tipo semantico, se ridondante, è una traduzione di quello sintattico *)
-datatype variabileTipata = defVarT of tipoSintattico * nomeVariabile * tipoSemantico
+datatype tipoSemantico = classeT of nomeClasse | intT | T
+
+and variabileTipata = defVarT of tipoSintattico * nomeVariabile * tipoSemantico
 
 and campoTipato = defCampoT of tipoSintattico * nomeCampo * espressioneTipata * tipoSemantico 
 
@@ -63,6 +62,11 @@ and classeTipata = defClasseT of nomeClasse * nomeClasse * campoTipato list * me
 and programmaTipato = codiceT of classeTipata list; 
 
 
+
+(********** SITEMA DEI TIPI **********)
+datatype varPiu = varNome of nomeVariabile | this;
+
+
 (********** ESECUZIONE **********)
 datatype locazione = buildLoc of int ;
 val currentLocInt: int ref = ref 0; (* DA PROVARE UNIFICAZIONE CON LA FUNZIONE *)
@@ -71,8 +75,23 @@ fun nextLoc () = (currentLocInt := (!currentLocInt) + 1; buildLoc (!currentLocIn
 datatype obj = 	istanza of nomeClasse * ((nomeClasse * nomeCampo * locazione ) list);
 datatype valore = intV of int | objV of obj | nullV | noV;
 
-datatype env = buildEnv of ((varPiu * valore) list); (* VALUTARE L'ASSOCIAIONE CON LOC, E NON VAL *)
-datatype heap = buildHeap of ((locazione * valore) list);
+
+datatype dataList =   buildContesto of (varPiu * tipoSemantico) list
+					| buildEnv of ((varPiu * valore) list) 
+					| buildHeap of ((locazione * valore) list);
+
+
+(********** FUNZIONI PER OPERARE CON dataList **********)
+
+exception ListError
+
+fun searchKey  k  []  = raise ListError
+	| searchKey k ((a,b)::l) = if( a=k) then b else searchKey k l;
+
+
+fun workOnList( buildContesto( x ), function ) = let val y = function in y x end
+| workOnList( buildEnv( x ) , function ) = let val y = function in y x end
+| workOnList( buildHeap( x ), function ) = let val y = function in y x end;
 
 
 (********** ECCEZIONI **********)
@@ -104,6 +123,5 @@ exception RuntimeErrorLocNotFoundInHeap;
 exception RuntimeErrorValIsNotObj;
 exception RuntimeErrorValIsNotInt;
 exception RuntimeErrorInitCampoNonTrovato;
-
 
 use "PrintToJava.sml";
