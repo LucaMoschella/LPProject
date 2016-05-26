@@ -1,23 +1,18 @@
 use "Sintassi.sml";
+use "Datatype.sml";
+use "Exception.sml";
+use "PrintToJava.sml";
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNZIONI DI UTLITA INDIPENDENTI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
-fun tipoSintatticoToSemantico ( intS   ) = intT
+fun tipoSintatticoToSemantico ( intS ) = intT
 	| tipoSintatticoToSemantico ( classeS c ) = classeT c;
 
-fun concatenaContesto ( (buildContesto l1), buildContesto l2) = buildContesto ( l1 @ l2);
 
 (* aggiungi al buildContesto una lista di variabili*)
-fun addVarsToContesto( buildContesto lc, [] ) = buildContesto lc 
-	| addVarsToContesto( buildContesto lc, defVarS( tipoSintattico, nomeV v)::l ) =
-		addVarsToContesto( buildContesto ((varNome (nomeV v),  tipoSintatticoToSemantico ( tipoSintattico ))::lc), l);
-
-fun equalVarPiuVar ( varNome( nomeV v ), nomeV s ) = ( v = s )
-	| equalVarPiuVar (  this, nomeV s ) = raise VarNameNotValid(nomeV s);
-
-fun cercaVarPiuInContesto ( buildContesto [],v ) =  raise UnknownVar( v )
-	| cercaVarPiuInContesto ( buildContesto ((n1,t1)::l), v ) = 
-		if ((n1 = v)) then t1 else cercaVarPiuInContesto( buildContesto l, v);
+fun addVarsToContesto( cont, [] ) = cont 
+	| addVarsToContesto( cont, defVarS( tipoSintattico, nomeV v)::l ) =
+		addVarsToContesto( put(cont, varNome (nomeV v),  tipoSintatticoToSemantico ( tipoSintattico )), l);
 
 fun getNomeClasseDaTipoT( classeT n) = n
  	| getNomeClasseDaTipoT( _ ) = raise TypeIsNotAClass;
@@ -132,7 +127,8 @@ and espressioneListStoT( programmaSintattico, cont, [] ) = []
 		espressioneStoT(programmaSintattico, cont, a)::(espressioneListStoT( programmaSintattico, cont, l ))
 
 and	espressioneStoT( programmaSintattico, cont, varExprS(nomeV v)  ) = 
-		varExprT(nomeV v, cercaVarPiuInContesto( cont, varNome (nomeV v)))
+		(varExprT(nomeV v, get( cont, varNome (nomeV v)))
+			handle KeyNotFound => raise UnknownVar(varNome(nomeV v)))
 
 	| espressioneStoT( programmaSintattico, cont, intExprS n) = 
 		intExprT( n, intT)
@@ -144,10 +140,12 @@ and	espressioneStoT( programmaSintattico, cont, varExprS(nomeV v)  ) =
 		nullT( T ) 
 
 	| espressioneStoT( programmaSintattico, cont, ( thisS )) = 
-		 thisT( cercaVarPiuInContesto(cont, this))
+		(thisT( get(cont, this))
+			handle KeyNotFound => raise UnknownVar(this))
 
 	| espressioneStoT( programmaSintattico, cont, ( superS )) = 
-		superT(classeT (getExtendedClass( cercaClasseInProgramma(programmaSintattico, getNomeClasseDaTipoT( cercaVarPiuInContesto(cont, this))))))
+		(superT(classeT (getExtendedClass( cercaClasseInProgramma(programmaSintattico, getNomeClasseDaTipoT( get(cont, this))))))
+			handle KeyNotFound => raise UnknownVar(this))
 
 	| espressioneStoT( programmaSintattico, cont, accessoCampoS( v, c) ) = 
 		let val expTyped = espressioneStoT( programmaSintattico, cont, v)
@@ -322,7 +320,7 @@ fun metodoListStoT( programmaSintattico, cont, nomeclasse, []) = []
 		metodoStoT( programmaSintattico, cont, nomeclasse, m) :: (metodoListStoT(programmaSintattico, cont, nomeclasse, l));
 
 fun classeStoT(programmaSintattico, defClasseS(nomeClasseCorrente, nomeClasseEstesa, campi, metodi)) =
-	if(nomeClasseCorrente = nomeClasseEstesa) then raise ClassExtNotValid( nomeClasseCorrente)
+	if(nomeClasseCorrente = nomeClasseEstesa) then raise ClassExtNotValid( nomeClasseCorrente )
 	else
 		if( esisteClasseInProgramma( programmaSintattico, nomeClasseEstesa))
 		then 
@@ -382,7 +380,7 @@ fun programmaStoT( programmaSintattico ) =
 
 use "ProgrammiEsempio.sml";
 
-print( stampaProgrammaS( programmaOverride6));
-programmaStoT( programmaOverride6);
-print( stampaProgrammaT( programmaStoT( programmaOverride6)));
+print( stampaProgrammaS( programmaTEST));
+programmaStoT( programmaTEST);
+print( stampaProgrammaT( programmaStoT( programmaTEST)));
 

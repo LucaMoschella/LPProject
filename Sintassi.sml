@@ -4,7 +4,6 @@ datatype nomeVariabile = nomeV of string;
 datatype nomeMetodo = nomeM of string;
 datatype nomeClasse = nomeCl of string | Object;
 
-
 (********** SINTASSI ASTRATTA **********)
 datatype tipoSintattico = intS | classeS of nomeClasse
 
@@ -32,14 +31,10 @@ and classeSintattica = defClasseS of nomeClasse * nomeClasse * campoSintattico l
 and programmaSintattico = codiceS of classeSintattica list; (* main andrà in semantica *)
 
 
-(********** TIPI E SINTASSI ASTRATTA TIPATA **********)
-datatype contestoDeiTipi = buildContesto of (varPiu * tipoSemantico) list
-and varPiu = varNome of nomeVariabile | this
-and tipoSemantico = classeT of nomeClasse | intT | T;
+(********** SINTASSI ASTRATTA TIPATA **********) (* il tipo semantico, se ridondante, è una traduzione di quello sintattico *)
+datatype tipoSemantico = classeT of nomeClasse | intT | T
 
-
-(* il tipo semantico, se ridondante, è una traduzione di quello sintattico *)
-datatype variabileTipata = defVarT of tipoSintattico * nomeVariabile * tipoSemantico
+and variabileTipata = defVarT of tipoSintattico * nomeVariabile * tipoSemantico
 
 and campoTipato = defCampoT of tipoSintattico * nomeCampo * espressioneTipata * tipoSemantico 
 
@@ -62,48 +57,8 @@ and classeTipata = defClasseT of nomeClasse * nomeClasse * campoTipato list * me
 
 and programmaTipato = codiceT of classeTipata list; 
 
-
-(********** ESECUZIONE **********)
-datatype locazione = buildLoc of int ;
-val currentLocInt: int ref = ref 0; (* DA PROVARE UNIFICAZIONE CON LA FUNZIONE *)
-fun nextLoc () = (currentLocInt := (!currentLocInt) + 1; buildLoc (!currentLocInt));
-
-datatype obj = 	istanza of nomeClasse * ((nomeClasse * nomeCampo * locazione ) list);
-datatype valore = intV of int | objV of obj | nullV | noV;
-
-datatype env = buildEnv of ((varPiu * valore) list); (* VALUTARE L'ASSOCIAIONE CON LOC, E NON VAL *)
-datatype heap = buildHeap of ((locazione * valore) list);
-
-
-(********** ECCEZIONI **********)
-(********** tipi **********)
-exception VarNameNotValid  of nomeVariabile;
-exception ClassExtNotValid  of nomeClasse;
-
-exception UnknownVar of varPiu;
-
-exception FieldNotFound of nomeCampo;
-exception MethodNotFound of nomeMetodo;
-exception ClassNotFound of nomeClasse;
-exception ReturnNotFound of nomeMetodo;
-
-exception TypeIsNotAClass;
-exception ExpIsNotAVar;
-
-exception TypeErrorDefField of tipoSintattico * nomeCampo * espressioneTipata;
-exception TypeErrorReturn of nomeMetodo * tipoSintattico * espressioneTipata;
-exception TypeErrorAssignVar of nomeMetodo * espressioneTipata * espressioneTipata;
-exception TypeErrorAssignField of nomeMetodo *espressioneTipata *espressioneTipata *espressioneTipata;
-
-exception OverrideMismatch of nomeMetodo * tipoSintattico  * nomeClasse
-exception MultipleMothodDef of nomeMetodo * nomeClasse
-
-(********** esecuzione **********)
-exception RuntimeErrorVarNotFoundInEnv;
-exception RuntimeErrorLocNotFoundInHeap;
-exception RuntimeErrorValIsNotObj;
-exception RuntimeErrorValIsNotInt;
-exception RuntimeErrorInitCampoNonTrovato;
-
-
+(*
+use "Datatype.sml";
+use "Exception.sml";
 use "PrintToJava.sml";
+*)

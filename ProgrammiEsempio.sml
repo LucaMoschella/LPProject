@@ -842,3 +842,50 @@ val programmaOverload = codiceS(
 	        )
 ]
 );
+val programmaTEST = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	           defCampoS ( intS, nomeC ("f"), intExprS 1) 
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	            defCampoS ( intS, nomeC ("f"), intExprS 2)
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), (nomeV "b")),
+	            		defVarS( intS, (nomeV "res1")),
+	            		defVarS( intS, (nomeV "res2"))
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")),
+	            		assegnamentoVarS( (nomeV "res1"), accessoCampoS( varExprS(nomeV "b"), nomeC "f")),
+	            		assegnamentoVarS( (nomeV "res2"), chiamataMetodoS (varExprS(nomeV "b") , nomeM "get_f" , [])),
+
+	            		returnS ( intExprS 0)
+	            	]) (*cmds*)
+	        ]
+	        )
+]
+);
