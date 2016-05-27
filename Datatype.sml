@@ -91,8 +91,10 @@ and getDuplicatedKey(data) = let val (x, y) = getCL(data) in getDuplicatedKeyL(y
 
 (********** FUNZIONI AUSILIARIE **********)
 
+
 fun fList( [], f) = []
 	| fList( a::l, f) = f a :: fList(l, f);
 
+(* converte una lista ricordandosi di quello che ha già convertito *)
 fun f2List( [], f, g, z) = []
 	| f2List( a::l, f, g, z) = f (a, g (a, z)) :: f2List(l, f, g, g( a, z));

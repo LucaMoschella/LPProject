@@ -461,18 +461,20 @@ val programmaInizializzazione0 = codiceS(
 
 	defClasseS(
 	        nomeCl "esempio",
-	        Object,
+	        nomeCl "A",
 	        [
-	        	defCampoS ( classeS( nomeCl "A"), nomeC ("g"), nullS)
+	            defCampoS ( classeS( nomeCl "A"), nomeC ("g2"), accessoCampoS( thisS, nomeC "g")),
+	        	defCampoS ( classeS( nomeCl "esempio"), nomeC ("g"), nullS)
+
 			],
 	        [
 	            defMetodoS ( intS, nomeM "main", 
 	            	[	           ], (*args*)
 	            	[
-	            		defVarS( classeS( nomeCl "A"), (nomeV "a"))
+	            		defVarS( intS, (nomeV "a"))
 	            	], (*locals*)
-	            	[ 
-	            		returnS ( accessoCampoS( varExprS( (nomeV "a")), nomeC "f"))
+	            	[    assegnamentoVarS( (nomeV "a"), intExprS 0),
+	            		returnS ( varExprS( nomeV "a"))
 	            	]) (*cmds*)
 	        ]
 	        )
