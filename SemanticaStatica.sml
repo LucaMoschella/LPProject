@@ -40,13 +40,6 @@ fun parametriCompatibili(programMap, [], [] ) = true
 	| parametriCompatibili(programMap, v::l, [] ) = false
 	| parametriCompatibili(programMap, [], t::l ) = false
 	| parametriCompatibili(programMap, (defVarS(t1,n))::l1, t2::l2 ) = if( not (compatibleTipoSintSem(programMap,t1,t2))) then false else parametriCompatibili(programMap,l1,l2 );
-
-(*
-fun equalList ([],[])=true
-	| equalList (_,[])=false
-	| equalList ([],_)=false
-	| equalList (n::l, n1::l1)=if(n=n1)then equalList(l,l1)else false;
-*)
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
@@ -63,49 +56,22 @@ fun estraiTipoSemantico( varExprT ( _, x)) = x
 fun getNomeClasseDaTipoT( classeT n) = n
  	| getNomeClasseDaTipoT( _ ) = raise TypeIsNotAClass;
  
-fun listVarToTipoT( l ) = fList(l, fn defVarS(t,n) => tipoSintToSem t )
-
-(*
-fun listVarToTipoT ( [] ) = []
-	| listVarToTipoT ( (defVarS(t,n))::l ) = 
-		(tipoSintToSem t) :: (listVarToTipoT ( l ));
-*)
+fun listVarSToTipoT( l ) = fList(l, fn defVarS(t, n) => tipoSintToSem t )
+fun listVarTToTipoT( l ) = fList(l, fn defVarT(t, n, ts) => ts )
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
+
 
 (* utili per sfruttare le funzioni già definite su dataList! *)
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COSTRUZIONE MAPPE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-fun buildVarsMap( l ) = putAllFun( buildData [], l, fn defVarS(t, n) => (n, defVarS(t, n)) );
-fun buildCampiMap( l ) = putAllFun( buildData [], l, fn defCampoS(t,n,s) => (n, defCampoS(t,n,s)));
-fun buildMetodiMap( l ) = putAllFun( buildData [], l, fn defMetodoS(t, m,args,locals,cmds) => ( (m, listVarToTipoT args), defMetodoS(t, m,args,locals,cmds)) );
-fun buildClassiMap( codiceS l ) = putAllFun( buildData [(Object, defClasseS ( Object, Object, [], []))], l, fn defClasseS( c, ce, lv, lm) => (c, defClasseS( c, ce, lv, lm)) );
+fun buildVarSMap( l ) = putAllFun( buildData [], l, fn defVarS(t, n) => (n, defVarS(t, n)) );
+fun buildCampiSMap( l ) = putAllFun( buildData [], l, fn defCampoS(t,n,s) => (n, defCampoS(t,n,s)));
+fun buildMetodiSMap( l ) = putAllFun( buildData [], l, fn defMetodoS(t, m,args,locals,cmds) => ( (m, listVarSToTipoT args), defMetodoS(t, m,args,locals,cmds)) );
+fun buildClassiSMap( codiceS l ) = putAllFun( buildData [(Object, defClasseS ( Object, Object, [], []))], l, fn defClasseS( c, ce, lv, lm) => (c, defClasseS( c, ce, lv, lm)) );
 
-fun buildComandiList( l ) = putAllFun( buildData [], l, fn assegnamentoVarS(n, e) => ("assegnamentoVar", assegnamentoVarS(n, e) )
+fun buildComandiSList( l ) = putAllFun( buildData [], l, fn assegnamentoVarS(n, e) => ("assegnamentoVar", assegnamentoVarS(n, e) )
 														| assegnamentoCampoS(e1, n, e2) => ("assegnamentoCampo", assegnamentoCampoS(e1, n, e2))
 														| returnS(e) => ("return", returnS(e)));
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-
-(* aggiungi al buildContesto una lista di variabili *)
-(*
-fun addVarsToContesto( cont, [] ) = cont 
-	| addVarsToContesto( cont, defVarS( tipoSintattico, nomeV v)::l ) =
-		addVarsToContesto( put(cont, varNome (nomeV v),  tipoSintToSem ( tipoSintattico )), l);
-*)
-
-(*
-fun cercaClasseInProgramma ( programMap, Object ) = defClasseS(Object, Object, [], [])	
-	| cercaClasseInProgramma ( codiceS [], nomeCl nclasse ) = raise ClassNotFound(nomeCl nclasse)
-	| cercaClasseInProgramma ( codiceS (  (defClasseS (nomeCl c, ce, lv, lm)) ::l ), nomeCl nclasse ) = 
-				if (nclasse = c) then defClasseS (nomeCl c, ce, lv, lm) else cercaClasseInProgramma( codiceS l, nomeCl nclasse)
-	| cercaClasseInProgramma ( codiceS (  (defClasseS (Object, ce, lv, lm)) ::l ), nomeCl nclasse ) =  
-				cercaClasseInProgramma( codiceS l, nomeCl nclasse);
-
-fun esisteClasseInProgramma ( programMap, Object ) = true	
-	| esisteClasseInProgramma ( codiceS [], nomeCl nclasse ) = false
-	| esisteClasseInProgramma ( codiceS (  (defClasseS (nomeCl c, ce, lv, lm)) ::l ), nomeCl nclasse ) = 
-				if (nclasse = c) then true else esisteClasseInProgramma( codiceS l, nomeCl nclasse)
-	| esisteClasseInProgramma ( codiceS (  (defClasseS (Object, ce, lv, lm)) ::l ), nomeCl nclasse ) =  
-				esisteClasseInProgramma( codiceS l, nomeCl nclasse);
-*)
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TIPO SEMANTICO DI UN NOME CAMPO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
@@ -145,8 +111,8 @@ fun controlloOverride (programMap, classebase, _, Object ) = true
 		let 
 			val defmetodobase = defMetodoS (baseype, n, args, l, c)
 			val defclasse = get(programMap, nomeclasse)
-			val metodiMap = buildMetodiMap( (fn defClasseS(_, _, _, metodi) => metodi) defclasse )
-			val metodoKey = ( n, listVarToTipoT args)
+			val metodiMap = buildMetodiSMap( (fn defClasseS(_, _, _, metodi) => metodi) defclasse )
+			val metodoKey = ( n, listVarSToTipoT args)
 		in
 			if not (containsKey( metodiMap, metodoKey ) ) then controlloOverride(programMap, classebase, defmetodobase, getExtendedClass defclasse)
 			else
@@ -167,22 +133,15 @@ fun putAss( l, v ) = putFun( l, v, fn assegnamentoVarS(nomeV n, e) => (("assegna
 									| assegnamentoCampoS(e1, nomeC n, e2) => (("assegnamentoCampo", n), assegnamentoCampoS(e1, nomeC n, e2))
 									| returnS(e) => (("return", "notValid"), returnS(e)));
 
-fun isInitialized(cmds, varExprS ( nomeV v )) = containsKey(cmds, ("assegnamentoVar", v))
-	| isInitialized(cmds, intExprS ( i ) ) = true
-	| isInitialized(cmds, thisS ) = true
-	| isInitialized(cmds, superS ) = true
-	| isInitialized(cmds, nullS ) = true
-	| isInitialized(cmds, newS ( nomeClasse ))= true
-	| isInitialized(cmds, accessoCampoS ( e , _ )) = isInitialized(cmds, e )
-	| isInitialized(cmds, chiamataMetodoS ( e , _, _ )) = isInitialized(cmds, e );
+fun isInitialized(cmds,  nomeV v ) = containsKey(cmds, ("assegnamentoVar", v));
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
 (* %%%%%%%%%%%%%%%%% REGOLE PER LA TRADUZIONE IN PROGRAMMA TIPATO %%%%%%%%%%%%%%%%%%%%% *)
 fun	espressioneStoT( programMap, cont, varExprS(nomeV v), executedCmds) = 
-			if not (containsKey( cont, varNome (nomeV v) )) then raise UnknownVar( varNome (nomeV v) )
-			else if not (isInitialized( executedCmds, varExprS(nomeV v) )) then raise VarNotInitialized( nomeV v)
-			else varExprT(nomeV v, get( cont, varNome (nomeV v)))
+			if not (containsKey( cont, varPiuNome (nomeV v) )) then raise UnknownVar( varPiuNome (nomeV v) )
+			else if not (isInitialized( executedCmds, nomeV v )) then raise VarNotInitialized( nomeV v)
+			else varExprT(nomeV v, get( cont, varPiuNome (nomeV v)))
 
 	| espressioneStoT( programMap, cont, intExprS n, executedCmds) = 
 		intExprT( n, intT)
@@ -259,10 +218,10 @@ and comandoStoT( programMap, cont, assegnamentoVarS( nomevar, v), defMetodoS( _,
 
 and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, comandi ) ) = 
 				let 
-					val argsMap = buildVarsMap args
-					val localsMap = buildVarsMap locals
-					val cmdsMap = buildComandiList comandi
-					val contestExpanded = putAllFun(cont, args @ locals, fn defVarS(t, v) => (varNome v, tipoSintToSem t))
+					val argsMap = buildVarSMap args
+					val localsMap = buildVarSMap locals
+					val cmdsMap = buildComandiSList comandi
+					val contestExpanded = putAllFun(cont, args @ locals, fn defVarS(t, v) => (varPiuNome v, tipoSintToSem t))
 					val defmetodo = defMetodoS( t, n, args, locals, comandi )
 				in				 
 					(if containsDuplicatedKey (argsMap) then raise MultipleArgsDef( getDuplicatedKey argsMap, nomeclasse, n)
@@ -285,8 +244,8 @@ and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 	if(nomeClasseCorrente = nomeClasseEstesa) then raise ClassExtNotValid( nomeClasseCorrente )
 	else 
 		let 
-			val campiMap = buildCampiMap campi
-			val metodiMap = buildMetodiMap metodi
+			val campiMap = buildCampiSMap campi
+			val metodiMap = buildMetodiSMap metodi
 			val contex = buildContesto[(this,classeT(nomeClasseCorrente))]
 		in
 			if containsDuplicatedKey (campiMap) then raise MultipleCampoDef( getDuplicatedKey campiMap, nomeClasseCorrente)
@@ -303,7 +262,7 @@ and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 											else defCampoT(t, n, right, tipoSintToSem t) 
 										end
 									),
-							fList(metodi, fn m => (	controlloOverride( programMap, nomeClasseCorrente, m, nomeClasseCorrente );
+							fList(metodi, fn m => 	(	controlloOverride( programMap, nomeClasseCorrente, m, nomeClasseCorrente );
 														metodoStoT( programMap, contex, nomeClasseCorrente, m))
 													)
 						)						
@@ -311,7 +270,7 @@ and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 
 and programmaStoT( programma ) = 
 	let 
-		val programMap = buildClassiMap programma
+		val programMap = buildClassiSMap programma
 	in
 		(if containsDuplicatedKey programMap then raise MultipleClasseDef( getDuplicatedKey programMap )
 		else codiceT ( fList( (fn codiceS x => x) programma, fn c => classeStoT(programMap, c))) )
@@ -378,6 +337,7 @@ and programmaStoT( programma ) =
 			| MultipleClasseDef ( cla ) =>
 				( print ("ERROR: La classe <" ^ (stampaNomeClasse cla) ^ "> è definita più volte.\n\n"); codiceT [] )
 	end;	
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 use "ProgrammiEsempio.sml";
 
@@ -406,213 +366,3 @@ programmaTEST
 
 print( stampaProgrammaS( programmaTEST));
 print( stampaProgrammaT( programmaStoT( programmaTEST)));
-
-(*
-fun variabileListStoT( [] ) = []
-	| variabileListStoT( (defVarS( t, n))::l) = 
-	(defVarT(t,n,tipoSintToSem t))::(variabileListStoT(l))
-*)
-
-(*
-fun campoListStoT( programMap, cont, l ) =
-			fList( l, fn defCampoS( t, n, r) => 
-							let 
-								val right = espressioneStoT(programMap, cont, r)
-							in
-								if ( compatibleTipoSintSem(programMap, t, estraiTipoSemantico right )) 
-								then 
-									defCampoT(t, n, right, tipoSintToSem t) 
-								else
-									raise TypeErrorDefField(t, n, right)
-							end
-					)
-*)
-(*
-
-and campoListStoT( programMap, cont, [] ) = []
-	| campoListStoT( programMap, cont, ( defCampoS( t, nomeC n, r))::l ) = 
-		let 
-			val right = espressioneStoT(programMap, cont, r)
-		in
-			if ( compatibleTipoSintSem(programMap, t, estraiTipoSemantico right )) 
-			then 
-				defCampoT(t, nomeC n, right, tipoSintToSem t) :: (campoListStoT( programMap, cont, l ))
-			else
-				raise TypeErrorDefField(t, nomeC n, right)
-		end 
-
-and listExprToTipoT (programMap, cont, [] ) = []
-	| listExprToTipoT ( programMap, cont,r::l ) = 
-		(estraiTipoSemantico(espressioneStoT(programMap, cont, r))) :: (listExprToTipoT (  programMap, cont,l ))
-*)
-(*
-and espressioneListStoT( programMap, cont, [] ) = []
-	| espressioneListStoT( programMap, cont, a::l ) = 
-		espressioneStoT(programMap, cont, a)::(espressioneListStoT( programMap, cont, l ))
-*)
-
-
-
-
-
-(********** controllo override OK**********) 
-(*
-and cercaMetodoInClasse(programMap, defClasseS (Object, _, _, _), nomeM metodoSintattico, parametri ) = raise MethodNotFound(nomeM metodoSintattico)
-
-	| cercaMetodoInClasse(programMap,  defClasseS ( _, _, _, []), nomeM metodoSintattico, parametri ) = raise MethodNotFound(nomeM metodoSintattico)
-
-	| cercaMetodoInClasse ( programMap, defClasseS (nomeCl classeSintattica, ext, campi, (defMetodoS(t, nomeM m, args, locals, cmds))::metodi),  
-																									nomeM metodoSintattico, parametri ) =
-			if( (m = metodoSintattico) andalso (listVarToTipoT(args) = parametri) ) 
-				then 
-					defMetodoS(t, nomeM m, args, locals, cmds)
-				else 
-					cercaMetodoInClasse(programMap, defClasseS (nomeCl classeSintattica, ext, campi, metodi), nomeM metodoSintattico, parametri )
-
-
-and esisteMetodoInClasse(programMap, defClasseS (Object, _, _, _), nomeM metodoSintattico, parametri ) = false
-
-	| esisteMetodoInClasse(programMap,  defClasseS ( _, _, _, []), nomeM metodoSintattico, parametri ) = false
-
-	| esisteMetodoInClasse ( programMap, defClasseS (nomeCl classeSintattica, ext, campi, (defMetodoS(t, nomeM m, args, locals, cmds))::metodi),  
-																									nomeM metodoSintattico, parametri ) =
-			( (m = metodoSintattico) andalso (listVarToTipoT(args) = parametri)) 
-
-
-and controlloOverride (programMap, _, Object ) = true
-
-	| controlloOverride (programMap, defMetodoS (ts,  nomeM n, args, locals, commands), nomeclasse ) = 
-		let
-			val nomeclasseestesa = getExtendedClass(get(programMap, nomeclasse))
-			val defclasseestesa = get(programMap, nomeclasseestesa)
-			val listatipi = listVarToTipoT(args)
-		in
-			if (esisteMetodoInClasse(programMap, defclasseestesa,  nomeM n, listatipi) )
-			then
-				let 
-					val (defMetodoS(ts2, _, _, _,_)) = cercaMetodoInClasse(programMap, defclasseestesa,  nomeM n, listatipi)
-				in
-					if ( compatibleTipoSintSint(programMap, ts2,ts) )
-					then 
-						controlloOverride( programMap,defMetodoS(ts, nomeM n,args,locals,commands), nomeclasseestesa) 
-					else 
-						false
-				end
-			else
-				controlloOverride(programMap,defMetodoS(ts, nomeM n,args,locals,commands), nomeclasseestesa) 
-		end
-*)
-
-(********************************************************************)
-
-(********** controllo doppione: true non ci osno doppioni **********)
-(*
-and controlloMetodiDoppiApp( defClasseS (Object, _, _, _), _, _, found ) = true
-
-	|controlloMetodiDoppiApp( defClasseS (nomeCl classeSintattica, ext, campi, []), nomemetodo, tipiargs, found ) = true
-
-	| controlloMetodiDoppiApp( defClasseS (nomeCl classeSintattica, ext, campi, (defMetodoS(t, m, args, locals, cmds))::metodi), nomemetodo, tipiargs, found ) =
-		if( (m = nomemetodo) andalso (listVarToTipoT(args) = tipiargs))
-		then
-			if( found )
-			then
-				false
-			else
-				controlloMetodiDoppiApp( defClasseS (nomeCl classeSintattica, ext, campi, metodi), nomemetodo, tipiargs, true )
-
-		else
-			controlloMetodiDoppiApp( defClasseS (nomeCl classeSintattica, ext, campi, metodi), nomemetodo, tipiargs, found )
-
-
-and controlloMetodiDoppi( definizioneclasse, nomemetodo, args) = controlloMetodiDoppiApp( definizioneclasse, nomemetodo, listVarToTipoT(args), false )
-*)
-(********************************************************************)
-(*
-and metodoStoTApp( programMap, cont, defMetodoS(tipoSintattico, nomeM nomemetodo, args, locals, [] ), metodoT, ret) = 
-		if( ret ) then metodoT else raise ReturnNotFound(nomeM nomemetodo)
-
-	| metodoStoTApp( programMap, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, (assegnamentoVarS( nomevar, v))::comandi ), 
-													defMetodoT(ti, no, ar, lo, cmds), ret) = 
-		let 
-			val left = espressioneStoT( programMap, cont, varExprS nomevar  )
-			val right = espressioneStoT( programMap, cont,  v  )
-		in
-			if( compatibleTipoSemSem( programMap, estraiTipoSemantico left, estraiTipoSemantico right) )
-			then  
-				metodoStoTApp( programMap, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, comandi ), 
-															defMetodoT(ti, no, ar, lo, cmds @ [assegnamentoVarT( nomevar, right )]), ret)
-			else 
-				raise TypeErrorAssignVar(nomeM nomemetodo, left, right)
-		end
-
-	| metodoStoTApp( programMap, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, (assegnamentoCampoS( right1, nomecampo, right2))::comandi ), 
-													defMetodoT(ti, no, ar, lo, cmds), ret) = 
-		let 
-			val left = espressioneStoT( programMap, cont, right1 )
-			val field = espressioneStoT( programMap, cont,  accessoCampoS( right1, nomecampo)  )
-			val right = espressioneStoT( programMap, cont,  right2  )
-		in
-			if( compatibleTipoSemSem( programMap, estraiTipoSemantico field, estraiTipoSemantico right ))
-			then 
-				metodoStoTApp( programMap, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, comandi ), 
-															defMetodoT(ti, no, ar, lo, cmds @ [assegnamentoCampoT(left, nomecampo, right)]), ret)
-			else
-				raise TypeErrorAssignField(nomeM nomemetodo, left, field, right )
-		end
-
-	| metodoStoTApp( programMap, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, (returnS d)::comandi ), 
-													defMetodoT(ti, no, ar, lo, cmds), ret) = 
-		let 
-			val right = espressioneStoT(  programMap, cont,  d  )
-		in
-			if( compatibleTipoSintSem( programMap,  tipoSintattico, estraiTipoSemantico right ))
-			then metodoStoTApp( programMap, cont, defMetodoS(tipoSintattico,nomeM nomemetodo, args, locals, comandi ), 
-															defMetodoT(ti, no, ar, lo, cmds @ [returnT(right)]), true)
-			else
-				raise TypeErrorReturn(nomeM nomemetodo, tipoSintattico, right)
-		end
-
-*)
-
-
-(*
-and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, comandi ) ) = 
-				let 
-					val argsMap = buildVarsMap args
-					val localsMap = buildVarsMap locals
-				in
-					if not ( controlloOverride( programMap, defMetodoS( t, n, args, locals, comandi ), nomeclasse ) ) then raise TypeErrorOverrideMismatch( n, t, nomeclasse )
-					else if containsDuplicatedKey (argsMap) then raise MultipleArgsDef( getDuplicatedKey argsMap, nomeclasse, n)
-					else if containsDuplicatedKey (localsMap) then raise MultipleLocalsDef( getDuplicatedKey localsMap, nomeclasse, n)
-					else
-					if  ( (controlloMetodiDoppi( get(programMap, nomeclasse) , n, args ))) 
-					then
-						defMetodoT( programMap, 
-											putAllFun(cont, args @ locals, fn defVarS(t, v) => (varNome v, tipoSintToSem t)),
-											defMetodoS( t, n, args, locals, comandi ),
-											defMetodoT( t, n, 	fList(args, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)), 
-																fList(locals, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)), []),
-											false
-										)
-				end
-					else
-						raise MultipleMetodoDef( n, nomeclasse )
-*)	
-(*
-and metodoListStoT( programMap, cont, nomeclasse, l) = fList(l, fn m => metodoStoT( programMap, cont, nomeclasse, m));
-*)
-
-
-
-	
-(*
-fun programmaStoTApp(programMap, codiceS [] ) = codiceT []
-	| programmaStoTApp(programMap, codiceS (c::l) ) = 
-		let 
-			val codiceT(x) = programmaStoTApp(programMap, codiceS l)
-		in
-			codiceT( classeStoT(programMap,c) :: x)
-		end;
-*)
-
-

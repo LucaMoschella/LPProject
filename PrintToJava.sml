@@ -1,17 +1,17 @@
-fun stampaListaApp( [], newline:string, ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) = ender |
-	stampaListaApp( l::[], newline:string, ind:string, midsep:string, endsep:string, ender:string,metodoSintattico) =  newline ^ (metodoSintattico (ind,l)) ^ endsep ^ ender |
-	stampaListaApp( l::lista, newline:string, ind:string, midsep:string, endsep:string, ender:string, metodoSintattico) =  
-		newline ^ (metodoSintattico (ind,l)) ^ midsep ^ (stampaListaApp (lista,newline, ind, midsep, endsep, ender, metodoSintattico))
+fun stampaListaApp( [], newline:string, ind:string, midsep:string, endsep:string, ender:string, f) = ender |
+	stampaListaApp( l::[], newline:string, ind:string, midsep:string, endsep:string, ender:string,f) =  newline ^ (f (ind,l)) ^ endsep ^ ender |
+	stampaListaApp( l::lista, newline:string, ind:string, midsep:string, endsep:string, ender:string, f) =  
+		newline ^ (f (ind,l)) ^ midsep ^ (stampaListaApp (lista,newline, ind, midsep, endsep, ender, f))
 		
-and stampaLista( [], newline:string, ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, metodoSintattico) = starter ^ ender
-	|stampaLista( l, newline:string, ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, metodoSintattico) = 
-		starter ^ presep ^ (stampaListaApp(  l, newline, ind, midsep:string, endsep:string, ender, metodoSintattico));
+and stampaLista( [], newline:string, ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, f) = starter ^ ender
+	| stampaLista( l, newline:string, ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, f) = 
+		starter ^ presep ^ (stampaListaApp(  l, newline, ind, midsep:string, endsep:string, ender, f));
 
-fun stampaListaInLine( l, ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, metodoSintattico) = 
-		stampaLista(  l, "", ind, starter, presep, midsep:string, endsep:string, ender, metodoSintattico);
+fun stampaListaInLine( l, ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, f) = 
+		stampaLista(  l, "", ind, starter, presep, midsep:string, endsep:string, ender, f);
 
-fun stampaListaNewLine( l, ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, metodoSintattico) = 
-		stampaLista(  l, "\n", ind, starter, presep, midsep:string, endsep:string, ender, metodoSintattico);
+fun stampaListaNewLine( l, ind:string, starter:string, presep:string, midsep:string, endsep:string, ender:string, f) = 
+		stampaLista(  l, "\n", ind, starter, presep, midsep:string, endsep:string, ender, f);
 
 
 val DEF_IND = "    ";
@@ -30,7 +30,7 @@ fun stampaNomeTipoT (classeT s) = stampaNomeClasse( s )
 	| stampaNomeTipoT ( intT) = "int"
 	| stampaNomeTipoT (T) = "T";
 
-fun stampaNomeVarPiu ( varNome n ) = stampaNomeVar n
+fun stampaNomeVarPiu ( varPiuNome n ) = stampaNomeVar n
 	| stampaNomeVarPiu (this) = "this";
 
 
@@ -77,11 +77,6 @@ and stampaProgrammaS ( codiceS l ) =
 
 (********************************* FUNZIONI PER STAMPARE SINTASSI ASTRATTA TIPATA ************************************************)
 fun stampaCoppia( x1:string, x2:string) = "(" ^ x1 ^ " : " ^ x2 ^ ")";
-	
-fun stampaCoppiaVarPiuType( ind, (v, t)) = ind ^ "(" ^ (stampaNomeVarPiu v) ^ ":" ^ (stampaNomeTipoT t) ^ ")"
-
-and stampaContesto ( data ) = let val (x,l) = getCL(data) in stampaListaInLine(l, "", "[", "", "; ", "", "]\n", stampaCoppiaVarPiuType)end;
-
 (*********************************)
 
 fun stampaDefVariabileT (ind, defVarT (t,n, ts)) = ind ^ (stampaNomeTipoS t ) ^ " " ^ (stampaNomeVar n)  ^ " : " ^ ( stampaNomeTipoT ts)
@@ -122,24 +117,38 @@ and stampaClasseT ( ind:string, defClasseT (n, nfrom, campi, metodi ) ) =
 and stampaProgrammaT ( codiceT l ) = 
 	stampaListaNewLine( l, DEF_IND, "\nProgramma Java tipato:", "", "\n", "", "\n",  stampaClasseT); 
 
-(***************** STAMPA SEMNATICA DINAMICA **********************)
 
-(** DA SOTITUIRE CON QUELLE SOPRA **)
-
-(*
+(********************************* FUNZIONI PER STAMPARE INFORMAZIONI DI ESECUZIONE ************************************************)
 fun stampaLoc ( buildLoc i) = "buildLoc#" ^ (Int.toString i);
 
-fun stampaTriplaCampiObj( ind, nomec, nomeca, lo ) = ind ^ "" ^ (stampaNomeClasse nomec) ^ ":" ^ ( stampaNomeCampo nomeca) ^ ":" ^ (stampaLoc lo) ^ "";
-fun stampaObj( istanza( nomec , l) ) = "{ obj:" ^ (stampaNomeClasse( nomec )) ^ " - Campi: " ^ (stampaListaInLine(l, "[", ", ", "]", stampaTriplaCampiObj )) ^ " }"  ;
+fun stampaTriplaCampiObj( ind, (nomec, nomeca, lo) ) = ind ^ "" ^ (stampaNomeClasse nomec) ^ ":" ^ ( stampaNomeCampo nomeca) ^ ":" ^ (stampaLoc lo) ^ "";
+fun stampaObj( istanza( nomec , l) ) = "{ obj:" ^ (stampaNomeClasse( nomec )) ^ " - Campi: " ^ (stampaListaInLine(l, "Campi: ", "[", "", "; ", "", "]\n", stampaTriplaCampiObj )) ^ " }";
 
 fun stampaVal( noV ) = "*"
 	| stampaVal( nullV ) = "nullS"
 	| stampaVal( objV( obj ) )  = stampaObj obj
 	| stampaVal( intV i ) = Int.toString i;
 
-fun stampaCoppiaVarVal( variabileSintattica, v ) = "" ^ (stampaNomeVarPiu variabileSintattica) ^ ":" ^ ( stampaVal v) ^ "";
-fun stampaEnv( buildEnv l) = stampaListaInLine(l, "[", ", ", "]", stampaCoppiaVarVal );
 
-fun stampaCoppiaLocVal( locaz, v) = "" ^ (stampaLoc locaz) ^ ":" ^ ( stampaVal v) ^ "";
-fun stampaHeap( buildHeap l) = stampaListaInLine(l, "[", ", ", "]", stampaCoppiaLocVal );
-	*)
+(********************************* FUNZIONI PER STAMPARE DATA LIST ************************************************)
+exception NotContesto;
+exception NotEnv;
+exception NotHeap;
+exception NotDataList;
+
+fun stampaCoppiaVarVal( ind, (variabileSintattica, v) ) = "" ^ (stampaNomeVarPiu variabileSintattica) ^ ":" ^ ( stampaVal v) ^ "";
+fun stampaCoppiaLocVal( ind, (locaz, v)) = "" ^ (stampaLoc locaz) ^ ":" ^ ( stampaVal v) ^ "";
+fun stampaCoppiaVarPiuType( ind, (v, t)) = ind ^ "(" ^ (stampaNomeVarPiu v) ^ ":" ^ (stampaNomeTipoT t) ^ ")";
+fun stampaCoppiaData( ind, (s1, s2)) = ind ^ "(" ^ s1 ^ ":" ^ s2 ^ ")";
+
+fun stampaContesto (buildContesto l) = stampaListaInLine(l, "Contesto: ", "[", "", "; ", "", "]\n", stampaCoppiaVarPiuType)
+	| stampaContesto( _ ) = raise NotContesto;
+
+fun stampaEnv (buildEnv  l) = stampaListaInLine(l, "Ambiente: ", "[", "", "; ", "", "]\n", stampaCoppiaVarVal)
+	| stampaEnv( _ ) = raise NotEnv;
+
+fun stampaHeap (buildHeap l) = stampaListaInLine(l, "Heap: ", "[", "", "; ", "", "]\n", stampaCoppiaLocVal)
+	| stampaHeap( _ ) = raise NotHeap;
+
+fun stampaDataList (buildData l) = stampaListaInLine(l, "Data: ", "[", "", "; ", "", "]\n", stampaCoppiaData)
+	| stampaDataList( _ ) = raise NotDataList;

@@ -1,60 +1,64 @@
-	use "SemanticaStatica.sml";
+use "SemanticaStatica.sml";
+(* Usiamo alcune delle funzione definite in SemanticaStatica.sml *)
+
+(* utili per sfruttare le funzioni già definite su dataList! *)
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COSTRUZIONE MAPPE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
+fun buildVarTMap( l ) = putAllFun( buildData [], l, fn defVarT(t, n, e) => (n, defVarT(t, n, e)) );
+fun buildCampiTMap( l ) = putAllFun( buildData [], l, fn defCampoT(t, n, s, e) => (n, defCampoT(t, n, s, e)));
+fun buildMetodiTMap( l ) = putAllFun( buildData [], l, fn defMetodoT(t, m,args,locals,cmds) => ( (m, listVarTToTipoT args), defMetodoT(t, m,args,locals,cmds)) );
+fun buildClassiTMap( codiceT l ) = putAllFun( buildData [(Object, defClasseT ( Object, Object, [], []))], l, fn defClasseT( c, ce, lv, lm) => (c, defClasseT( c, ce, lv, lm)) );
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
-(* GESTIONE AMBIENTE *)
-fun getValEnv( buildEnv [], var:varPiu ) = raise RuntimeErrorVarNotFoundInEnv
-	| getValEnv( buildEnv ((k,v)::l), var:varPiu) = if (k = var)then (v) else (getValEnv(buildEnv l,var)); 
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OPERAZIONI CON TIPI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
+fun tipoDefault( intT ) = intV 0
+	| tipoDefault( classeT _ ) = nullV;
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
-(* GESTIONE HEAP *)
-fun concatHeap( buildHeap h1, buildHeap h2) = buildHeap ( h1 @ h2) ;
 
-fun changeHeapApp( buildHeap [], buildHeap newHeap, key, value  ) = buildHeap newHeap
-	| changeHeapApp( buildHeap ((keyh,v)::l), buildHeap newHeap, key, value  ) = 
-		if( keyh = key) 
-		then changeHeapApp(  buildHeap l, buildHeap ((keyh, value)::newHeap), key, value) 
-		else changeHeapApp(  buildHeap l, buildHeap ((keyh, v)::newHeap), key, value)
-and changeHeap( h, key, value  ) = changeHeapApp(h, buildHeap [], key, value);
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ESTRAZIONE INFORMAZIONI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
+fun	estraiOggetto( objV obj) = obj
+	| estraiOggetto( _ ) = raise RuntimeErrorValIsNotObj;
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
-fun getValHeap( buildHeap [], lo ) = raise RuntimeErrorLocNotFoundInHeap
-	| getValHeap( buildHeap ((k,v)::l), lo) = if (k = lo)then (v) else (getValHeap(buildHeap l,lo)); 
 
-(* FUNZIONI DI COMODO *)
-fun getSuperClasseOggetto(programmaTipato, istanza(c,(_)))=getExtendedClass(cercaClasseInProgramma ( programmaTipato, c ));
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OPERAZIONI CON OGGETTI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
+fun getSuperClasseObj( programMap, istanza(c, (_)) ) = getExtendedClass( get( programMap, c ) );
+fun getSuperCampiObj( programMap, istanza ( n, l)) =  istanza ( n, f3List(l, fn (nc, nf, lo) => if( n = nc) then [] else [(nc, nf, lo)] ));
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
-fun getSuperCampi(programmaTipato, istanza ( n, l))= getSuperCampiAppoggio(programmaTipato,istanza ( n, l),istanza ( n, []))
-and
-	 getSuperCampiAppoggio(programmaTipato, istanza (n1, []), istanza (n2, l))=l
+(*
+fun getSuperCampi(programMap, istanza ( n, l))= getSuperCampiAppoggio(programMap, istanza ( n, l), istanza( n, []))
 
-	 | getSuperCampiAppoggio(programmaTipato, istanza(n1, (nomec,nomef,lo)::l), istanza(n2,l2))= 
-	 if (nomec=n1)
-	 then getSuperCampiAppoggio(programmaTipato,istanza(n1,l),istanza(n2,l2))
-	 else getSuperCampiAppoggio(programmaTipato, istanza(n1,l), istanza(n2,((nomec,nomef,lo)::l2)) )
-and
-	getObjFromVal( objV obj) = obj
-	| getObjFromVal( _ ) = raise RuntimeErrorValIsNotObj;
+and getSuperCampiAppoggio(programMap, istanza (n1, []), istanza (n2, l))=l
+	 | getSuperCampiAppoggio(programMap, istanza(n1, (nomec,nomef,lo)::l), istanza(n2,l2))= 
+		 if (nomec=n1)
+		 then getSuperCampiAppoggio(programMap,istanza(n1,l),istanza(n2,l2))
+		 else getSuperCampiAppoggio(programMap, istanza(n1,l), istanza(n2,((nomec,nomef,lo)::l2)) );
+*)
 
-fun tipoDefault( intS ) = intV 0
-	| tipoDefault( classeS _ ) =nullV ;
 
-fun cbody( programmaTipato,  nomec ) = let val ( defClasseS( _ , _ , campi, _ ) ) = cercaClasseInProgramma ( programmaTipato, nomec ) 
+
+
+fun cbody( programMap,  nomec ) = let val ( defClasseS( _ , _ , campi, _ ) ) = cercaClasseInProgramma ( programMap, nomec ) 
 								in campi end;
 
 (* Prende un ( oggetto, classeSintattica ) => ( obj, buildHeap) dove obj = oggetto + campi in classeSintattica, con i valori nell'buildHeap *)
-fun aggiornaObjAndHeap([], ncl, istanza(n, l2), buildHeap h) = (istanza(ncl,l2), buildHeap h)
-	| aggiornaObjAndHeap( defCampoS( t, nc, r)::l1, ncl, istanza(n, l2), buildHeap h)= (	let val x = nextLoc() 
+fun aggiornaObjAndHeap([], ncl, istanza(n, l2), heap) = (istanza(ncl,l2), heap)
+	| aggiornaObjAndHeap( defCampoS( t, nc, r)::l1, ncl, istanza(n, l2), heap)= (	let val x = nextLoc() 
 																						in aggiornaObjAndHeap( l1, ncl, istanza(n, (ncl,nc,x)::l2), buildHeap( (x, tipoDefault(t))::h)) 
 																						end)
 	
-and alloc (programmaTipato, obj, ncl) = aggiornaObjAndHeap( cbody(programmaTipato, ncl), ncl, obj, buildHeap [])
+and alloc (programMap, obj, ncl) = aggiornaObjAndHeap( cbody(programMap, ncl), ncl, obj, buildHeap [])
 
-and allocaOggetto( programmaTipato, newT (Object,t), buildHeap h ) = ( istanza( Object, []) , buildHeap h)
-	| allocaOggetto( programmaTipato, newT ( c, t ), buildHeap h ) =
+and allocaOggetto( programMap, newT (Object,t), heap ) = ( istanza( Object, []) , heap)
+	| allocaOggetto( programMap, newT ( c, t ), heap ) =
 		(* Sale verso Object*)
-			let val (x, y) = allocaOggetto (programmaTipato, newT( getExtendedClass( cercaClasseInProgramma( programmaTipato, c)), t), buildHeap h)
+			let val (x, y) = allocaOggetto (programMap, newT( getExtendedClass( cercaClasseInProgramma( programMap, c)), t), heap)
 			in (* Riscende, e ad ogni passo in discesa: *)
 				let  
 					(* 1: espande l'oggetto con la classse corrente e inizializza i campi nell'buildHeap con i valori di default*)
-					val (x1, y1) = alloc( programmaTipato,  x, c) 
+					val (x1, y1) = alloc( programMap,  x, c) 
 				in
 					(* 2: Torna l'oggetto creato, espandendo l'buildHeap con i campi aggiunti *)
 					( x1,  concatHeap(y, y1) )
@@ -62,65 +66,61 @@ and allocaOggetto( programmaTipato, newT (Object,t), buildHeap h ) = ( istanza( 
 			end;
 
 (* Inizializza la buildLoc nell'buildHeap conil corretto right value.  
-QUI I CAMPI DEVONO ESSERE INZIIZALIZZATI RICHIAMANDO regolaEspressione, CON UN AMBIENTE IN CUI è PRESENTE (THIS, OBJ) *)
-fun cercaInitCampoApp ( programmaTipato, [], nomeC campoSintattico ) = raise RuntimeErrorInitCampoNonTrovato
-	| cercaInitCampoApp ( programmaTipato, (defCampoS( tipoca, nomeC nomeca, rightca))::campi , nomeC campoSintattico ) =
-			if( nomeca = campoSintattico ) then rightca else cercaInitCampoApp(programmaTipato, campi, nomeC campoSintattico )
-and cercaInitCampo( programmaTipato, nomec, nomecl) = cercaInitCampoApp(programmaTipato, cbody ( programmaTipato, nomecl ), nomec );
+QUI I CAMPI DEVONO ESSERE INZIIZALIZZATI RICHIAMANDO valutaEspressione, CON UN AMBIENTE IN CUI è PRESENTE (THIS, OBJ) *)
+fun cercaInitCampoApp ( programMap, [], nomeC campoSintattico ) = raise RuntimeErrorInitCampoNonTrovato
+	| cercaInitCampoApp ( programMap, (defCampoS( tipoca, nomeC nomeca, rightca))::campi , nomeC campoSintattico ) =
+			if( nomeca = campoSintattico ) then rightca else cercaInitCampoApp(programMap, campi, nomeC campoSintattico )
+and cercaInitCampo( programMap, nomec, nomecl) = cercaInitCampoApp(programMap, cbody ( programMap, nomecl ), nomec );
 
-fun initCampiApp( programmaTipato, obj, istanza( nomec, []),  buildHeap h  ) =  buildHeap h  
+fun initCampiApp( programMap, obj, istanza( nomec, []),  heap  ) =  heap  
 
-	| initCampiApp( programmaTipato, obj, istanza( nomec, (classecampo, nomecampo, loccampo)::l), buildHeap h ) = 
-		let val (x, _) = regolaEspressione( programmaTipato, 
+	| initCampiApp( programMap, obj, istanza( nomec, (classecampo, nomecampo, loccampo)::l), heap ) = 
+		let val (x, _) = valutaEspressione( programMap, 
 										buildEnv [(this, objV obj )],
-										cercaInitCampo(programmaTipato, nomecampo, classecampo), 
-										buildHeap h)
+										cercaInitCampo(programMap, nomecampo, classecampo), 
+										heap)
 		in
-			initCampiApp( programmaTipato, obj, istanza( nomec, l), changeHeap( buildHeap h , loccampo , x ))
+			initCampiApp( programMap, obj, istanza( nomec, l), changeHeap( heap , loccampo , x ))
 		end
-and initCampi( programmaTipato, obj, mem ) = initCampiApp( programmaTipato, obj, obj, mem)
+and initCampi( programMap, obj, mem ) = initCampiApp( programMap, obj, obj, mem)
 (* fine emtodi per inziializzare i campi! *)
 
-(*REGOLE PER VALUTARE RIGHT EXPRESSION *)
-and regolaEspressione (programmaTipato, buildEnv a, varExprT(v, t), buildHeap h) = (getValEnv(buildEnv a, varNome v),buildHeap h)
 
-	| regolaEspressione (programmaTipato, buildEnv a, intExprT (n, t), buildHeap h) = (intV(n), buildHeap h)
+(* %%%%%%%%%%%%%%%%% REGOLE PER L'ESECUZIONE DEL PROGRAMMA TIPATO %%%%%%%%%%%%%%%%%%%%% *)
+and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiuNome v),heap)
 
- 	| regolaEspressione (programmaTipato, buildEnv a,  thisT (t) , buildHeap h) = (getValEnv(buildEnv a, this), buildHeap h)
+	| valutaEspressione (programMap, env, intExprT (n, t), heap) = (intV(n), heap)
 
-	| regolaEspressione (programmaTipato, buildEnv a,  superT (t) , buildHeap h) = (let val x = getObjFromVal (getValEnv(buildEnv a, this)) 
-									in
-										(
-										objV ( istanza ( getSuperClasseOggetto(programmaTipato, x), getSuperCampi(programmaTipato, x))),
-										buildHeap h 
-										)
-									end)
+ 	| valutaEspressione (programMap, env,  thisT (t) , heap) = (get(env, this), heap)
 
-	| regolaEspressione (programmaTipato, buildEnv a,  nullT (t) , buildHeap h) = (nullV, buildHeap h)
+	| valutaEspressione (programMap, env,  superT (t) , heap) = 
+		let 
+			val x = estraiOggetto( get(env, this) ) 
+		in 
+			objV ( istanza ( getSuperClasseObj(programMap, x), getSuperCampiObj(programMap, x)), heap)
+		end
 
-	| regolaEspressione (programmaTipato, buildEnv a, newT (nomeclasse, t), buildHeap h) =  
-		(* Alloca l'intS oggetto*)
-		let val (x, y) = allocaOggetto (programmaTipato, newT nomeclasse, buildHeap h)
+	| valutaEspressione (programMap, env,  nullT (t) , heap) = (nullV, heap)
+
+	| valutaEspressione (programMap, env, newT (nomeclasse, t), heap) =  
+		(* Alloca l'oggetto*)
+		let val (x, y) = allocaOggetto (programMap, newT nomeclasse, heap)
 		in 
 			(* 2: calcola il rightvalue di tutti i campi dell'oggetto e li assegna.  *)
-			( objV x, initCampi( programmaTipato, x, y ))
+			( objV x, initCampi( programMap, x, y ))
 		end
-	| regolaEspressione (programmaTipato, buildEnv a, _ , buildHeap h) =( intV 999, buildHeap h);  
+	| valutaEspressione (programMap, env, _ , heap) =( intV 999, heap);  
+
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 use "ProgrammiEsempio.sml";
 
 print (stampaProgrammaS esempioDispensa);
-print (let val (x,y ) =regolaEspressione( esempioDispensa, buildEnv [], newS( nomeCl "A"), buildHeap []);
-in 
-	"Oggetto: " ^ stampaVal(x) ^"\nHeap: " ^ stampaHeap(y) ^ "\n"
-end);
-print (let val (x,y ) =regolaEspressione( esempioDispensa, buildEnv [], newS( nomeCl "B"), buildHeap []);
-in 
-	"Oggetto: " ^ stampaVal(x) ^"\nHeap: " ^ stampaHeap(y) ^ "\n"
-end);
-print (let val (x,y ) =regolaEspressione( esempioDispensa, buildEnv [], newS( nomeCl "weird"), buildHeap []);
-in 
-	"Oggetto: " ^ stampaVal(x) ^"\nHeap: " ^ stampaHeap(y) ^ "\n"
-end);
+val x = programmaStoT( esempioDispensa );
 
-controllaTipoProgramma( esempioDispensa )
+print (let val (x, y) = valutaEspressione ( x, buildEnv [], newT( nomeCl "A"), buildHeap []);
+in 
+	"Oggetto: " ^ stampaVal(x) ^"\nHeap: " ^ stampaHeap(y) ^ "\n"
+end);
+p
+

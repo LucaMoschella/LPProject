@@ -89,7 +89,7 @@ fun equalType ( intS, intS ) = true
 
 
 (*  REGOLA 1 - cerca var *) 
-(* OK *)	fun equalVarPiuVar ( varNome( nomeV v ), nomeV s ) = ( v = s )
+(* OK *)	fun equalVarPiuVar ( varPiuNome( nomeV v ), nomeV s ) = ( v = s )
 			| equalVarPiuVar (  this, _ ) = raise ex;
 
 (* OK *)	fun cercaVarPiuInContesto ( buildContesto [],v ) = raise ex
@@ -111,7 +111,7 @@ fun equalType ( intS, intS ) = true
 (* OK *)fun getListaTipiExpr (programmaSintattico, cont, [] ) = []
 				| getListaTipiExpr ( programmaSintattico, cont,r::l ) = (cercaTipoRightValueInContesto(programmaSintattico, cont, r)) :: (getListaTipiExpr (  programmaSintattico, cont,l ))
 
-(* OK *)and	cercaTipoRightValueInContesto( programmaSintattico, cont, varExprS(nomeV v)  ) = cercaVarPiuInContesto( cont, varNome (nomeV v))
+(* OK *)and	cercaTipoRightValueInContesto( programmaSintattico, cont, varExprS(nomeV v)  ) = cercaVarPiuInContesto( cont, varPiuNome (nomeV v))
 				| cercaTipoRightValueInContesto( programmaSintattico, cont, intExprS n) = intT
 				| cercaTipoRightValueInContesto( programmaSintattico, cont, newS( c)) = classeT c
 				| cercaTipoRightValueInContesto( programmaSintattico, cont, ( nullS )) = T 
@@ -123,7 +123,7 @@ fun equalType ( intS, intS ) = true
 
 (* aggiungi al buildContesto una lista di variabili*)
 (* OK *)	fun getContestExpanded( buildContesto lc, [] ) = buildContesto lc 
-	 			|getContestExpanded( buildContesto lc, defVarS( tipoSintattico, nomeV v)::l ) =getContestExpanded( buildContesto ((varNome (nomeV v),  tipoSintatticoToSemantico ( tipoSintattico ))::lc), l);
+	 			|getContestExpanded( buildContesto lc, defVarS( tipoSintattico, nomeV v)::l ) =getContestExpanded( buildContesto ((varPiuNome (nomeV v),  tipoSintatticoToSemantico ( tipoSintattico ))::lc), l);
 
 
 
@@ -190,9 +190,9 @@ use "ProgrammiEsempio.sml";
 
 print (stampaProgrammaS esempioDispensa);
 
-val x=buildContesto [(varNome (nomeV "i"), intT), (varNome(nomeV "e"), intT)];
+val x=buildContesto [(varPiuNome (nomeV "i"), intT), (varPiuNome(nomeV "e"), intT)];
 
-val y=buildContesto [(varNome (nomeV "e"), T), (varNome(nomeV "g"), T)];
+val y=buildContesto [(varPiuNome (nomeV "e"), T), (varPiuNome(nomeV "g"), T)];
 
 
 print (stampaContesto x);
@@ -205,7 +205,7 @@ val chiama = chiamataMetodoS((newS (nomeCl "Classe2")) ,
 							[varExprS ( nomeV "v")]
 							);
 print (stampaProgrammaS esempio);
-print (stampaNomeTipoT( cercaTipoRightValueInContesto(esempio, buildContesto [(varNome(nomeV "v"), classeT(nomeCl "Classe2"))], chiama )) ^ "\n");
+print (stampaNomeTipoT( cercaTipoRightValueInContesto(esempio, buildContesto [(varPiuNome(nomeV "v"), classeT(nomeCl "Classe2"))], chiama )) ^ "\n");
 
 val metodoSintattico = defMetodoS ( intS, nomeM "metodo2", [defVarS (intS, nomeV "input")], [], [assegnamentoVarS(nomeV "input", intExprS 5), returnS (varExprS (nomeV "input"))]);
 
@@ -213,9 +213,9 @@ controllaTipoMetodo(esempio, buildContesto [] , metodoSintattico );
 
 print (stampaMetodoS metodoSintattico);
 
-val x=buildContesto [(varNome (nomeV "i"), intT), (varNome(nomeV "e"), intT)];
+val x=buildContesto [(varPiuNome (nomeV "i"), intT), (varPiuNome(nomeV "e"), intT)];
 
-val y=buildContesto [(varNome (nomeV "e"), T), (varNome(nomeV "g"), T)];
+val y=buildContesto [(varPiuNome (nomeV "e"), T), (varPiuNome(nomeV "g"), T)];
 
 
 print (stampaContesto x);

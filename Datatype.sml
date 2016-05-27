@@ -1,6 +1,6 @@
 use "Sintassi.sml";
 (********** SISTEMA DEI TIPI **********)
-datatype varPiu = varNome of nomeVariabile | this;
+datatype varPiu = varPiuNome of nomeVariabile | this;
 
 
 (********** SISTEMA DI ESECUZIONE **********)
@@ -91,10 +91,14 @@ and getDuplicatedKey(data) = let val (x, y) = getCL(data) in getDuplicatedKeyL(y
 
 (********** FUNZIONI AUSILIARIE **********)
 
-
+(* Modifica la lista con gli elementi generati dall'applicazione di f ad ogni elemento della lista *)
 fun fList( [], f) = []
 	| fList( a::l, f) = f a :: fList(l, f);
 
 (* converte una lista ricordandosi di quello che ha già convertito *)
 fun f2List( [], f, g, z) = []
 	| f2List( a::l, f, g, z) = f (a, g (a, z)) :: f2List(l, f, g, g( a, z));
+
+(* Modifica la lista, con la lista degli elementi generati dall'applicazione di f ad ogni elemento della lista *)
+fun f3List( [], f) = []
+	| f3List( a::l, f) = f a @ f3List(l, f);
