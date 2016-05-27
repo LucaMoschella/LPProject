@@ -79,6 +79,9 @@ fun listVarToTipoT ( [] ) = []
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COSTRUZIONE MAPPE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 fun buildVarsMap( l ) = putAllFun( buildData [], l, fn defVarS(t, n) => (n, defVarS(t, n)) );
 fun buildCampiMap( l ) = putAllFun( buildData [], l, fn defCampoS(t,n,s) => (n, defCampoS(t,n,s)));
+fun buildComandiMap( l ) = putAllFun( buildData [], l, fn assegnamentoVarS(n, e) => ("assegnamentoVar", assegnamentoVarS(n, e) )
+														| assegnamentoCampoS(e1, n, e2) => ("assegnamentoCampo", assegnamentoCampoS(e1, n, e2))
+														| returnS(e) => ("return", returnS(e)));
 fun buildMetodiMap( l ) = putAllFun( buildData [], l, fn defMetodoS(t, m,args,locals,cmds) => ( (m, listVarToTipoT args), defMetodoS(t, m,args,locals,cmds)) );
 fun buildClassiMap( codiceS l ) = putAllFun( buildData [(Object, defClasseS ( Object, Object, [], []))], l, fn defClasseS( c, ce, lv, lm) => (c, defClasseS( c, ce, lv, lm)) );
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
@@ -139,67 +142,29 @@ fun mtype( programMap, nomem, nomecl, tipi) =
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CONTROLLO OVERRIDE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-fun controlloOverride (programMap, _, Object ) = true
-	| controlloOverride (programMap, defMetodoS (ts,  nomeM n, args, l, c), nomeclasse ) = 
-		let
+fun controlloOverride (programMap, classebase, _, Object ) = true
+	| controlloOverride (programMap, classebase, defMetodoS (baseype, n, args, l, c), nomeclasse ) = 
+		let 
+			val defmetodobase = defMetodoS (baseype, n, args, l, c)
 			val defclasse = get(programMap, nomeclasse)
 			val metodiMap = buildMetodiMap( (fn defClasseS(_, _, _, metodi) => metodi) defclasse )
+			val metodoKey = ( n, listVarToTipoT args)
 		in
-			(if compatibleTipoSintSint( programMap, (fn defMetodoS(ts2, _, _, _,_) => ts2) (get( metodiMap , ( nomeM n, listVarToTipoT args) )), ts)
-			then controlloOverride( programMap, defMetodoS(ts, nomeM n, args, l, c), getExtendedClass defclasse ) 
-			else false)
-			handle KeyNotFound => controlloOverride(programMap,defMetodoS(ts, nomeM n, args, l, c), getExtendedClass defclasse)
-		end
+			if not (containsKey( metodiMap, metodoKey ) ) then controlloOverride(programMap, classebase, defmetodobase, getExtendedClass defclasse)
+			else
+				let 
+					val supertype = (fn defMetodoS(t, _, _, _,_) => t) (get( metodiMap , metodoKey ))
+				in
+					if compatibleTipoSintSint( programMap, supertype, baseype)
+					then controlloOverride( programMap, classebase, defmetodobase, getExtendedClass defclasse ) 
+					else raise TypeErrorOverrideMismatch( n, supertype, nomeclasse, baseype, classebase )
+				end
+		end;
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
 
 (* %%%%%%%%%%%%%%%%% REGOLE PER LA TRADUZIONE IN PROGRAMMA TIPATO %%%%%%%%%%%%%%%%%%%%% *)
-
-
-(*
-fun variabileListStoT( [] ) = []
-	| variabileListStoT( (defVarS( t, n))::l) = 
-	(defVarT(t,n,tipoSintToSem t))::(variabileListStoT(l))
-*)
-
-(*
-fun campoListStoT( programMap, cont, l ) =
-			funList( l, fn defCampoS( t, n, r) => 
-							let 
-								val right = espressioneStoT(programMap, cont, r)
-							in
-								if ( compatibleTipoSintSem(programMap, t, estraiTipoSemantico right )) 
-								then 
-									defCampoT(t, n, right, tipoSintToSem t) 
-								else
-									raise TypeErrorDefField(t, n, right)
-							end
-					)
-*)
-(*
-
-and campoListStoT( programMap, cont, [] ) = []
-	| campoListStoT( programMap, cont, ( defCampoS( t, nomeC n, r))::l ) = 
-		let 
-			val right = espressioneStoT(programMap, cont, r)
-		in
-			if ( compatibleTipoSintSem(programMap, t, estraiTipoSemantico right )) 
-			then 
-				defCampoT(t, nomeC n, right, tipoSintToSem t) :: (campoListStoT( programMap, cont, l ))
-			else
-				raise TypeErrorDefField(t, nomeC n, right)
-		end 
-
-and listExprToTipoT (programMap, cont, [] ) = []
-	| listExprToTipoT ( programMap, cont,r::l ) = 
-		(estraiTipoSemantico(espressioneStoT(programMap, cont, r))) :: (listExprToTipoT (  programMap, cont,l ))
-*)
-(*
-and espressioneListStoT( programMap, cont, [] ) = []
-	| espressioneListStoT( programMap, cont, a::l ) = 
-		espressioneStoT(programMap, cont, a)::(espressioneListStoT( programMap, cont, l ))
-*)
 fun	espressioneStoT( programMap, cont, varExprS(nomeV v)  ) = 
 		(varExprT(nomeV v, get( cont, varNome (nomeV v)))
 			handle KeyNotFound => raise UnknownVar(varNome(nomeV v)))
@@ -246,6 +211,196 @@ fun	espressioneStoT( programMap, cont, varExprS(nomeV v)  ) =
 								)
 				)
 		end
+
+and comandoStoT( programMap, cont, assegnamentoVarS( nomevar, v), defMetodoS( _, nomemetodo, _, _, _ ), nomeclasse) = 
+		let 
+			val left = espressioneStoT( programMap, cont, varExprS nomevar  )
+			val right = espressioneStoT( programMap, cont,  v  )
+		in
+			if( compatibleTipoSemSem( programMap, estraiTipoSemantico left, estraiTipoSemantico right) )
+			then assegnamentoVarT( nomevar, right )
+			else raise TypeErrorAssignVar(nomemetodo, left, right, nomeclasse, nomevar)
+		end
+
+	| comandoStoT( programMap, cont, assegnamentoCampoS( right1, nomecampo, right2), defMetodoS( _, nomemetodo, _, _, _ ), nomeclasse) = 
+		let 
+			val left = espressioneStoT( programMap, cont, right1 )
+			val field = espressioneStoT( programMap, cont,  accessoCampoS( right1, nomecampo)  )
+			val right = espressioneStoT( programMap, cont,  right2  )
+		in
+			if( compatibleTipoSemSem( programMap, estraiTipoSemantico field, estraiTipoSemantico right ))
+			then assegnamentoCampoT(left, nomecampo, right)
+			else raise TypeErrorAssignField(nomemetodo, left, field, right, nomeclasse, nomecampo)
+		end
+
+	| comandoStoT( programMap, cont, returnS d, defMetodoS( t, nomemetodo, _, _, _ ), nomeclasse) = 
+		let 
+			val right = espressioneStoT(  programMap, cont,  d  )
+		in
+			if( compatibleTipoSintSem( programMap,  t, estraiTipoSemantico right ))
+			then returnT(right)
+			else raise TypeErrorReturn(nomemetodo, t, right, nomeclasse)
+		end
+
+
+and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, comandi ) ) = 
+				let 
+					val argsMap = buildVarsMap args
+					val localsMap = buildVarsMap locals
+					val cmdsMap = buildComandiMap comandi
+					val contestExpanded = putAllFun(cont, args @ locals, fn defVarS(t, v) => (varNome v, tipoSintToSem t))
+					val defmetodo = defMetodoS( t, n, args, locals, comandi )
+				in				 
+					(if containsDuplicate (argsMap) then raise MultipleArgsDef( getKeyDuplicated argsMap, nomeclasse, n)
+					else if containsDuplicate (localsMap) then raise MultipleLocalsDef( getKeyDuplicated localsMap, nomeclasse, n)
+					else if not (containsKey (cmdsMap, "return")) then raise ReturnNotFound(n, nomeclasse)
+					else
+						defMetodoT	( t, n, funList(args, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)), 
+											funList(locals, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)),
+											funList(comandi, fn cmd => comandoStoT(	programMap, contestExpanded, cmd, defmetodo, nomeclasse))
+									)	
+					)					
+				end
+
+and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, campi, metodi)) =
+	if(nomeClasseCorrente = nomeClasseEstesa) then raise ClassExtNotValid( nomeClasseCorrente )
+	else 
+		let 
+			val campiMap = buildCampiMap campi
+			val metodiMap = buildMetodiMap metodi
+			val contex = buildContesto[(this,classeT(nomeClasseCorrente))]
+		in
+			if containsDuplicate (campiMap) then raise MultipleCampoDef( getKeyDuplicated campiMap, nomeClasseCorrente)
+			else if containsDuplicate (metodiMap) then raise MultipleMetodoDef( (fn (x,y) => x)(getKeyDuplicated metodiMap), nomeClasseCorrente)
+			else if not (containsKey( programMap, nomeClasseEstesa)) then raise ClassNotFound(nomeClasseEstesa)
+			else 
+				defClasseT( nomeClasseCorrente, 
+							nomeClasseEstesa, 
+							funList( campi, fn defCampoS( t, n, r) => 
+										let 
+											val right = espressioneStoT(programMap, contex, r)
+										in
+											if not (compatibleTipoSintSem(programMap, t, estraiTipoSemantico right )) then raise TypeErrorDefField(t, n, right, nomeClasseCorrente)
+											else defCampoT(t, n, right, tipoSintToSem t) 
+										end
+									),
+							funList(metodi, fn m => (	controlloOverride( programMap, nomeClasseCorrente, m, nomeClasseCorrente );
+														metodoStoT( programMap, contex, nomeClasseCorrente, m))
+													)
+						)						
+		end
+
+and programmaStoT( programma ) = 
+	let 
+		val programMap = buildClassiMap programma
+	in
+		(if containsDuplicate programMap then raise MultipleClasseDef( getKeyDuplicated programMap )
+		else codiceT ( funList( (fn codiceS x => x) programma, fn c => classeStoT(programMap, c))) )
+		
+		handle ClassExtNotValid x => ( print ("ERROR: La classe <" ^ (stampaNomeClasse x) ^ "> non non può estendere sé stessa.\n\n"); codiceT [] )
+
+			| UnknownVar x => ( print ("ERROR: La variabile <" ^ (stampaNomeVarPiu x) ^ "> non è stata definita.\n\n"); codiceT [] )
+
+			| FieldNotFound x => ( print ("ERROR: Il campo <" ^ (stampaNomeCampo x) ^ "> non è stato trovato.\n\n"); codiceT [] )
+			
+			| MethodNotFound x => ( print ("ERROR: Il metodo <" ^ (stampaNomeMetodo x) ^ "> compatibile con gli argomenti passati non è stato trovato nella gerarchia.\n\n"); codiceT [] )
+			
+			| ClassNotFound x => ( print ("ERROR: La classe <" ^ (stampaNomeClasse x) ^ "> non è stata trovata.\n\n"); codiceT [] )
+			
+			| ReturnNotFound (x, cla) => ( print ("ERROR: Il metodo <" ^ (stampaNomeMetodo x) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
+					"> non contiene un comando di return.\n\n"); codiceT [] )
+
+			| TypeIsNotAClass => ( print ("ERROR: Impossibile convertire l'espressione in una classe.\n\n"); codiceT [] )
+
+			| TypeErrorDefField ( ts, n, e , cla) => 
+				( print ("ERROR TYPE MISMATCH: Impossibile inizializzare il campo <" ^ (stampaNomeCampo n) ^ "> di tipo <" ^ (stampaNomeTipoS ts) ^ "> con un espressione di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e )) ^
+					 ">,\n                     nella classe <" ^ (stampaNomeClasse cla) ^  ">.\n\n"); codiceT [] )
+
+			| TypeErrorReturn ( n, ts, e, cla) => 
+				( print ("ERROR TYPE MISMATCH: Impossibile tornare un espressione di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e )) ^ "> se il tipo di ritorno definito è <" ^ (stampaNomeTipoS( ts )) ^
+					 ">,\n                     nel metodo <" ^ (stampaNomeMetodo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^  ">.\n\n"); codiceT [] )
+			
+			| TypeErrorAssignVar (n, e1, e2, cla, v) => 
+				( print ("ERROR TYPE MISMATCH: Impossibile assegnare alla variabile <" ^ (stampaNomeVar v) ^ "> di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e1 ))^ "> un espressione di tipo <"^ (stampaNomeTipoT( estraiTipoSemantico e2 )) ^
+					 ">,\n                     nel metodo <" ^ (stampaNomeMetodo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^  ">.\n\n"); codiceT [] )
+			
+			| TypeErrorAssignField (n, e1, e2, e3, cla, c) => 
+				( print ("ERROR TYPE MISMATCH: Impossibile assegnare al campo <" ^ (stampaNomeCampo c) ^ "> di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e2 ))^ "> un espressione di tipo <"^ (stampaNomeTipoT( estraiTipoSemantico e3 )) ^
+					 ">,\n                     nel metodo <" ^ (stampaNomeMetodo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^  ">.\n\n"); codiceT [] )
+
+			| TypeErrorOverrideMismatch ( n, supert, superc, baset, basec ) =>
+				( print ("ERROR TYPE MISMATCH: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse basec) ^ "> effettua un override del metodo definito nella classe <" ^ (stampaNomeClasse superc) ^  
+					 ">,\n                     cambiando il tipo di ritorno da <" ^ (stampaNomeTipoS supert) ^ "> a <" ^ (stampaNomeTipoS baset) ^ "> (incompatibili).\n\n"); codiceT [] )
+
+			| MultipleMetodoDef ( n, cla ) =>
+				( print ("ERROR: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
+					"> è definito più volte.\n\n"); codiceT [] )
+
+			| MultipleCampoDef ( n, cla ) =>
+				( print ("ERROR: Il campo <" ^ (stampaNomeCampo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
+					"> è definito più volte.\n\n"); codiceT [] )
+
+			| MultipleArgsDef ( n, cla, m ) =>
+				( print ("ERROR: Il parametro <" ^ (stampaNomeVar n) ^ "> del metodo <" ^ (stampaNomeMetodo m) ^ "> nella classe <" 
+					^ (stampaNomeClasse cla) ^ "> è definito più volte.\n\n"); codiceT [] )
+
+			| MultipleLocalsDef ( n, cla, m ) =>
+				( print ("ERROR: La variabile <" ^ (stampaNomeVar n) ^ "> del metodo <" ^ (stampaNomeMetodo m) ^ "> nella classe <" 
+					^ (stampaNomeClasse cla) ^ "> è definita più volte.\n\n"); codiceT [] )
+			
+			| MultipleClasseDef ( cla ) =>
+				( print ("ERROR: La classe <" ^ (stampaNomeClasse cla) ^ "> è definita più volte.\n\n"); codiceT [] )
+	end;	
+
+use "ProgrammiEsempio.sml";
+
+print( stampaProgrammaS( programmaOverride6));
+print( stampaProgrammaT( programmaStoT( programmaOverride6)));
+
+(*
+fun variabileListStoT( [] ) = []
+	| variabileListStoT( (defVarS( t, n))::l) = 
+	(defVarT(t,n,tipoSintToSem t))::(variabileListStoT(l))
+*)
+
+(*
+fun campoListStoT( programMap, cont, l ) =
+			funList( l, fn defCampoS( t, n, r) => 
+							let 
+								val right = espressioneStoT(programMap, cont, r)
+							in
+								if ( compatibleTipoSintSem(programMap, t, estraiTipoSemantico right )) 
+								then 
+									defCampoT(t, n, right, tipoSintToSem t) 
+								else
+									raise TypeErrorDefField(t, n, right)
+							end
+					)
+*)
+(*
+
+and campoListStoT( programMap, cont, [] ) = []
+	| campoListStoT( programMap, cont, ( defCampoS( t, nomeC n, r))::l ) = 
+		let 
+			val right = espressioneStoT(programMap, cont, r)
+		in
+			if ( compatibleTipoSintSem(programMap, t, estraiTipoSemantico right )) 
+			then 
+				defCampoT(t, nomeC n, right, tipoSintToSem t) :: (campoListStoT( programMap, cont, l ))
+			else
+				raise TypeErrorDefField(t, nomeC n, right)
+		end 
+
+and listExprToTipoT (programMap, cont, [] ) = []
+	| listExprToTipoT ( programMap, cont,r::l ) = 
+		(estraiTipoSemantico(espressioneStoT(programMap, cont, r))) :: (listExprToTipoT (  programMap, cont,l ))
+*)
+(*
+and espressioneListStoT( programMap, cont, [] ) = []
+	| espressioneListStoT( programMap, cont, a::l ) = 
+		espressioneStoT(programMap, cont, a)::(espressioneListStoT( programMap, cont, l ))
+*)
+
 
 
 
@@ -322,6 +477,7 @@ and controlloMetodiDoppiApp( defClasseS (Object, _, _, _), _, _, found ) = true
 and controlloMetodiDoppi( definizioneclasse, nomemetodo, args) = controlloMetodiDoppiApp( definizioneclasse, nomemetodo, listVarToTipoT(args), false )
 *)
 (********************************************************************)
+(*
 and metodoStoTApp( programMap, cont, defMetodoS(tipoSintattico, nomeM nomemetodo, args, locals, [] ), metodoT, ret) = 
 		if( ret ) then metodoT else raise ReturnNotFound(nomeM nomemetodo)
 
@@ -366,18 +522,22 @@ and metodoStoTApp( programMap, cont, defMetodoS(tipoSintattico, nomeM nomemetodo
 				raise TypeErrorReturn(nomeM nomemetodo, tipoSintattico, right)
 		end
 
+*)
+
+
+(*
 and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, comandi ) ) = 
 				let 
 					val argsMap = buildVarsMap args
 					val localsMap = buildVarsMap locals
 				in
-					if not ( controlloOverride( programMap, defMetodoS( t, n, args, locals, comandi ), nomeclasse ) ) then raise OverrideMismatch( n, t, nomeclasse )
+					if not ( controlloOverride( programMap, defMetodoS( t, n, args, locals, comandi ), nomeclasse ) ) then raise TypeErrorOverrideMismatch( n, t, nomeclasse )
 					else if containsDuplicate (argsMap) then raise MultipleArgsDef( getKeyDuplicated argsMap, nomeclasse, n)
 					else if containsDuplicate (localsMap) then raise MultipleLocalsDef( getKeyDuplicated localsMap, nomeclasse, n)
 					else
-					(*if  ( (controlloMetodiDoppi( get(programMap, nomeclasse) , n, args ))) 
-					then*)
-						metodoStoTApp( programMap, 
+					if  ( (controlloMetodiDoppi( get(programMap, nomeclasse) , n, args ))) 
+					then
+						defMetodoT( programMap, 
 											putAllFun(cont, args @ locals, fn defVarS(t, v) => (varNome v, tipoSintToSem t)),
 											defMetodoS( t, n, args, locals, comandi ),
 											defMetodoT( t, n, 	funList(args, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)), 
@@ -385,39 +545,15 @@ and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, co
 											false
 										)
 				end
-					(*else
-						raise MultipleMetodoDef( n, nomeclasse )*)
-			
+					else
+						raise MultipleMetodoDef( n, nomeclasse )
+*)	
 (*
 and metodoListStoT( programMap, cont, nomeclasse, l) = funList(l, fn m => metodoStoT( programMap, cont, nomeclasse, m));
 *)
 
 
-fun classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, campi, metodi)) =
-	if(nomeClasseCorrente = nomeClasseEstesa) then raise ClassExtNotValid( nomeClasseCorrente )
-	else 
-		let 
-			val campiMap = buildCampiMap campi
-			val metodiMap = buildMetodiMap metodi
-			val contex = buildContesto[(this,classeT(nomeClasseCorrente))]
-		in
-			if containsDuplicate (campiMap) then raise MultipleCampoDef( getKeyDuplicated campiMap, nomeClasseCorrente)
-			else if containsDuplicate (metodiMap) then raise MultipleMetodoDef( (fn (x,y) => x)(getKeyDuplicated metodiMap), nomeClasseCorrente)
-			else if not (containsKey( programMap, nomeClasseEstesa)) then raise ClassNotFound(nomeClasseEstesa)
-			else 
-				defClasseT( nomeClasseCorrente, 
-							nomeClasseEstesa, 
-							funList( campi, fn defCampoS( t, n, r) => 
-										let 
-											val right = espressioneStoT(programMap, contex, r)
-										in
-											if not (compatibleTipoSintSem(programMap, t, estraiTipoSemantico right )) then raise TypeErrorDefField(t, n, right)
-											else defCampoT(t, n, right, tipoSintToSem t) 
-										end
-									),
-							funList(metodi, fn m => metodoStoT( programMap, contex, nomeClasseCorrente, m))
-						)						
-		end;
+
 	
 (*
 fun programmaStoTApp(programMap, codiceS [] ) = codiceT []
@@ -430,68 +566,3 @@ fun programmaStoTApp(programMap, codiceS [] ) = codiceT []
 *)
 
 
-fun programmaStoT( programma ) = 
-	let 
-		val programMap = buildClassiMap programma
-	in
-		(if containsDuplicate programMap then raise MultipleClasseDef( getKeyDuplicated programMap )
-		else codiceT ( funList( (fn codiceS x => x) programma, fn c => classeStoT(programMap, c))) )
-		
-		handle    VarNameNotValid x => ( print ("ERRORE: Il nome <" ^ (stampaNomeVar x) ^ "> non è un nome di variabile è valido.\n\n"); codiceT [] )
-			| ClassExtNotValid x => ( print ("ERRORE: La classe <" ^ (stampaNomeClasse x) ^ "> non non può estendere sé stessa.\n\n"); codiceT [] )
-
-			| UnknownVar x => ( print ("ERRORE: La variabile <" ^ (stampaNomeVarPiu x) ^ "> non è stata definita.\n\n"); codiceT [] )
-
-			| FieldNotFound x => ( print ("ERRORE: Il campo <" ^ (stampaNomeCampo x) ^ "> non è stato trovato.\n\n"); codiceT [] )
-			
-			| MethodNotFound x => ( print ("ERRORE: Il metodo <" ^ (stampaNomeMetodo x) ^ "> compatibile con gli argomenti passati non è stato trovato.\n\n"); codiceT [] )
-			
-			| ClassNotFound x => ( print ("ERRORE: La classe <" ^ (stampaNomeClasse x) ^ "> non è stata trovata.\n\n"); codiceT [] )
-			
-			| ReturnNotFound x => ( print ("ERRORE: Il metodo <" ^ (stampaNomeMetodo x) ^ "> non contiene un comando di return.\n\n"); codiceT [] )
-
-			| TypeIsNotAClass => ( print ("ERRORE: Impossibile convertire l'espressione in una classe.\n\n"); codiceT [] )
-
-			| TypeErrorDefField ( ts, n, e ) => 
-				( print ("ERRORE: Impossibile inizializzare il campo <" ^ (stampaNomeCampo n) ^ ">, di tipo <" 
-							^ (stampaNomeTipoS ts) ^ ">, con un espressione di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e )) ^ ">.\n\n"); codiceT [] )
-			
-			| TypeErrorReturn ( n, ts, e) => 
-				( print ("ERRORE: Impossibile tornare un espressione di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e )) ^ 
-							"> nel metodo <" ^ (stampaNomeMetodo n) ^ ">, che ha un tipo di ritorno <" ^ (stampaNomeTipoS( ts )) ^ ">.\n\n"); codiceT [] )
-			
-			| TypeErrorAssignVar (n, e1, e2) => 
-				( print ("ERRORE: Impossibile assegnare alla variabile <" ^ (getNomeVarDaExpT e1) ^ "> di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e1 ))^ ">, nel metodo <" 
-					^ (stampaNomeMetodo n) ^ ">, un espressione di tipo <"^ (stampaNomeTipoT( estraiTipoSemantico e2 )) ^"> .\n\n"); codiceT [] )
-			
-			| TypeErrorAssignField (n, e1, e2, e3) => 
-				( print ("ERRORE: Il tipo del valore nell'assegnamento non è compatibile con il tipo del campo, nel metodo <" ^ (stampaNomeMetodo n) ^ ">.\n\n"); codiceT [] )
-
-			| OverrideMismatch ( n, ts, cla ) =>
-				( print ("ERRORE: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
-					"> effettua un Override cambiando il tipo di ritorno in <" ^ (stampaNomeTipoS ts) ^ ">, non compatibile con quello definito precedentemente.\n\n"); codiceT [] )
-			
-			| MultipleMetodoDef ( n, cla ) =>
-				( print ("ERRORE: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
-					"> è definito più volte.\n\n"); codiceT [] )
-
-			| MultipleCampoDef ( n, cla ) =>
-				( print ("ERRORE: Il campo <" ^ (stampaNomeCampo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
-					"> è definito più volte.\n\n"); codiceT [] )
-
-			| MultipleArgsDef ( n, cla, m ) =>
-				( print ("ERRORE: Il parametro <" ^ (stampaNomeVar n) ^ "> del metodo <" ^ (stampaNomeMetodo m) ^ "> nella classe <" 
-					^ (stampaNomeClasse cla) ^ "> è definito più volte.\n\n"); codiceT [] )
-
-			| MultipleLocalsDef ( n, cla, m ) =>
-				( print ("ERRORE: La variabile <" ^ (stampaNomeVar n) ^ "> del metodo <" ^ (stampaNomeMetodo m) ^ "> nella classe <" 
-					^ (stampaNomeClasse cla) ^ "> è definita più volte.\n\n"); codiceT [] )
-			
-			| MultipleClasseDef ( cla ) =>
-				( print ("ERRORE: La classe <" ^ (stampaNomeClasse cla) ^ "> è definita più volte.\n\n"); codiceT [] )
-	end;	
-
-use "ProgrammiEsempio.sml";
-
-print( stampaProgrammaS( programmaOverload));
-print( stampaProgrammaT( programmaStoT( programmaOverload)));
