@@ -79,15 +79,15 @@ fun removeL([], k ) =  []
 and remove(data, k) = let val (x, y) = getCL(data) in removeL(y, k) end;
 
 
-fun containsDuplicateL([] ) = false
-	| containsDuplicateL((a,b)::l) = if containsKeyL(l, a) then true else containsDuplicateL(l)
-and containsDuplicate(data) = let val (x, y) = getCL(data) in containsDuplicateL(y) end;
+fun containsDuplicatedKeyL([] ) = false
+	| containsDuplicatedKeyL((a,b)::l) = if containsKeyL(l, a) then true else containsDuplicatedKeyL(l)
+and containsDuplicatedKey(data) = let val (x, y) = getCL(data) in containsDuplicatedKeyL(y) end;
 
-fun getKeyDuplicatedL( [] ) = raise KeyNotFound
-	| getKeyDuplicatedL((a,b)::l) = if containsKeyL(l, a) then a else getKeyDuplicatedL(l)
-and getKeyDuplicated(data) = let val (x, y) = getCL(data) in getKeyDuplicatedL(y) end;
+fun getDuplicatedKeyL( [] ) = raise KeyNotFound
+	| getDuplicatedKeyL((a,b)::l) = if containsKeyL(l, a) then a else getDuplicatedKeyL(l)
+and getDuplicatedKey(data) = let val (x, y) = getCL(data) in getDuplicatedKeyL(y) end;
 
 (********** FUNZIONI AUSILIARIE **********)
 
-fun funList( [], f) = []
-	| funList( a::l, f) = f a :: funList(l, f);
+fun fList( [], f) = []
+	| fList( a::l, f) = f a :: fList(l, f);

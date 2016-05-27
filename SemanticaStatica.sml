@@ -66,7 +66,7 @@ fun getNomeClasseDaTipoT( classeT n) = n
 fun getNomeVarDaExpT( varExprT( nomeV v, _)) = v
 	| getNomeVarDaExpT( _ ) = raise ExpIsNotAVar;
 
-fun listVarToTipoT ( l ) = funList(l, fn defVarS(t,n) => tipoSintToSem t )
+fun listVarToTipoT ( l ) = fList(l, fn defVarS(t,n) => tipoSintToSem t )
 
 (*
 fun listVarToTipoT ( [] ) = []
@@ -75,7 +75,7 @@ fun listVarToTipoT ( [] ) = []
 *)
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
-
+(* utili per sfruttare le funzioni già definite su dataList! *)
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COSTRUZIONE MAPPE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 fun buildVarsMap( l ) = putAllFun( buildData [], l, fn defVarS(t, n) => (n, defVarS(t, n)) );
 fun buildCampiMap( l ) = putAllFun( buildData [], l, fn defCampoS(t,n,s) => (n, defCampoS(t,n,s)));
@@ -202,12 +202,12 @@ fun	espressioneStoT( programMap, cont, varExprS(nomeV v)  ) =
 		in
 			chiamataMetodoT(expTyped, 
 							m ,
-							funList(args, fn x => espressioneStoT(programMap, cont, x)),
+							fList(args, fn x => espressioneStoT(programMap, cont, x)),
 							mtype(	programMap, 
 									m, 
 									getNomeClasseDaTipoT( estraiTipoSemantico(expTyped) ),
 								(*	listExprToTipoT (programMap, cont, args ) *)
-									funList(args, fn x => estraiTipoSemantico(espressioneStoT(programMap, cont, x)))
+									fList(args, fn x => estraiTipoSemantico(espressioneStoT(programMap, cont, x)))
 								)
 				)
 		end
@@ -251,13 +251,13 @@ and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, co
 					val contestExpanded = putAllFun(cont, args @ locals, fn defVarS(t, v) => (varNome v, tipoSintToSem t))
 					val defmetodo = defMetodoS( t, n, args, locals, comandi )
 				in				 
-					(if containsDuplicate (argsMap) then raise MultipleArgsDef( getKeyDuplicated argsMap, nomeclasse, n)
-					else if containsDuplicate (localsMap) then raise MultipleLocalsDef( getKeyDuplicated localsMap, nomeclasse, n)
+					(if containsDuplicatedKey (argsMap) then raise MultipleArgsDef( getDuplicatedKey argsMap, nomeclasse, n)
+					else if containsDuplicatedKey (localsMap) then raise MultipleLocalsDef( getDuplicatedKey localsMap, nomeclasse, n)
 					else if not (containsKey (cmdsMap, "return")) then raise ReturnNotFound(n, nomeclasse)
 					else
-						defMetodoT	( t, n, funList(args, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)), 
-											funList(locals, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)),
-											funList(comandi, fn cmd => comandoStoT(	programMap, contestExpanded, cmd, defmetodo, nomeclasse))
+						defMetodoT	( t, n, fList(args, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)), 
+											fList(locals, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)),
+											fList(comandi, fn cmd => comandoStoT(	programMap, contestExpanded, cmd, defmetodo, nomeclasse))
 									)	
 					)					
 				end
@@ -270,13 +270,13 @@ and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 			val metodiMap = buildMetodiMap metodi
 			val contex = buildContesto[(this,classeT(nomeClasseCorrente))]
 		in
-			if containsDuplicate (campiMap) then raise MultipleCampoDef( getKeyDuplicated campiMap, nomeClasseCorrente)
-			else if containsDuplicate (metodiMap) then raise MultipleMetodoDef( (fn (x,y) => x)(getKeyDuplicated metodiMap), nomeClasseCorrente)
+			if containsDuplicatedKey (campiMap) then raise MultipleCampoDef( getDuplicatedKey campiMap, nomeClasseCorrente)
+			else if containsDuplicatedKey (metodiMap) then raise MultipleMetodoDef( (fn (x,y) => x)(getDuplicatedKey metodiMap), nomeClasseCorrente)
 			else if not (containsKey( programMap, nomeClasseEstesa)) then raise ClassNotFound(nomeClasseEstesa)
 			else 
 				defClasseT( nomeClasseCorrente, 
 							nomeClasseEstesa, 
-							funList( campi, fn defCampoS( t, n, r) => 
+							fList( campi, fn defCampoS( t, n, r) => 
 										let 
 											val right = espressioneStoT(programMap, contex, r)
 										in
@@ -284,7 +284,7 @@ and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 											else defCampoT(t, n, right, tipoSintToSem t) 
 										end
 									),
-							funList(metodi, fn m => (	controlloOverride( programMap, nomeClasseCorrente, m, nomeClasseCorrente );
+							fList(metodi, fn m => (	controlloOverride( programMap, nomeClasseCorrente, m, nomeClasseCorrente );
 														metodoStoT( programMap, contex, nomeClasseCorrente, m))
 													)
 						)						
@@ -294,8 +294,8 @@ and programmaStoT( programma ) =
 	let 
 		val programMap = buildClassiMap programma
 	in
-		(if containsDuplicate programMap then raise MultipleClasseDef( getKeyDuplicated programMap )
-		else codiceT ( funList( (fn codiceS x => x) programma, fn c => classeStoT(programMap, c))) )
+		(if containsDuplicatedKey programMap then raise MultipleClasseDef( getDuplicatedKey programMap )
+		else codiceT ( fList( (fn codiceS x => x) programma, fn c => classeStoT(programMap, c))) )
 		
 		handle ClassExtNotValid x => ( print ("ERROR: La classe <" ^ (stampaNomeClasse x) ^ "> non non può estendere sé stessa.\n\n"); codiceT [] )
 
@@ -365,7 +365,7 @@ fun variabileListStoT( [] ) = []
 
 (*
 fun campoListStoT( programMap, cont, l ) =
-			funList( l, fn defCampoS( t, n, r) => 
+			fList( l, fn defCampoS( t, n, r) => 
 							let 
 								val right = espressioneStoT(programMap, cont, r)
 							in
@@ -532,16 +532,16 @@ and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, co
 					val localsMap = buildVarsMap locals
 				in
 					if not ( controlloOverride( programMap, defMetodoS( t, n, args, locals, comandi ), nomeclasse ) ) then raise TypeErrorOverrideMismatch( n, t, nomeclasse )
-					else if containsDuplicate (argsMap) then raise MultipleArgsDef( getKeyDuplicated argsMap, nomeclasse, n)
-					else if containsDuplicate (localsMap) then raise MultipleLocalsDef( getKeyDuplicated localsMap, nomeclasse, n)
+					else if containsDuplicatedKey (argsMap) then raise MultipleArgsDef( getDuplicatedKey argsMap, nomeclasse, n)
+					else if containsDuplicatedKey (localsMap) then raise MultipleLocalsDef( getDuplicatedKey localsMap, nomeclasse, n)
 					else
 					if  ( (controlloMetodiDoppi( get(programMap, nomeclasse) , n, args ))) 
 					then
 						defMetodoT( programMap, 
 											putAllFun(cont, args @ locals, fn defVarS(t, v) => (varNome v, tipoSintToSem t)),
 											defMetodoS( t, n, args, locals, comandi ),
-											defMetodoT( t, n, 	funList(args, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)), 
-																funList(locals, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)), []),
+											defMetodoT( t, n, 	fList(args, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)), 
+																fList(locals, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)), []),
 											false
 										)
 				end
@@ -549,7 +549,7 @@ and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, co
 						raise MultipleMetodoDef( n, nomeclasse )
 *)	
 (*
-and metodoListStoT( programMap, cont, nomeclasse, l) = funList(l, fn m => metodoStoT( programMap, cont, nomeclasse, m));
+and metodoListStoT( programMap, cont, nomeclasse, l) = fList(l, fn m => metodoStoT( programMap, cont, nomeclasse, m));
 *)
 
 
