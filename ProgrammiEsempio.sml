@@ -432,7 +432,7 @@ val programmaOverride6 = codiceS(
 	            	[	           ], 
 	            	[
 	            		defVarS( classeS( nomeCl "B"), (nomeV "res")),
-	            		defVarS( classeS( nomeCl "B"), (nomeV "a"))
+	            		defVarS( classeS( nomeCl "C"), (nomeV "a"))
 	            	], 
 	            	[ 
 
@@ -834,7 +834,7 @@ val programmaOverload = codiceS(
 		            	assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")),
 
 		            	assegnamentoVarS( (nomeV "resA"), chiamataMetodoS (varExprS((nomeV "b")) , nomeM "m" , [])) ,
-		            	assegnamentoVarS( (nomeV "resInt"), chiamataMetodoS (varExprS((nomeV "b")) , nomeM "m" , [ newS( nomeCl "weird")])) ,
+		            	assegnamentoVarS( (nomeV "resInt"), chiamataMetodoS (varExprS((nomeV "b")) , nomeM "m" , [ newS( nomeCl "B")])) ,
 
 		            	returnS ( intExprS 0)
 	            	]) (*cmds*)
@@ -866,16 +866,7 @@ val programmaTEST = codiceS(
 	        ]
 	        ),
 
-	defClasseS(
-	        nomeCl "B",
-	        nomeCl "esempio",
-	        [
-	            defCampoS ( intS, nomeC ("f"), intExprS 2)
-	        ],
-	        [
-	            defMetodoS ( intS, nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
-	        ]
-	        ),
+
 
 	defClasseS(
 	        nomeCl "esempio",
@@ -883,12 +874,11 @@ val programmaTEST = codiceS(
 	        [],
 	        [
 	            defMetodoS ( intS, nomeM "main", 
-	            	[	 defVarS( intS, (nomeV "a")),
-	            		defVarS( intS, (nomeV "a"))          ], (*args*)
+	            	[	 defVarS( intS, (nomeV "a"))         ], (*args*)
 	            	[
 	            		defVarS( classeS( nomeCl "A"), (nomeV "b")),
 	            		defVarS( intS, (nomeV "res1")),
-	            		defVarS( intS, (nomeV "res1"))
+	            		defVarS( intS, (nomeV "res2"))
 	            	], (*locals*)
 	            	[ 
 	            		assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")),

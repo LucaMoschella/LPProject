@@ -66,9 +66,13 @@ fun getNomeClasseDaTipoT( classeT n) = n
 fun getNomeVarDaExpT( varExprT( nomeV v, _)) = v
 	| getNomeVarDaExpT( _ ) = raise ExpIsNotAVar;
 
+fun listVarToTipoT ( l ) = funList(l, fn defVarS(t,n) => tipoSintToSem t )
+
+(*
 fun listVarToTipoT ( [] ) = []
 	| listVarToTipoT ( (defVarS(t,n))::l ) = 
 		(tipoSintToSem t) :: (listVarToTipoT ( l ));
+*)
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
@@ -134,7 +138,19 @@ fun mtype( programMap, nomem, nomecl, tipi) =
 
 
 
-	
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CONTROLLO OVERRIDE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
+fun controlloOverride (programMap, _, Object ) = true
+	| controlloOverride (programMap, defMetodoS (ts,  nomeM n, args, l, c), nomeclasse ) = 
+		let
+			val defclasse = get(programMap, nomeclasse)
+			val metodiMap = buildMetodiMap( (fn defClasseS(_, _, _, metodi) => metodi) defclasse )
+		in
+			(if compatibleTipoSintSint( programMap, (fn defMetodoS(ts2, _, _, _,_) => ts2) (get( metodiMap , ( nomeM n, listVarToTipoT args) )), ts)
+			then controlloOverride( programMap, defMetodoS(ts, nomeM n, args, l, c), getExtendedClass defclasse ) 
+			else false)
+			handle KeyNotFound => controlloOverride(programMap,defMetodoS(ts, nomeM n, args, l, c), getExtendedClass defclasse)
+		end
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
 
@@ -235,7 +251,7 @@ fun	espressioneStoT( programMap, cont, varExprS(nomeV v)  ) =
 
 
 (********** controllo override OK**********) 
-
+(*
 and cercaMetodoInClasse(programMap, defClasseS (Object, _, _, _), nomeM metodoSintattico, parametri ) = raise MethodNotFound(nomeM metodoSintattico)
 
 	| cercaMetodoInClasse(programMap,  defClasseS ( _, _, _, []), nomeM metodoSintattico, parametri ) = raise MethodNotFound(nomeM metodoSintattico)
@@ -280,6 +296,7 @@ and controlloOverride (programMap, _, Object ) = true
 			else
 				controlloOverride(programMap,defMetodoS(ts, nomeM n,args,locals,commands), nomeclasseestesa) 
 		end
+*)
 
 (********************************************************************)
 
@@ -426,8 +443,11 @@ fun programmaStoT( programma ) =
 			| UnknownVar x => ( print ("ERRORE: La variabile <" ^ (stampaNomeVarPiu x) ^ "> non è stata definita.\n\n"); codiceT [] )
 
 			| FieldNotFound x => ( print ("ERRORE: Il campo <" ^ (stampaNomeCampo x) ^ "> non è stato trovato.\n\n"); codiceT [] )
-			| MethodNotFound x => ( print ("ERRORE: Il metodo <" ^ (stampaNomeMetodo x) ^ ">, compatibile con gli argomenti, non è stato trovato.\n\n"); codiceT [] )
+			
+			| MethodNotFound x => ( print ("ERRORE: Il metodo <" ^ (stampaNomeMetodo x) ^ "> compatibile con gli argomenti passati non è stato trovato.\n\n"); codiceT [] )
+			
 			| ClassNotFound x => ( print ("ERRORE: La classe <" ^ (stampaNomeClasse x) ^ "> non è stata trovata.\n\n"); codiceT [] )
+			
 			| ReturnNotFound x => ( print ("ERRORE: Il metodo <" ^ (stampaNomeMetodo x) ^ "> non contiene un comando di return.\n\n"); codiceT [] )
 
 			| TypeIsNotAClass => ( print ("ERRORE: Impossibile convertire l'espressione in una classe.\n\n"); codiceT [] )
@@ -449,7 +469,7 @@ fun programmaStoT( programma ) =
 
 			| OverrideMismatch ( n, ts, cla ) =>
 				( print ("ERRORE: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
-					"> effettua un Override cambiando il tipo di ritorno in <" ^ (stampaNomeTipoS ts) ^ ">, non compatibile con quello definito.\n\n"); codiceT [] )
+					"> effettua un Override cambiando il tipo di ritorno in <" ^ (stampaNomeTipoS ts) ^ ">, non compatibile con quello definito precedentemente.\n\n"); codiceT [] )
 			
 			| MultipleMetodoDef ( n, cla ) =>
 				( print ("ERRORE: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
@@ -473,5 +493,5 @@ fun programmaStoT( programma ) =
 
 use "ProgrammiEsempio.sml";
 
-print( stampaProgrammaS( programmaTEST));
-print( stampaProgrammaT( programmaStoT( programmaTEST)));
+print( stampaProgrammaS( programmaOverload));
+print( stampaProgrammaT( programmaStoT( programmaOverload)));
