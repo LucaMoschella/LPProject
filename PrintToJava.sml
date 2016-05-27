@@ -79,7 +79,8 @@ and stampaProgrammaS ( codiceS l ) =
 fun stampaCoppia( x1:string, x2:string) = "(" ^ x1 ^ " : " ^ x2 ^ ")";
 	
 fun stampaCoppiaVarPiuType( ind, (v, t)) = ind ^ "(" ^ (stampaNomeVarPiu v) ^ ":" ^ (stampaNomeTipoT t) ^ ")"
-and stampaContesto ( buildContesto l) = stampaListaInLine(l, "", "[", "", "; ", "", "]\n", stampaCoppiaVarPiuType);
+
+and stampaContesto ( data ) = let val (x,l) = getCL(data) in stampaListaInLine(l, "", "[", "", "; ", "", "]\n", stampaCoppiaVarPiuType)end;
 
 (*********************************)
 

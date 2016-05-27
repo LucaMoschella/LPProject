@@ -872,11 +872,12 @@ val programmaTEST = codiceS(
 	        [],
 	        [
 	            defMetodoS ( intS, nomeM "main", 
-	            	[	           ], (*args*)
+	            	[	 defVarS( intS, (nomeV "a")),
+	            		defVarS( intS, (nomeV "a"))          ], (*args*)
 	            	[
 	            		defVarS( classeS( nomeCl "A"), (nomeV "b")),
 	            		defVarS( intS, (nomeV "res1")),
-	            		defVarS( intS, (nomeV "res2"))
+	            		defVarS( intS, (nomeV "res1"))
 	            	], (*locals*)
 	            	[ 
 	            		assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")),

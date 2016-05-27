@@ -1,3 +1,4 @@
+use "Sintassi.sml";
 (********** SISTEMA DEI TIPI **********)
 datatype varPiu = varNome of nomeVariabile | this;
 
@@ -15,15 +16,17 @@ datatype valore = intV of int | objV of obj | nullV | noV;
 (* preferiamo lasciare le tre cose separate, anche se sono uguali: *)
 (* danno maggior chiarezza al codice, ma essendo polimorfe, *)
 (* permettono di non ripetere le funzioni! *)
-datatype ('a, 'b) dataList = 	buildContesto of ('a * 'b) list 
-							|	buildEnv of ('a * 'b) list 
-							|	buildHeap of ('a * 'b) list;
+datatype ('a, 'b) dataList = 	buildContesto of ('a * 'b) list (* varpiu * tiposemantico*)
+							|	buildEnv of ('a * 'b) list (* varpiu * valori*)
+							|	buildHeap of ('a * 'b) list (* loc * valori*)
+							|	buildData of ('a * 'b) list;
 
 
 (* funzione di comodo per evitare di fare troppi casi nelle fun *)
 fun getCL(buildContesto data) = (buildContesto, data)
 | getCL(buildEnv data) = (buildEnv, data)
-| getCL(buildHeap data) = (buildHeap, data);
+| getCL(buildHeap data) = (buildHeap, data)
+| getCL(buildData data) = (buildData, data);
 
 
 (********** ECCEZIONI INTERNE **********)
@@ -47,7 +50,7 @@ and containsValue(data, v) = let val (x, y) = getCL(data) in containsValueL(y, v
 
 
 fun getL([], k) = raise KeyNotFound
-	| getL((a,b)::l, k) =	if a = k then b else getL(l, k)
+	| getL((a,b)::l, k) = if a = k then b else getL(l, k)
 and get(data, k) = let val (x, y) = getCL(data) in getL(y, k) end;
 
 
@@ -57,7 +60,11 @@ fun isEmpty( data ) = let val (x, y) = getCL(data) in y = [] end;
 fun put(data, k, v) = let val (x, y) = getCL(data) in x( (k,v)::y ) end;
 
 
-fun putAll(data, l) = let val (x, y) = getCL(data) in x( l @ y ) end;
+fun putAll(data, []) = data
+	| putAll(data, (x,y)::l) = putAll(put( data, x, y), l);
+
+fun putAllFun(data, [], f) = data
+	| putAllFun(data, a::l, f) = let val (x,y) = f a in putAllFun(put( data, x, y), l, f) end;
 
 
 fun setApp([], k, v, found) = if found then [] else raise KeyNotFound
@@ -70,3 +77,17 @@ and set(data, k, v) = let val (x, y) = getCL(data) in setL(y, k, v) end;
 fun removeL([], k ) =  [] 
 	| removeL((a,b)::l, k) = if a = k then removeL(l, k) else (a,b)::removeL(l, k)
 and remove(data, k) = let val (x, y) = getCL(data) in removeL(y, k) end;
+
+
+fun containsDuplicateL([] ) = false
+	| containsDuplicateL((a,b)::l) = if containsKeyL(l, a) then true else containsDuplicateL(l)
+and containsDuplicate(data) = let val (x, y) = getCL(data) in containsDuplicateL(y) end;
+
+fun getKeyDuplicatedL( [] ) = raise KeyNotFound
+	| getKeyDuplicatedL((a,b)::l) = if containsKeyL(l, a) then a else getKeyDuplicatedL(l)
+and getKeyDuplicated(data) = let val (x, y) = getCL(data) in getKeyDuplicatedL(y) end;
+
+(********** FUNZIONI AUSILIARIE **********)
+
+fun funList( [], f) = []
+	| funList( a::l, f) = f a :: funList(l, f);
