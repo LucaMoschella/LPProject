@@ -24,6 +24,7 @@ exception MultipleMetodoDef of nomeMetodo * nomeClasse
 exception MultipleCampoDef of nomeCampo * nomeClasse
 exception MultipleArgsDef of nomeVariabile * nomeClasse * nomeMetodo
 exception MultipleLocalsDef of nomeVariabile * nomeClasse * nomeMetodo
+exception MultipleClasseDef of nomeClasse
 
 (********** esecuzione **********)
 exception RuntimeErrorVarNotFoundInEnv;

@@ -402,7 +402,7 @@ fun classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 						)						
 		end;
 	
-
+(*
 fun programmaStoTApp(programMap, codiceS [] ) = codiceT []
 	| programmaStoTApp(programMap, codiceS (c::l) ) = 
 		let 
@@ -410,11 +410,17 @@ fun programmaStoTApp(programMap, codiceS [] ) = codiceT []
 		in
 			codiceT( classeStoT(programMap,c) :: x)
 		end;
+*)
 
 
 fun programmaStoT( programma ) = 
-	programmaStoTApp(buildClassiMap programma, programma)
-	handle    VarNameNotValid x => ( print ("ERRORE: Il nome <" ^ (stampaNomeVar x) ^ "> non è un nome di variabile è valido.\n\n"); codiceT [] )
+	let 
+		val programMap = buildClassiMap programma
+	in
+		(if containsDuplicate programMap then raise MultipleClasseDef( getKeyDuplicated programMap )
+		else codiceT ( funList( (fn codiceS x => x) programma, fn c => classeStoT(programMap, c))) )
+		
+		handle    VarNameNotValid x => ( print ("ERRORE: Il nome <" ^ (stampaNomeVar x) ^ "> non è un nome di variabile è valido.\n\n"); codiceT [] )
 			| ClassExtNotValid x => ( print ("ERRORE: La classe <" ^ (stampaNomeClasse x) ^ "> non non può estendere sé stessa.\n\n"); codiceT [] )
 
 			| UnknownVar x => ( print ("ERRORE: La variabile <" ^ (stampaNomeVarPiu x) ^ "> non è stata definita.\n\n"); codiceT [] )
@@ -459,9 +465,13 @@ fun programmaStoT( programma ) =
 
 			| MultipleLocalsDef ( n, cla, m ) =>
 				( print ("ERRORE: La variabile <" ^ (stampaNomeVar n) ^ "> del metodo <" ^ (stampaNomeMetodo m) ^ "> nella classe <" 
-					^ (stampaNomeClasse cla) ^ "> è definita più volte.\n\n"); codiceT [] );
+					^ (stampaNomeClasse cla) ^ "> è definita più volte.\n\n"); codiceT [] )
+			
+			| MultipleClasseDef ( cla ) =>
+				( print ("ERRORE: La classe <" ^ (stampaNomeClasse cla) ^ "> è definita più volte.\n\n"); codiceT [] )
+	end;	
 
 use "ProgrammiEsempio.sml";
 
-print( stampaProgrammaS( programmaWeird));
-print( stampaProgrammaT( programmaStoT( programmaWeird)));
+print( stampaProgrammaS( programmaTEST));
+print( stampaProgrammaT( programmaStoT( programmaTEST)));

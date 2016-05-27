@@ -867,6 +867,17 @@ val programmaTEST = codiceS(
 	        ),
 
 	defClasseS(
+	        nomeCl "B",
+	        nomeCl "esempio",
+	        [
+	            defCampoS ( intS, nomeC ("f"), intExprS 2)
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
+	        ]
+	        ),
+
+	defClasseS(
 	        nomeCl "esempio",
 	        Object,
 	        [],
