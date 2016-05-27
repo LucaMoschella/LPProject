@@ -119,10 +119,10 @@ and stampaProgrammaT ( codiceT l ) =
 
 
 (********************************* FUNZIONI PER STAMPARE INFORMAZIONI DI ESECUZIONE ************************************************)
-fun stampaLoc ( buildLoc i) = "buildLoc#" ^ (Int.toString i);
+fun stampaLoc ( buildLoc i) = "loc#" ^ (Int.toString i);
 
-fun stampaTriplaCampiObj( ind, (nomec, nomeca, lo) ) = ind ^ "" ^ (stampaNomeClasse nomec) ^ ":" ^ ( stampaNomeCampo nomeca) ^ ":" ^ (stampaLoc lo) ^ "";
-fun stampaObj( istanza( nomec , l) ) = "{ obj:" ^ (stampaNomeClasse( nomec )) ^ " - Campi: " ^ (stampaListaInLine(l, "Campi: ", "[", "", "; ", "", "]\n", stampaTriplaCampiObj )) ^ " }";
+fun stampaTriplaCampiObj( ind, (nomec, nomeca, lo) ) = ind ^ "(" ^ (stampaNomeClasse nomec) ^ ":" ^ ( stampaNomeCampo nomeca) ^ ":" ^ (stampaLoc lo) ^ ")";
+fun stampaObj( istanza( nomec , l) ) = "{ obj:" ^ (stampaNomeClasse( nomec )) ^ " - " ^ (stampaListaInLine(l, "Campi: ", "[", "", "; ", "", "]", stampaTriplaCampiObj )) ^ " }\n";
 
 fun stampaVal( noV ) = "*"
 	| stampaVal( nullV ) = "nullS"

@@ -885,7 +885,7 @@ val programmaTEST = codiceS(
 	           defCampoS ( intS, nomeC ("f"), intExprS 1) 
 	        ],
 	        [
-	            defMetodoS ( intS, nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
+	            defMetodoS ( classeS(nomeCl "B"), nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
 	        ]
 	        ),
 
@@ -893,10 +893,10 @@ val programmaTEST = codiceS(
 	        nomeCl "B",
 	        nomeCl "A",
 	        [
-	            defCampoS ( intS, nomeC ("f"), intExprS 2)
+	            defCampoS ( classeS(nomeCl "B"), nomeC ("f"), thisS)
 	        ],
 	        [
-	            defMetodoS ( intS, nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
+	            defMetodoS ( classeS(nomeCl "B"), nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
 	        ]
 	        ),
 
@@ -912,13 +912,12 @@ val programmaTEST = codiceS(
 	            	[
 	            		defVarS( classeS( nomeCl "A"), (nomeV "b")),
 	            		defVarS( intS, (nomeV "res1")),
-	            		defVarS( intS, (nomeV "res2")),
+	            		defVarS( classeS(nomeCl "B"), (nomeV "res2")),
 	            		defVarS( intS, (nomeV "cia"))
 
 	            	], (*locals*)
 	            	[ 
 	            		assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")),
-	            		assegnamentoVarS( (nomeV "res1"), accessoCampoS( varExprS(nomeV "b"), nomeC "f")),
 	            		assegnamentoVarS( (nomeV "res2"), chiamataMetodoS (varExprS(nomeV "b") , nomeM "get_f" , [])),
 
 	            		returnS ( intExprS 0)

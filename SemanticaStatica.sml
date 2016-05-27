@@ -11,14 +11,14 @@ fun tipoSemToSint ( intT ) = intS
 	| tipoSemToSint ( classeT c ) = classeS c
 	| tipoSemToSint( T ) = raise WrongSemToSint;
 
-fun getExtendedClass( defClasseS (nomeclasse, nomeclasseestesa, campi, metodi) ) = nomeclasseestesa;
+fun getExtendedClassS( defClasseS (_, nomeclasseestesa, _, _) ) = nomeclasseestesa;
 
 (* c1 è più in alto nella gerarchia di c2 *)
 fun isSottoClasse( programMap, Object, Object) = true
  |	isSottoClasse( programMap, Object, nomeCl c2) = true
  |	isSottoClasse( programMap, nomeCl c1, Object) = false
  |  isSottoClasse( programMap, nomeCl c1, nomeCl c2) = if (c1 = c2) then true 
- 	else  (isSottoClasse(programMap, nomeCl c1,  getExtendedClass(get(programMap,nomeCl c2))))
+ 	else  (isSottoClasse(programMap, nomeCl c1,  getExtendedClassS(get(programMap,nomeCl c2))))
  	handle KeyNotFound => raise ClassNotFound(nomeCl c2);
 
 (* il secondo è compatibile con il primo*)
@@ -114,13 +114,13 @@ fun controlloOverride (programMap, classebase, _, Object ) = true
 			val metodiMap = buildMetodiSMap( (fn defClasseS(_, _, _, metodi) => metodi) defclasse )
 			val metodoKey = ( n, listVarSToTipoT args)
 		in
-			if not (containsKey( metodiMap, metodoKey ) ) then controlloOverride(programMap, classebase, defmetodobase, getExtendedClass defclasse)
+			if not (containsKey( metodiMap, metodoKey ) ) then controlloOverride(programMap, classebase, defmetodobase, getExtendedClassS defclasse)
 			else
 				let 
 					val supertype = (fn defMetodoS(t, _, _, _,_) => t) (get( metodiMap , metodoKey ))
 				in
 					if compatibleTipoSintSint( programMap, supertype, baseype)
-					then controlloOverride( programMap, classebase, defmetodobase, getExtendedClass defclasse ) 
+					then controlloOverride( programMap, classebase, defmetodobase, getExtendedClassS defclasse ) 
 					else raise TypeErrorOverrideMismatch( n, supertype, nomeclasse, baseype, classebase )
 				end
 		end;
@@ -160,7 +160,7 @@ fun	espressioneStoT( programMap, cont, varExprS(nomeV v), executedCmds) =
 				val x = get(cont, this) handle KeyNotFound => raise UnknownVar(this)
 				val y = getNomeClasseDaTipoT( x )
 			in
-				superT(classeT (getExtendedClass( get(programMap, y))))
+				superT(classeT (getExtendedClassS( get(programMap, y))))
 				handle KeyNotFound => raise ClassNotFound(y)
 			end 
 

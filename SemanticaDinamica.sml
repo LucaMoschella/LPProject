@@ -13,6 +13,9 @@ fun buildClassiTMap( codiceT l ) = putAllFun( buildData [(Object, defClasseT ( O
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OPERAZIONI CON TIPI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 fun tipoDefault( intT ) = intV 0
 	| tipoDefault( classeT _ ) = nullV;
+
+fun getExtendedClassT( defClasseT (_, nomeclasseestesa, _, _) ) = nomeclasseestesa;
+
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
@@ -23,8 +26,8 @@ fun	estraiOggetto( objV obj) = obj
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OPERAZIONI CON OGGETTI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-fun getSuperClasseObj( programMap, istanza(c, (_)) ) = getExtendedClass( get( programMap, c ) );
-fun getSuperCampiObj( programMap, istanza ( n, l)) =  istanza ( n, f3List(l, fn (nc, nf, lo) => if( n = nc) then [] else [(nc, nf, lo)] ));
+fun getSuperClasseObj( programMap, istanza(c, (_)) ) = getExtendedClassT( get( programMap, c ) );
+fun getSuperCampiObj( programMap, istanza ( n, l)) =  f3List(l, fn (nc, nf, lo) => if( n = nc) then [] else [(nc, nf, lo)] );
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 (*
@@ -40,30 +43,42 @@ and getSuperCampiAppoggio(programMap, istanza (n1, []), istanza (n2, l))=l
 
 
 
-fun cbody( programMap,  nomec ) = let val ( defClasseS( _ , _ , campi, _ ) ) = cercaClasseInProgramma ( programMap, nomec ) 
-								in campi end;
+fun cbody( programMap,  nomeclasse ) =  (fn defClasseT( _ , _ , campi, _ )  => campi) (get( programMap, nomeclasse ));
+
+(* Genera una lista di tutti i metodi che deve avere l'oggetto della forma: ( (nomeClasse, nomeCampo), (defCampo) )     *)
+fun cbodyGerarchico( programMap, Object ) = []
+	| cbodyGerarchico( programMap, nomeclasse ) = 
+		fList(cbody( programMap, nomeclasse ), fn defCampoT( t, n, r, s ) => ((nomeclasse,n), defCampoT( t, n, r, s ) )) @ ( cbodyGerarchico(programMap, getExtendedClassT( get(programMap, nomeclasse) )))
 
 (* Prende un ( oggetto, classeSintattica ) => ( obj, buildHeap) dove obj = oggetto + campi in classeSintattica, con i valori nell'buildHeap *)
-fun aggiornaObjAndHeap([], ncl, istanza(n, l2), heap) = (istanza(ncl,l2), heap)
-	| aggiornaObjAndHeap( defCampoS( t, nc, r)::l1, ncl, istanza(n, l2), heap)= (	let val x = nextLoc() 
-																						in aggiornaObjAndHeap( l1, ncl, istanza(n, (ncl,nc,x)::l2), buildHeap( (x, tipoDefault(t))::h)) 
-																						end)
-	
-and alloc (programMap, obj, ncl) = aggiornaObjAndHeap( cbody(programMap, ncl), ncl, obj, buildHeap [])
+fun updateObjHeap([], istanza( obj, campi), heap) = ( istanza( obj,campi ), heap )
+	| updateObjHeap( ( (nomeclasse, nomecampo), defCampoT( _, _, _, tipo ))::l, istanza( obj, campi), heap) = 
+		let val x = nextLoc() in (updateObjHeap( l,  istanza( obj, (nomeclasse, nomecampo, x)::campi), put( heap, x, tipoDefault tipo))) end;
 
-and allocaOggetto( programMap, newT (Object,t), heap ) = ( istanza( Object, []) , heap)
+fun allocaObj( programMap, newT( nomeclasse, t ), oldheap) = updateObjHeap(cbodyGerarchico(programMap, nomeclasse), istanza( nomeclasse, [] ), oldheap)
+
+and inizializzaObj( programMap, obj, campiMap, [] , heap) = heap
+	| inizializzaObj( programMap, obj, campiMap, (classecampo, nomecampo, loccampo)::l, heap ) = 
+		let 
+			val (x, _) = valutaEspressione( programMap, buildEnv [(this, objV obj )], 
+				(fn defCampoT( _, _, r, _ ) => r) ( get(campiMap, (classecampo, nomecampo) ) ), heap)
+		in 
+			inizializzaObj( programMap, obj, campiMap, l , set(heap, loccampo, x) )
+		end
+(*
+fun alloc (programMap, obj, ncl) = updateObjHeap( cbody(programMap, ncl), ncl, obj, buildHeap []);
+
+fun allocaOggetto( programMap, newT( Object, t ), heap ) = ( istanza( Object, [] ) , heap)
 	| allocaOggetto( programMap, newT ( c, t ), heap ) =
-		(* Sale verso Object*)
-			let val (x, y) = allocaOggetto (programMap, newT( getExtendedClass( cercaClasseInProgramma( programMap, c)), t), heap)
+			let val (x, y) = allocaOggetto (programMap, newT( getExtendedClass( get( programMap, c)), t), heap) 		(* Sale verso Object*)
 			in (* Riscende, e ad ogni passo in discesa: *)
 				let  
-					(* 1: espande l'oggetto con la classse corrente e inizializza i campi nell'buildHeap con i valori di default*)
-					val (x1, y1) = alloc( programMap,  x, c) 
+					val (x1, y1) = alloc( programMap,  x, c) (* 1: espande l'oggetto con la classse corrente e inizializza i campi nell'buildHeap con i valori di default*)
 				in
-					(* 2: Torna l'oggetto creato, espandendo l'buildHeap con i campi aggiunti *)
-					( x1,  concatHeap(y, y1) )
+					( x1,  concat(y, y1) )	(* 2: Torna l'oggetto creato, espandendo l'buildHeap con i campi aggiunti *)
 				end
 			end;
+
 
 (* Inizializza la buildLoc nell'buildHeap conil corretto right value.  
 QUI I CAMPI DEVONO ESSERE INZIIZALIZZATI RICHIAMANDO valutaEspressione, CON UN AMBIENTE IN CUI è PRESENTE (THIS, OBJ) *)
@@ -84,7 +99,7 @@ fun initCampiApp( programMap, obj, istanza( nomec, []),  heap  ) =  heap
 		end
 and initCampi( programMap, obj, mem ) = initCampiApp( programMap, obj, obj, mem)
 (* fine emtodi per inziializzare i campi! *)
-
+*)
 
 (* %%%%%%%%%%%%%%%%% REGOLE PER L'ESECUZIONE DEL PROGRAMMA TIPATO %%%%%%%%%%%%%%%%%%%%% *)
 and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiuNome v),heap)
@@ -97,30 +112,39 @@ and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiu
 		let 
 			val x = estraiOggetto( get(env, this) ) 
 		in 
-			objV ( istanza ( getSuperClasseObj(programMap, x), getSuperCampiObj(programMap, x)), heap)
+			(objV ( istanza ( getSuperClasseObj(programMap, x), getSuperCampiObj(programMap, x))), heap)
 		end
 
 	| valutaEspressione (programMap, env,  nullT (t) , heap) = (nullV, heap)
 
 	| valutaEspressione (programMap, env, newT (nomeclasse, t), heap) =  
-		(* Alloca l'oggetto*)
-		let val (x, y) = allocaOggetto (programMap, newT nomeclasse, heap)
-		in 
-			(* 2: calcola il rightvalue di tutti i campi dell'oggetto e li assegna.  *)
-			( objV x, initCampi( programMap, x, y ))
+		let 
+			val campi = cbodyGerarchico(programMap, nomeclasse)
+			val campiMap = buildData( campi )
+			val (oggetto, newheap) = updateObjHeap(campi, istanza( nomeclasse, [] ), heap)
+		in
+			let
+				val istanza( _, campiObj) = oggetto
+			in
+				(objV oggetto, inizializzaObj( programMap, oggetto, campiMap, campiObj, newheap))
+			end
 		end
+		(* Alloca l'oggetto
+		let val (x, y) = allocaObj (programMap, newT (nomeclasse, t), heap)
+		in 
+			 2: calcola il rightvalue di tutti i campi dell'oggetto e li assegna.  
+			( objV x, y)
+		end*)
 	| valutaEspressione (programMap, env, _ , heap) =( intV 999, heap);  
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 use "ProgrammiEsempio.sml";
 
-print (stampaProgrammaS esempioDispensa);
-val x = programmaStoT( esempioDispensa );
+print (stampaProgrammaS programmaTEST);
+val x = programmaStoT( programmaTEST );
 
-print (let val (x, y) = valutaEspressione ( x, buildEnv [], newT( nomeCl "A"), buildHeap []);
+print (let val (x, y) = valutaEspressione ( buildClassiTMap x, buildEnv [], newT( nomeCl "B", classeT (Object) ), buildHeap []);
 in 
 	"Oggetto: " ^ stampaVal(x) ^"\nHeap: " ^ stampaHeap(y) ^ "\n"
 end);
-p
-
