@@ -447,6 +447,38 @@ val programmaOverride6 = codiceS(
 ]
 );
 
+val programmaInizializzazione0 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	            defCampoS ( classeS( nomeCl "A"), nomeC ("f"), nullS)
+	        ],
+	        [
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [
+	        	defCampoS ( classeS( nomeCl "A"), nomeC ("g"), nullS)
+			],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), (nomeV "a"))
+	            	], (*locals*)
+	            	[ 
+	            		returnS ( accessoCampoS( varExprS( (nomeV "a")), nomeC "f"))
+	            	]) (*cmds*)
+	        ]
+	        )
+]
+);
+
 val programmaInizializzazione1 = codiceS( 
 [
 	defClasseS(

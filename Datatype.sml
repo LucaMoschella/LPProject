@@ -12,8 +12,8 @@ datatype obj = 	istanza of nomeClasse * ((nomeClasse * nomeCampo * locazione) li
 datatype valore = intV of int | objV of obj | nullV | noV;
 
 
-(********** DATATYPE POLIMORFO PER GESTIRE AMBIENTI, HEAP E CONTESTO **********)
-(* preferiamo lasciare le tre cose separate, anche se sono uguali: *)
+(********** DATATYPE POLIMORFO PER GESTIRE AMBIENTI, HEAP, CONTESTO E DATI VARI **********)
+(* preferiamo lasciare le quattro cose separate, anche se sono uguali: *)
 (* danno maggior chiarezza al codice, ma essendo polimorfe, *)
 (* permettono di non ripetere le funzioni! *)
 datatype ('a, 'b) dataList = 	buildContesto of ('a * 'b) list (* varpiu * tiposemantico*)
@@ -59,6 +59,7 @@ fun isEmpty( data ) = let val (x, y) = getCL(data) in y = [] end;
 
 fun put(data, k, v) = let val (x, y) = getCL(data) in x( (k,v)::y ) end;
 
+fun putFun(data, v, f) = let val (x,y) = f v in put( data, x, y) end;
 
 fun putAll(data, []) = data
 	| putAll(data, (x,y)::l) = putAll(put( data, x, y), l);
@@ -87,7 +88,11 @@ fun getDuplicatedKeyL( [] ) = raise KeyNotFound
 	| getDuplicatedKeyL((a,b)::l) = if containsKeyL(l, a) then a else getDuplicatedKeyL(l)
 and getDuplicatedKey(data) = let val (x, y) = getCL(data) in getDuplicatedKeyL(y) end;
 
+
 (********** FUNZIONI AUSILIARIE **********)
 
 fun fList( [], f) = []
 	| fList( a::l, f) = f a :: fList(l, f);
+
+fun f2List( [], f, g, z) = []
+	| f2List( a::l, f, g, z) = f (a, g (a, z)) :: f2List(l, f, g, g( a, z));

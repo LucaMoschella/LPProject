@@ -3,6 +3,8 @@
 exception ClassExtNotValid  of nomeClasse;
 
 exception UnknownVar of varPiu;
+exception VarNotInitialized of nomeVariabile;
+exception VarNotInitializedInMetod of nomeVariabile * nomeClasse * nomeMetodo;
 
 exception FieldNotFound of nomeCampo;
 exception MethodNotFound of nomeMetodo;
@@ -16,7 +18,7 @@ exception ExpIsNotAVar;
 exception TypeErrorDefField of tipoSintattico * nomeCampo * espressioneTipata * nomeClasse;
 exception TypeErrorReturn of nomeMetodo * tipoSintattico * espressioneTipata * nomeClasse;
 exception TypeErrorAssignVar of nomeMetodo * espressioneTipata * espressioneTipata * nomeClasse * nomeVariabile;
-exception TypeErrorAssignField of nomeMetodo *espressioneTipata *espressioneTipata *espressioneTipata * nomeClasse * nomeCampo;
+exception TypeErrorAssignField of nomeMetodo * espressioneTipata * espressioneTipata * espressioneTipata * nomeClasse * nomeCampo;
 exception TypeErrorOverrideMismatch of nomeMetodo * tipoSintattico  * nomeClasse * tipoSintattico  * nomeClasse;
 
 exception MultipleMetodoDef of nomeMetodo * nomeClasse;
