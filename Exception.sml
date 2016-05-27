@@ -3,6 +3,7 @@
 exception ClassExtNotValid  of nomeClasse;
 
 exception UnknownVar of varPiu;
+exception UnknownVarInMetod of varPiu * nomeClasse * nomeMetodo;
 exception VarNotInitialized of nomeVariabile;
 exception VarNotInitializedInMetod of nomeVariabile * nomeClasse * nomeMetodo;
 
@@ -13,7 +14,6 @@ exception ReturnNotFound of nomeMetodo * nomeClasse;
 
 exception WrongSemToSint;
 exception TypeIsNotAClass;
-exception ExpIsNotAVar;
 
 exception TypeErrorDefField of tipoSintattico * nomeCampo * espressioneTipata * nomeClasse;
 exception TypeErrorReturn of nomeMetodo * tipoSintattico * espressioneTipata * nomeClasse;

@@ -63,14 +63,7 @@ fun estraiTipoSemantico( varExprT ( _, x)) = x
 fun getNomeClasseDaTipoT( classeT n) = n
  	| getNomeClasseDaTipoT( _ ) = raise TypeIsNotAClass;
  
-
-fun getNomeVarDaExpT( varExprT( nomeV v, _)) = v
-	| getNomeVarDaExpT( _ ) = raise ExpIsNotAVar;
-
-fun getNomeVarDaExpS( varExprS( v ) ) =  v
-	| getNomeVarDaExpS( _ ) = raise ExpIsNotAVar;
-
-fun listVarToTipoT ( l ) = fList(l, fn defVarS(t,n) => tipoSintToSem t )
+fun listVarToTipoT( l ) = fList(l, fn defVarS(t,n) => tipoSintToSem t )
 
 (*
 fun listVarToTipoT ( [] ) = []
@@ -182,14 +175,14 @@ fun isInitialized(cmds, varExprS ( nomeV v )) = containsKey(cmds, ("assegnamento
 	| isInitialized(cmds, newS ( nomeClasse ))= true
 	| isInitialized(cmds, accessoCampoS ( e , _ )) = isInitialized(cmds, e )
 	| isInitialized(cmds, chiamataMetodoS ( e , _, _ )) = isInitialized(cmds, e );
-
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
 (* %%%%%%%%%%%%%%%%% REGOLE PER LA TRADUZIONE IN PROGRAMMA TIPATO %%%%%%%%%%%%%%%%%%%%% *)
 fun	espressioneStoT( programMap, cont, varExprS(nomeV v), executedCmds) = 
-		(varExprT(nomeV v, get( cont, varNome (nomeV v)))
-			handle KeyNotFound => raise UnknownVar(varNome(nomeV v)))
+			if not (containsKey( cont, varNome (nomeV v) )) then raise UnknownVar( varNome (nomeV v) )
+			else if not (isInitialized( executedCmds, varExprS(nomeV v) )) then raise VarNotInitialized( nomeV v)
+			else varExprT(nomeV v, get( cont, varNome (nomeV v)))
 
 	| espressioneStoT( programMap, cont, intExprS n, executedCmds) = 
 		intExprT( n, intT)
@@ -201,8 +194,7 @@ fun	espressioneStoT( programMap, cont, varExprS(nomeV v), executedCmds) =
 		nullT( T ) 
 
 	| espressioneStoT( programMap, cont, ( thisS ), executedCmds) = 
-		(thisT( get(cont, this))
-			handle KeyNotFound => raise UnknownVar(this))
+		(thisT( get(cont, this)) handle KeyNotFound => raise UnknownVar(this))
 
 	| espressioneStoT( programMap, cont, ( superS ), executedCmds) = 
 			let 
@@ -214,29 +206,25 @@ fun	espressioneStoT( programMap, cont, varExprS(nomeV v), executedCmds) =
 			end 
 
 	| espressioneStoT( programMap, cont, accessoCampoS( v, c) , executedCmds) = 
-		if not (isInitialized( executedCmds, v )) then raise VarNotInitialized( getNomeVarDaExpS v)
-		else
-			let val expTyped = espressioneStoT( programMap, cont, v, executedCmds)
-			in
-				accessoCampoT( expTyped, c, ftype(programMap, c, getNomeClasseDaTipoT( estraiTipoSemantico expTyped)))
-			end
+		let val expTyped = espressioneStoT( programMap, cont, v, executedCmds)
+		in
+			accessoCampoT( expTyped, c, ftype(programMap, c, getNomeClasseDaTipoT( estraiTipoSemantico expTyped)))
+		end
 		
 	| espressioneStoT( programMap, cont, chiamataMetodoS( v, m, args) , executedCmds) = 
-		if not (isInitialized( executedCmds, v )) then raise VarNotInitialized( getNomeVarDaExpS v)
-		else
-			let val expTyped = espressioneStoT( programMap, cont, v, executedCmds)
-			in
-				chiamataMetodoT(expTyped, 
-								m ,
-								fList(args, fn x => espressioneStoT(programMap, cont, x, executedCmds)),
-								mtype(	programMap, 
-										m, 
-										getNomeClasseDaTipoT( estraiTipoSemantico(expTyped) ),
-									(*	listExprToTipoT (programMap, cont, args ) *)
-										fList(args, fn x => estraiTipoSemantico(espressioneStoT(programMap, cont, x, executedCmds)))
-									)
-					)
-			end
+		let val expTyped = espressioneStoT( programMap, cont, v, executedCmds)
+		in
+			chiamataMetodoT(expTyped, 
+							m ,
+							fList(args, fn x => espressioneStoT(programMap, cont, x, executedCmds)),
+							mtype(	programMap, 
+									m, 
+									getNomeClasseDaTipoT( estraiTipoSemantico(expTyped) ),
+								(*	listExprToTipoT (programMap, cont, args ) *)
+									fList(args, fn x => estraiTipoSemantico(espressioneStoT(programMap, cont, x, executedCmds)))
+								)
+				)
+		end
 
 and comandoStoT( programMap, cont, assegnamentoVarS( nomevar, v), defMetodoS( _, nomemetodo, _, _, _ ), nomeclasse, executedCmds) = 
 		let 
@@ -285,11 +273,12 @@ and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, co
 											fList(locals, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)),
 
 											f2List(comandi, 
-												fn (cmd, exec) => comandoStoT(programMap, contestExpanded, cmd, defmetodo, nomeclasse, exec),
-												fn (cmd, exec) => putAss(exec, cmd),
-												buildData [])
+												fn (cmd, exec) => comandoStoT(programMap, contestExpanded, cmd, defmetodo, nomeclasse, exec), (* questo è il comando per convertire la lista *)
+												fn (cmd, exec) => putAss(exec, cmd),	(* questo serve per dirgli cosa si deve portare dietro mentre scorre la lista: i comandi usati + quello attuale *)
+												buildData []) (* inzialmente non sono stati eseguiti comandi*)
 									))			
 					handle VarNotInitialized v => raise VarNotInitializedInMetod( v, nomeclasse, n )
+						  | UnknownVar v => raise UnknownVarInMetod( v, nomeclasse, n )
 				end
 
 and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, campi, metodi)) =
@@ -327,9 +316,12 @@ and programmaStoT( programma ) =
 		(if containsDuplicatedKey programMap then raise MultipleClasseDef( getDuplicatedKey programMap )
 		else codiceT ( fList( (fn codiceS x => x) programma, fn c => classeStoT(programMap, c))) )
 		
-		handle ClassExtNotValid x => ( print ("ERROR: La classe <" ^ (stampaNomeClasse x) ^ "> non non può estendere sé stessa.\n\n"); codiceT [] )
+		handle ClassExtNotValid x => ( print ("ERROR: La classe <" ^ (stampaNomeClasse x) ^ "> non non puo estendere sé stessa.\n\n"); codiceT [] )
 
 			| UnknownVar x => ( print ("ERROR: La variabile <" ^ (stampaNomeVarPiu x) ^ "> non è stata definita.\n\n"); codiceT [] )
+			
+			| UnknownVarInMetod( n, cla, m ) => ( print ("ERROR: La variabile <" ^ (stampaNomeVarPiu n) ^ "> del metodo <" ^ (stampaNomeMetodo m) ^ "> nella classe <" 
+					^ (stampaNomeClasse cla) ^ "> non è stata definita.\n\n"); codiceT [] )
 
 			| VarNotInitialized n => ( print ("ERROR: La variabile <" ^ (stampaNomeVar n) ^ "> non è stata inizializzata.\n\n"); codiceT [] )
 			
@@ -345,7 +337,7 @@ and programmaStoT( programma ) =
 			| ReturnNotFound (x, cla) => ( print ("ERROR: Il metodo <" ^ (stampaNomeMetodo x) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
 					"> non contiene un comando di return.\n\n"); codiceT [] )
 
-			| TypeIsNotAClass => ( print ("ERROR: Impossibile convertire l'espressione in una classe.\n\n"); codiceT [] )
+			| TypeIsNotAClass => ( print ("ERROR: Impossibile convertire l'espressione in una classe o oggetto.\n\n"); codiceT [] )
 
 			| TypeErrorDefField ( ts, n, e , cla) => 
 				( print ("ERROR TYPE MISMATCH: Impossibile inizializzare il campo <" ^ (stampaNomeCampo n) ^ "> di tipo <" ^ (stampaNomeTipoS ts) ^ "> con un espressione di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e )) ^
@@ -412,8 +404,8 @@ programmaOverload
 programmaTEST 
 *)
 
-print( stampaProgrammaS( programmaInizializzazione0));
-print( stampaProgrammaT( programmaStoT( programmaInizializzazione0)));
+print( stampaProgrammaS( programmaTEST));
+print( stampaProgrammaT( programmaStoT( programmaTEST)));
 
 (*
 fun variabileListStoT( [] ) = []
