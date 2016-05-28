@@ -207,7 +207,7 @@ val chiama = chiamataMetodoS((newS (nomeCl "Classe2")) ,
 print (stampaProgrammaS esempio);
 print (stampaNomeTipoT( cercaTipoRightValueInContesto(esempio, buildContesto [(varPiuNome(nomeV "v"), classeT(nomeCl "Classe2"))], chiama )) ^ "\n");
 
-val metodoSintattico = defMetodoS ( intS, nomeM "metodo2", [defVarS (intS, nomeV "input")], [], [assegnamentoVarS(nomeV "input", intExprS 5), returnS (varExprS (nomeV "input"))]);
+val metodoSintattico = defMetodoS ( intS, nomeM "metodo2", [defVarS (intS, nomeV "inheadPut")], [], [assegnamentoVarS(nomeV "inheadPut", intExprS 5), returnS (varExprS (nomeV "inheadPut"))]);
 
 controllaTipoMetodo(esempio, buildContesto [] , metodoSintattico );
 

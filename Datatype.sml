@@ -1,3 +1,5 @@
+use "Sintassi.sml";
+
 (********** SISTEMA DEI TIPI **********)
 datatype varPiu = varPiuNome of nomeVariabile | this;
 
@@ -37,11 +39,12 @@ fun concat(data1, data2) = 	let val (x1, y1) = getCL(data1)
 								val (x2, y2) = getCL(data2)
 							in x1( (rev y1) @ y2 ) end;
 
+fun getList(data) = let val (x, y) = getCL(data) in y end;
+
 
 fun containsKeyL([], k ) = false
 	| containsKeyL((a,b)::l, k) = if a = k then true else containsKeyL(l, k)
 and containsKey(data, k) = let val (x, y) = getCL(data) in containsKeyL(y, k) end;
-
 
 fun containsValueL([], v ) = false
 	| containsValueL((a,b)::l, v) = if b = v then true else containsValueL(l, v)
@@ -51,21 +54,45 @@ fun getL([], k) = raise KeyNotFound
 	| getL((a,b)::l, k) = if a = k then b else getL(l, k)
 and get(data, k) = let val (x, y) = getCL(data) in getL(y, k) end;
 
-fun getList(data) = let val (x, y) = getCL(data) in y end;
+
+fun getCompL([], k, f) = raise KeyNotFound
+	| getCompL( (a,b)::l, k, f) = if f (a, k) then b else getCompL(l, k, f)
+and getComp( data, k, f ) = let val (x, y) = getCL(data) in getCompL(y, k, f) end;
+
 
 fun isEmpty( data ) = let val (x, y) = getCL(data) in y = [] end;
 
-fun add(data, a) = let val (x, y) = getCL(data) in x( a::y ) end;
 
-fun put(data, k, v) = let val (x, y) = getCL(data) in x( (k,v)::y ) end;
 
-fun putFun(data, v, f) = let val (x,y) = f v in put( data, x, y) end;
+fun headAddPair(data, a) = let val (x, y) = getCL(data) in x( a::y ) end;
 
-fun putAll(data, []) = data
-	| putAll(data, (x,y)::l) = putAll(put( data, x, y), l);
 
-fun putAllFun(data, [], f) = data
-	| putAllFun(data, a::l, f) = let val (x,y) = f a in putAllFun(put( data, x, y), l, f) end;
+
+fun headPut(data, k, v) = let val (x, y) = getCL(data) in x( (k,v)::y ) end;
+
+fun headPutFun(data, v, f) = let val (x,y) = f v in headPut( data, x, y) end;
+
+fun headPutAll(data, []) = data
+	| headPutAll(data, (x,y)::l) = headPutAll(headPut( data, x, y), l);
+
+fun headPutAllFun(data, [], f) = data
+	| headPutAllFun(data, a::l, f) = let val (x,y) = f a in headPutAllFun(headPut( data, x, y), l, f) end;
+
+
+
+fun tailAddPair(data, a) = let val (x, y) = getCL(data) in x( y@[a] ) end;
+
+fun tailPut(data, k, v) = let val (x, y) = getCL(data) in x( y@[(k,v)] ) end;
+
+fun tailPutFun(data, v, f) = let val (x,y) = f v in tailPut( data, x, y) end;
+
+fun tailPutAll(data, []) = data
+	| tailPutAll(data, (x,y)::l) = tailPutAll(tailPut( data, x, y), l) ;
+
+fun tailPutAllFun(data, [], f) = data
+	| tailPutAllFun(data, a::l, f) = let val (x,y) = f a in tailPutAllFun(tailPut( data, x, y), l, f) end;
+
+
 
 fun setApp([], k, v, found) = if found then [] else raise KeyNotFound
 	| setApp((a,b)::l, k, v, found) = 

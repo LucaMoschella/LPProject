@@ -63,12 +63,12 @@ fun listVarSToTipoT( l ) = fList(l, fn defVarS(t, n) => tipoSintToSem t )
 
 (* utili per sfruttare le funzioni già definite su dataList! *)
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COSTRUZIONE MAPPE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-fun buildVarSMap( l ) = putAllFun( buildData [], l, fn defVarS(t, n) => (n, defVarS(t, n)) );
-fun buildCampiSMap( l ) = putAllFun( buildData [], l, fn defCampoS(t,n,s) => (n, defCampoS(t,n,s)));
-fun buildMetodiSMap( l ) = putAllFun( buildData [], l, fn defMetodoS(t, m,args,locals,cmds) => ( (m, listVarSToTipoT args), defMetodoS(t, m,args,locals,cmds)) );
-fun buildClassiSMap( codiceS l ) = putAllFun( buildData [(Object, defClasseS ( Object, Object, [], []))], l, fn defClasseS( c, ce, lv, lm) => (c, defClasseS( c, ce, lv, lm)) );
+fun buildVarSMap( l ) = headPutAllFun( buildData [], l, fn defVarS(t, n) => (n, defVarS(t, n)) );
+fun buildCampiSMap( l ) = headPutAllFun( buildData [], l, fn defCampoS(t,n,s) => (n, defCampoS(t,n,s)));
+fun buildMetodiSMap( l ) = headPutAllFun( buildData [], l, fn defMetodoS(t, m,args,locals,cmds) => ( (m, listVarSToTipoT args), defMetodoS(t, m,args,locals,cmds)) );
+fun buildClassiSMap( codiceS l ) = headPutAllFun( buildData [(Object, defClasseS ( Object, Object, [], []))], l, fn defClasseS( c, ce, lv, lm) => (c, defClasseS( c, ce, lv, lm)) );
 
-fun buildComandiSList( l ) = putAllFun( buildData [], l, fn assegnamentoVarS(n, e) => ("assegnamentoVar", assegnamentoVarS(n, e) )
+fun buildComandiSList( l ) = headPutAllFun( buildData [], l, fn assegnamentoVarS(n, e) => ("assegnamentoVar", assegnamentoVarS(n, e) )
 														| assegnamentoCampoS(e1, n, e2) => ("assegnamentoCampo", assegnamentoCampoS(e1, n, e2))
 														| returnS(e) => ("return", returnS(e)));
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
@@ -129,7 +129,7 @@ fun controlloOverride (programMap, classebase, _, Object ) = true
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CONTROLLO INIZIALIZZAZIONE VARIABILI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-fun putAss( l, v ) = putFun( l, v, fn assegnamentoVarS(nomeV n, e) => (("assegnamentoVar", n), assegnamentoVarS(nomeV n, e) )
+fun headPutAss( l, v ) = headPutFun( l, v, fn assegnamentoVarS(nomeV n, e) => (("assegnamentoVar", n), assegnamentoVarS(nomeV n, e) )
 									| assegnamentoCampoS(e1, nomeC n, e2) => (("assegnamentoCampo", n), assegnamentoCampoS(e1, nomeC n, e2))
 									| returnS(e) => (("return", "notValid"), returnS(e)));
 
@@ -221,7 +221,7 @@ and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, co
 					val argsMap = buildVarSMap args
 					val localsMap = buildVarSMap locals
 					val cmdsMap = buildComandiSList comandi
-					val contestExpanded = putAllFun(cont, args @ locals, fn defVarS(t, v) => (varPiuNome v, tipoSintToSem t))
+					val contestExpanded = headPutAllFun(cont, args @ locals, fn defVarS(t, v) => (varPiuNome v, tipoSintToSem t))
 					val defmetodo = defMetodoS( t, n, args, locals, comandi )
 				in				 
 					(if containsDuplicatedKey (argsMap) then raise MultipleArgsDef( getDuplicatedKey argsMap, nomeclasse, n)
@@ -233,7 +233,7 @@ and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, co
 
 											f2List(comandi, 
 												fn (cmd, exec) => comandoStoT(programMap, contestExpanded, cmd, defmetodo, nomeclasse, exec), (* questo è il comando per convertire la lista *)
-												fn (cmd, exec) => putAss(exec, cmd),	(* questo serve per dirgli cosa si deve portare dietro mentre scorre la lista: i comandi usati + quello attuale *)
+												fn (cmd, exec) => headPutAss(exec, cmd),	(* questo serve per dirgli cosa si deve portare dietro mentre scorre la lista: i comandi usati + quello attuale *)
 												buildData []) (* inzialmente non sono stati eseguiti comandi*)
 									))			
 					handle VarNotInitialized v => raise VarNotInitializedInMetod( v, nomeclasse, n )

@@ -21,10 +21,10 @@ fun listVarTToTipoT( l ) = fList(l, fn defVarT(t, n, ts) => ts )
 
 (* utili per sfruttare le funzioni già definite su dataList! *)
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COSTRUZIONE MAPPE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-fun buildVarTMap( l ) = putAllFun( buildData [], l, fn defVarT(t, n, e) => (n, defVarT(t, n, e)) );
-fun buildCampiTMap( l ) = putAllFun( buildData [], l, fn defCampoT(t, n, s, e) => (n, defCampoT(t, n, s, e)));
-fun buildMetodiTMap( l ) = putAllFun( buildData [], l, fn defMetodoT(t, m,args,locals,cmds) => ( (m, listVarTToTipoT args), defMetodoT(t, m,args,locals,cmds)) );
-fun buildClassiTMap( codiceT l ) = putAllFun( buildData [(Object, defClasseT ( Object, Object, [], []))], l, fn defClasseT( c, ce, lv, lm) => (c, defClasseT( c, ce, lv, lm)) );
+fun buildVarTMap( l ) = headPutAllFun( buildData [], l, fn defVarT(t, n, e) => (n, defVarT(t, n, e)) );
+fun buildCampiTMap( l ) = headPutAllFun( buildData [], l, fn defCampoT(t, n, s, e) => (n, defCampoT(t, n, s, e)));
+fun buildMetodiTMap( l ) = headPutAllFun( buildData [], l, fn defMetodoT(t, m,args,locals,cmds) => ( (m, listVarTToTipoT args), defMetodoT(t, m,args,locals,cmds)) );
+fun buildClassiTMap( codiceT l ) = headPutAllFun( buildData [(Object, defClasseT ( Object, Object, [], []))], l, fn defClasseT( c, ce, lv, lm) => (c, defClasseT( c, ce, lv, lm)) );
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
@@ -35,7 +35,7 @@ fun getSuperCampiObj( programMap, istanza ( n, l)) =  f3List(l, fn (nc, nf, lo) 
 
 fun cbody( programMap,  nomeclasse ) =  (fn defClasseT( nome , _ , campi, _ )  => campi ) (get( programMap, nomeclasse ));
 
-fun classCampiTMap( l, nomeclasse ) = putAllFun( buildData [], l, fn defCampoT(t, n, s, e) => ((nomeclasse, n), defCampoT(t, n, s, e)));
+fun classCampiTMap( l, nomeclasse ) = headPutAllFun( buildData [], l, fn defCampoT(t, n, s, e) => ((nomeclasse, n), defCampoT(t, n, s, e)));
 
 fun allCampiTMap(programMap, Object) = buildData []
 	| allCampiTMap(programMap, nomeclasse) = 
@@ -48,7 +48,7 @@ fun allCampiTMap(programMap, Object) = buildData []
 (* Aggiunge i campi all'oggeto e all'heap *)
 fun allocObjHeap([], istanza( obj, campi), heap) = ( istanza( obj,campi ), heap )
 	| allocObjHeap( ( (nomeclasse, nomecampo), defCampoT( _, _, _, tipo ))::l, istanza( obj, campi), heap) = 
-		let val x = nextLoc() in (allocObjHeap( l,  istanza( obj, (nomeclasse, nomecampo, x)::campi), put( heap, x, tipoDefault tipo))) end
+		let val x = nextLoc() in (allocObjHeap( l,  istanza( obj, (nomeclasse, nomecampo, x)::campi), headPut( heap, x, tipoDefault tipo))) end
 
 and inizializzaObj( programMap, obj, campiMap, [] , heap) = heap
 	| inizializzaObj( programMap, obj, campiMap, (classecampo, nomecampo, loccampo)::l, heap ) = 
