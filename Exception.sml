@@ -28,6 +28,7 @@ exception MultipleLocalsDef of nomeVariabile * nomeClasse * nomeMetodo;
 exception MultipleClasseDef of nomeClasse;
 
 (********** esecuzione **********)
+exception RuntimeError
 exception RuntimeErrorVarNotFoundInEnv;
 exception RuntimeErrorLocNotFoundInHeap;
 exception RuntimeErrorValIsNotObj;

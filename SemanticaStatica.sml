@@ -2,6 +2,7 @@ use "Sintassi.sml";
 use "Datatype.sml";
 use "Exception.sml";
 use "PrintToJava.sml";
+use "ProgrammiEsempio.sml";
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CONVERSIONE E COMPATIBILITA FRA TIPI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 fun tipoSintToSem ( intS ) = intT
@@ -57,7 +58,6 @@ fun getNomeClasseDaTipoT( classeT n) = n
  	| getNomeClasseDaTipoT( _ ) = raise TypeIsNotAClass;
  
 fun listVarSToTipoT( l ) = fList(l, fn defVarS(t, n) => tipoSintToSem t )
-fun listVarTToTipoT( l ) = fList(l, fn defVarT(t, n, ts) => ts )
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
@@ -339,7 +339,6 @@ and programmaStoT( programma ) =
 	end;	
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
-use "ProgrammiEsempio.sml";
 
 (*
 programmaStatDin 
@@ -362,7 +361,7 @@ programmaCampo1
 programmaDouble 
 programmaOverload 
 programmaTEST 
-*)
+
 
 print( stampaProgrammaS( programmaTEST));
-print( stampaProgrammaT( programmaStoT( programmaTEST)));
+print( stampaProgrammaT( programmaStoT( programmaTEST)));*)

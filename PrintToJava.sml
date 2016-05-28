@@ -122,7 +122,7 @@ and stampaProgrammaT ( codiceT l ) =
 fun stampaLoc ( buildLoc i) = "loc#" ^ (Int.toString i);
 
 fun stampaTriplaCampiObj( ind, (nomec, nomeca, lo) ) = ind ^ "(" ^ (stampaNomeClasse nomec) ^ ":" ^ ( stampaNomeCampo nomeca) ^ ":" ^ (stampaLoc lo) ^ ")";
-fun stampaObj( istanza( nomec , l) ) = "{ obj:" ^ (stampaNomeClasse( nomec )) ^ " - " ^ (stampaListaInLine(l, "Campi: ", "[", "", "; ", "", "]", stampaTriplaCampiObj )) ^ " }\n";
+fun stampaObj( istanza( nomec , l) ) = "{ obj:" ^ (stampaNomeClasse( nomec )) ^ " - " ^ (stampaListaInLine(l, "", "Campi: <", "", ", ", "", ">", stampaTriplaCampiObj )) ^ " }";
 
 fun stampaVal( noV ) = "*"
 	| stampaVal( nullV ) = "nullS"
@@ -141,14 +141,14 @@ fun stampaCoppiaLocVal( ind, (locaz, v)) = "" ^ (stampaLoc locaz) ^ ":" ^ ( stam
 fun stampaCoppiaVarPiuType( ind, (v, t)) = ind ^ "(" ^ (stampaNomeVarPiu v) ^ ":" ^ (stampaNomeTipoT t) ^ ")";
 fun stampaCoppiaData( ind, (s1, s2)) = ind ^ "(" ^ s1 ^ ":" ^ s2 ^ ")";
 
-fun stampaContesto (buildContesto l) = stampaListaInLine(l, "Contesto: ", "[", "", "; ", "", "]\n", stampaCoppiaVarPiuType)
+fun stampaContesto (buildContesto l) = stampaListaInLine(l, "", "Contesto: [", "", "; ", "", "]\n", stampaCoppiaVarPiuType)
 	| stampaContesto( _ ) = raise NotContesto;
 
-fun stampaEnv (buildEnv  l) = stampaListaInLine(l, "Ambiente: ", "[", "", "; ", "", "]\n", stampaCoppiaVarVal)
+fun stampaEnv (buildEnv  l) = stampaListaInLine(l, "", "Ambiente: [", "", "; ", "", "]\n", stampaCoppiaVarVal)
 	| stampaEnv( _ ) = raise NotEnv;
 
-fun stampaHeap (buildHeap l) = stampaListaInLine(l, "Heap: ", "[", "", "; ", "", "]\n", stampaCoppiaLocVal)
+fun stampaHeap (buildHeap l) = stampaListaInLine(l, "", "Heap: [", "", "; ", "", "]\n", stampaCoppiaLocVal)
 	| stampaHeap( _ ) = raise NotHeap;
 
-fun stampaDataList (buildData l) = stampaListaInLine(l, "Data: ", "[", "", "; ", "", "]\n", stampaCoppiaData)
+fun stampaDataList (buildData l) = stampaListaInLine(l, "", "Data: [", "", "; ", "", "]\n", stampaCoppiaData)
 	| stampaDataList( _ ) = raise NotDataList;

@@ -1,4 +1,3 @@
-use "Sintassi.sml";
 (********** SISTEMA DEI TIPI **********)
 datatype varPiu = varPiuNome of nomeVariabile | this;
 
@@ -36,7 +35,7 @@ exception KeyNotFound;
 (********** FUNZIONI POLIMORFE **********)
 fun concat(data1, data2) = 	let val (x1, y1) = getCL(data1) 
 								val (x2, y2) = getCL(data2)
-							in x1( y1 @ y2 ) end;
+							in x1( (rev y1) @ y2 ) end;
 
 
 fun containsKeyL([], k ) = false
@@ -52,7 +51,11 @@ fun getL([], k) = raise KeyNotFound
 	| getL((a,b)::l, k) = if a = k then b else getL(l, k)
 and get(data, k) = let val (x, y) = getCL(data) in getL(y, k) end;
 
+fun getList(data) = let val (x, y) = getCL(data) in y end;
+
 fun isEmpty( data ) = let val (x, y) = getCL(data) in y = [] end;
+
+fun add(data, a) = let val (x, y) = getCL(data) in x( a::y ) end;
 
 fun put(data, k, v) = let val (x, y) = getCL(data) in x( (k,v)::y ) end;
 
