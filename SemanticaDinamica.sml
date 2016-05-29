@@ -1,5 +1,4 @@
 use "SemanticaStatica.sml";
-(* Usiamo alcune delle funzione definite in SemanticaStatica.sml *)
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OPERAZIONI CON TIPI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
@@ -92,5 +91,5 @@ and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiu
 print (stampaProgrammaS programmaTEST);
 val x = programmaStoT( programmaTEST );
 
-val (x, y) = valutaEspressione ( buildClassiTMap x, buildEnv [], newT( nomeCl "B", classeT (Object) ), buildHeap [( buildLoc 42, intV 4)]);
+val (x, y) = valutaEspressione ( buildClassiTMap x, buildEnv [], newT( nomeCl "B", classeT (Object) ), buildHeap []);
 print (stampaVal(x) ^"\n" ^stampaHeap(y));

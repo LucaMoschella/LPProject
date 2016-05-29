@@ -12,7 +12,7 @@ datatype valore = intV of int | objV of obj | nullV | noV;
 
 
 (********** DATATYPE POLIMORFO PER GESTIRE AMBIENTI, HEAP, CONTESTO E DATI VARI **********)
-(* preferiamo lasciare le quattro cose separate, anche se sono uguali: *)
+(* preferiamo (?) lasciare le quattro cose separate, anche se sono uguali: *)
 (* danno maggior chiarezza al codice, ma essendo polimorfe, *)
 (* permettono di non ripetere le funzioni! *)
 datatype ('a, 'b) dataList = 	buildContesto of ('a * 'b) list (* varpiu * tiposemantico*)
@@ -32,7 +32,7 @@ fun getCL(buildContesto data) = (buildContesto, data)
 exception KeyNotFound;
 
 
-(********** FUNZIONI POLIMORFE **********)
+(******************** FUNZIONI POLIMORFE ********************)
 
 (********** funzioni di check **********)
 fun isEmpty( data ) = let val (x, y) = getCL(data) in y = [] end;
@@ -119,7 +119,7 @@ fun fList( [], f) = []
 	| fList( a::l, f) = f a :: fList(l, f);
 
 
-(* converte una lista ricordandosi di quello che ha già convertito *)
+(* converte una lista ricordandosi di quello che ha già convertito (lo passa alla funzione di conversione) *)
 fun f2List( [], f, g, z) = []
 	| f2List( a::l, f, g, z) = f (a, g (a, z)) :: f2List(l, f, g, g( a, z));
 

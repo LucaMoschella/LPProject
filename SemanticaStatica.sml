@@ -13,7 +13,7 @@ fun tipoSintToSem ( intS ) = intT
 
 fun tipoSemToSint ( intT ) = intS
 	| tipoSemToSint ( classeT c ) = classeS c
-	| tipoSemToSint( T ) = raise WrongSemToSint;
+	| tipoSemToSint( T ) = raise WrongSemToSint; (* internal error *)
 
 fun getExtendedClassS( defClasseS (_, nomeclasseestesa, _, _) ) = nomeclasseestesa;
 
@@ -96,7 +96,7 @@ fun buildAllMetodiSMap(programMap, Object) = buildData []
 fun mtype( programMap, nomeclasse, nomemetodo, tipi) = (fn defMetodoS(t, _, _, _, _) => tipoSintToSem t) 
 	( find( buildAllMetodiSMap(programMap, nomeclasse), (nomemetodo, tipi), fn ((m1,t1), (m2,t2)) => (m1 = m2) andalso (compatibleTipiSemSem(programMap, t1, t2))) )
 	handle KeyNotFound => raise MethodNotFound(nomemetodo, nomeclasse);
-(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% pronde solo quelli della classe attuale *)
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*)
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CONTROLLO OVERRIDE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
@@ -202,7 +202,6 @@ and comandoStoT( programMap, cont, assegnamentoVarS( nomevar, v), defMetodoS( _,
 			else raise TypeErrorReturn(nomemetodo, t, right, nomeclasse)
 		end
 
-
 and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, comandi ) ) = 
 				let 
 					val argsMap = buildVarSMap args
@@ -280,18 +279,18 @@ and programmaStoT( programma ) =
 		handle ClassExtNotValid x => ( print ("ERROR: La classe <" ^ (stampaNomeClasse x) ^ "> non può estendere sé stessa.\n\n"); codiceT [] )
 
 			| UnknownVarInMetodo( n, cla, m ) => ( print ("ERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata nel metodo <" ^ (stampaNomeMetodo m) ^ "> della classe <"^ (stampaNomeClasse cla) ^ "> non è stata definita.\n\n"); codiceT [] )			
-			| UnknownVarInClasse( n, cla ) => ( print ("ERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata durante l'inizializzazione dei campi nella classe <" ^ (stampaNomeClasse cla) ^ "> non è stata definita.\n\n"); codiceT [] )
+			| UnknownVarInClasse( n, cla ) => ( print ("ERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata durante l'inizializzazione dei campi della classe <" ^ (stampaNomeClasse cla) ^ "> non è stata definita.\n\n"); codiceT [] )
 
 			| VarNotInitializedInMetodo( n, cla, m ) => ( print ("ERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata nel metodo <" ^ (stampaNomeMetodo m) ^ "> della classe <" ^ (stampaNomeClasse cla) ^ "> non è stata inizializzata.\n\n"); codiceT [] )			
-			| VarNotInitializedInClasse( n, cla ) => ( print ("ERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata durante l'inizializzazione dei campi nella classe <" ^ (stampaNomeClasse cla) ^ "> non è stata inizializzata.\n\n"); codiceT [] )
+			| VarNotInitializedInClasse( n, cla ) => ( print ("ERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata durante l'inizializzazione dei campi della classe <" ^ (stampaNomeClasse cla) ^ "> non è stata inizializzata.\n\n"); codiceT [] )
 
 			| FieldNotFound (x, cla) => ( print ("ERROR: Il campo <" ^ (stampaNomeCampo x) ^ "> non è stato trovato nella gerarchia della classe <" ^ (stampaNomeClasse cla) ^ ">.\n\n"); codiceT [] )
 			| MethodNotFound (x, cla) => ( print ("ERROR: Il metodo <" ^ (stampaNomeMetodo x) ^ "> compatibile con gli argomenti passati non è stato trovato nella gerarchia della classe <" ^ (stampaNomeClasse cla) ^ ">.\n\n"); codiceT [] )			
-			| ClassNotFound (x, x2) => ( print ("ERROR: La classe <" ^ (stampaNomeClasse x) ^ ">  estende la classe non definita <" ^ (stampaNomeClasse x) ^ ">.\n\n"); codiceT [] )			
+			| ClassNotFound (x, x2) => ( print ("ERROR: La classe <" ^ (stampaNomeClasse x) ^ ">  estende la classe non definita <" ^ (stampaNomeClasse x2) ^ ">.\n\n"); codiceT [] )			
 			| ReturnNotFound (x, cla) => ( print ("ERROR: Il metodo <" ^ (stampaNomeMetodo x) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ "> non contiene un comando di return.\n\n"); codiceT [] )
 
 			| TypeIsNotAClassInMetodo(m, cla) => ( print ("ERROR: L'espressione utilizzata nel metodo <" ^ (stampaNomeMetodo m) ^ "> della classe <" ^ (stampaNomeClasse cla) ^  "> non risolve in un oggetto valido.\n\n"); codiceT [] ) 
-			| TypeIsNotAClassInClasse( cla) => ( print ("ERROR: L'espressione utilizzata durante l'inizializzazione dei campi nella classe <" ^ (stampaNomeClasse cla) ^  "> non risolve in un oggetto valido.\n\n"); codiceT [] ) 
+			| TypeIsNotAClassInClasse( cla) => ( print ("ERROR: L'espressione utilizzata durante l'inizializzazione dei campi della classe <" ^ (stampaNomeClasse cla) ^  "> non risolve in un oggetto valido.\n\n"); codiceT [] ) 
 			
 			| TypeIsNotAClassCampo ( ts, c, cla ) => ( print ("ERROR: Il tipo <" ^ (stampaNomeTipoS ts) ^ "> del campo <" ^ (stampaNomeCampo c) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^  "> non rappresenta un tipo valido.\n\n"); codiceT [] )
 			| TypeIsNotAClassMetodo ( ts, m, cla ) => ( print ("ERROR: Il tipo di ritorno <" ^ (stampaNomeTipoS ts) ^ "> del metodo <" ^ (stampaNomeMetodo m) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^  "> non rappresenta un tipo valido.\n\n"); codiceT [] )
@@ -299,12 +298,12 @@ and programmaStoT( programma ) =
 			| TypeIsNotAClassLocals ( ts, v, m, cla ) => ( print ("ERROR: Il tipo <" ^ (stampaNomeTipoS ts) ^ "> della variabile <" ^ (stampaNomeVar v) ^ "> del metodo <" ^ (stampaNomeMetodo m) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^  "> non rappresenta un tipo valido.\n\n"); codiceT [] )
 			
 			| TypeIsNotAClassNewInMetodo ( x, cla, m ) => ( print ("ERROR: Nel metodo <" ^ (stampaNomeMetodo m) ^ "> della classe <" ^ (stampaNomeClasse cla) ^ "> viene effettuata un operazione di new(<" ^ (stampaNomeClasse x) ^  ">), ma <" ^ (stampaNomeClasse x) ^  "> non è un nome di classe definito.\n\n"); codiceT [] )
-			| TypeIsNotAClassNewInClasse ( x, cla ) => ( print ("ERROR: Durante l'inizializzazione dei campi nella classe <" ^ (stampaNomeClasse cla) ^ "> viene effettuata un operazione di new(<" ^ (stampaNomeClasse x) ^  ">), ma <" ^ (stampaNomeClasse x) ^  "> non è un nome di classe definito.\n\n"); codiceT [] )
+			| TypeIsNotAClassNewInClasse ( x, cla ) => ( print ("ERROR: Durante l'inizializzazione dei campi della classe <" ^ (stampaNomeClasse cla) ^ "> viene effettuata un operazione di new(<" ^ (stampaNomeClasse x) ^  ">), ma <" ^ (stampaNomeClasse x) ^  "> non è un nome di classe definito.\n\n"); codiceT [] )
 
-			| TypeErrorDefField ( ts, n, e , cla) => ( print ("ERROR TYPE MISMATCH: Impossibile inizializzare il campo <" ^ (stampaNomeCampo n) ^ "> di tipo <" ^ (stampaNomeTipoS ts) ^ "> con un espressione di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e )) ^"> nella classe <" ^ (stampaNomeClasse cla) ^  ">.\n\n"); codiceT [] )
-			| TypeErrorReturn ( n, ts, e, cla) => ( print ("ERROR TYPE MISMATCH: Impossibile tornare un espressione di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e )) ^ "> se il tipo di ritorno definito è <" ^ (stampaNomeTipoS( ts )) ^"> nel metodo <" ^ (stampaNomeMetodo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^  ">.\n\n"); codiceT [] )
-			| TypeErrorAssignVar (n, e1, e2, cla, v) =>	( print ("ERROR TYPE MISMATCH: Impossibile assegnare alla variabile <" ^ (stampaNomeVar v) ^ "> di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e1 ))^ "> un espressione di tipo <"^ (stampaNomeTipoT( estraiTipoSemantico e2 )) ^"> nel metodo <" ^ (stampaNomeMetodo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^  ">.\n\n"); codiceT [] )			
-			| TypeErrorAssignField (n, e1, e2, e3, cla, c) => ( print ("ERROR TYPE MISMATCH: Impossibile assegnare al campo <" ^ (stampaNomeCampo c) ^ "> di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e2 ))^ "> un espressione di tipo <"^ (stampaNomeTipoT( estraiTipoSemantico e3 )) ^"> nel metodo <" ^ (stampaNomeMetodo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^  ">.\n\n"); codiceT [] )
+			| TypeErrorDefField ( ts, n, e , cla) => ( print ("ERROR TYPE MISMATCH: Impossibile inizializzare il campo <" ^ (stampaNomeCampo n) ^ "> di tipo <" ^ (stampaNomeTipoS ts) ^ "> con un espressione di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e )) ^">, nella classe <" ^ (stampaNomeClasse cla) ^  ">.\n\n"); codiceT [] )
+			| TypeErrorReturn ( n, ts, e, cla) => ( print ("ERROR TYPE MISMATCH: Impossibile tornare un espressione di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e )) ^ "> se il tipo di ritorno definito è <" ^ (stampaNomeTipoS( ts )) ^">, nel metodo <" ^ (stampaNomeMetodo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^  ">.\n\n"); codiceT [] )
+			| TypeErrorAssignVar (n, e1, e2, cla, v) =>	( print ("ERROR TYPE MISMATCH: Impossibile assegnare alla variabile <" ^ (stampaNomeVar v) ^ "> di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e1 ))^ "> un espressione di tipo <"^ (stampaNomeTipoT( estraiTipoSemantico e2 )) ^">, nel metodo <" ^ (stampaNomeMetodo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^  ">.\n\n"); codiceT [] )			
+			| TypeErrorAssignField (n, e1, e2, e3, cla, c) => ( print ("ERROR TYPE MISMATCH: Impossibile assegnare al campo <" ^ (stampaNomeCampo c) ^ "> di tipo <" ^ (stampaNomeTipoT( estraiTipoSemantico e2 ))^ "> un espressione di tipo <"^ (stampaNomeTipoT( estraiTipoSemantico e3 )) ^">, nel metodo <" ^ (stampaNomeMetodo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^  ">.\n\n"); codiceT [] )
 			| TypeErrorOverrideMismatch ( n, supert, superc, baset, basec ) => ( print ("ERROR TYPE MISMATCH: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse basec) ^ "> effettua un override del metodo definito nella classe <" ^ (stampaNomeClasse superc) ^  "> cambiando il tipo di ritorno da <" ^ (stampaNomeTipoS supert) ^ "> al tipo incompatibile <" ^ (stampaNomeTipoS baset) ^ ">.\n\n"); codiceT [] )
 
 			| MultipleClasseDef ( cla ) => ( print ("ERROR: La classe <" ^ (stampaNomeClasse cla) ^ "> è definita più volte.\n\n"); codiceT [] )
