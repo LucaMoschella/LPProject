@@ -28,18 +28,20 @@ fun buildClassiTMap( codiceT l ) = tailPutAllFun( buildData [(Object, defClasseT
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
-
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OPERAZIONI CON OGGETTI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 fun getSuperClasseObj( programMap, istanza(c, (_)) ) = getExtendedClassT( get( programMap, c ) );
 fun getSuperCampiObj( programMap, istanza ( n, l)) =  f3List(l, fn (nc, nf, lo) => if( n = nc) then [] else [(nc, nf, lo)] );
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
+
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RICERCA CAMPI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 fun cTbody( programMap,  nomeclasse ) =  (fn defClasseT( nome , _ , campi, _ )  => campi ) (get( programMap, nomeclasse ));
 
-fun classCampiTMap( l, nomeclasse ) = tailPutAllFun( buildData [], l, fn defCampoT(t, n, s, e) => ((nomeclasse, n), defCampoT(t, n, s, e)));
+fun buildClassCampiTMap( l, nomeclasse ) = tailPutAllFun( buildData [], l, fn defCampoT(t, n, s, e) => ((nomeclasse, n), defCampoT(t, n, s, e)));
 
-fun allCampiTMap(programMap, Object) = buildData []
-	| allCampiTMap(programMap, nomeclasse) = 
-		concat( classCampiTMap( cTbody( programMap,  nomeclasse ), nomeclasse ), allCampiTMap(programMap, getExtendedClassT( get(programMap, nomeclasse) )) );
+fun allClassCampiTMap(programMap, Object) = buildData []
+	| allClassCampiTMap(programMap, nomeclasse) = 
+		concat( buildClassCampiTMap( cTbody( programMap,  nomeclasse ), nomeclasse ), allClassCampiTMap(programMap, getExtendedClassT( get(programMap, nomeclasse) )) );
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
@@ -76,7 +78,7 @@ and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiu
 
 	| valutaEspressione (programMap, env, newT (nomeclasse, t), heap) =  
 		let 
-			val campiMap = allCampiTMap(programMap, nomeclasse)
+			val campiMap = allClassCampiTMap(programMap, nomeclasse)
 			val campi = getList( campiMap )
 			val (oggetto, newheap) = allocObjHeap(campi, istanza( nomeclasse, [] ), heap)
 		in
@@ -87,8 +89,8 @@ and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiu
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
-print (stampaProgrammaS programmaTEST);
-val x = programmaStoT( programmaTEST );
+print (stampaProgrammaS programmaWeird);
+val x = programmaStoT( programmaWeird );
 
 val (x, y) = valutaEspressione ( buildClassiTMap x, buildEnv [], newT( nomeCl "B", classeT (Object) ), buildHeap [( buildLoc 42, intV 4)]);
 print (stampaVal(x) ^"\n" ^stampaHeap(y));
