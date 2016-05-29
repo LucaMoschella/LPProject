@@ -33,12 +33,9 @@ exception KeyNotFound;
 
 
 (********** FUNZIONI POLIMORFE **********)
-fun concat(data1, data2) = 	let val (x1, y1) = getCL(data1) 
-								val (x2, y2) = getCL(data2)
-							in x1( y1 @ y2 ) end;
 
-fun getList(data) = let val (x, y) = getCL(data) in y end;
-
+(********** funzioni di check **********)
+fun isEmpty( data ) = let val (x, y) = getCL(data) in y = [] end;
 
 fun containsKeyL([], k ) = false
 	| containsKeyL((a,b)::l, k) = if a = k then true else containsKeyL(l, k)
@@ -48,23 +45,41 @@ fun containsValueL([], v ) = false
 	| containsValueL((a,b)::l, v) = if b = v then true else containsValueL(l, v)
 and containsValue(data, v) = let val (x, y) = getCL(data) in containsValueL(y, v) end;
 
+fun containsDuplicatedKeyL([] ) = false
+	| containsDuplicatedKeyL((a,b)::l) = if containsKeyL(l, a) then true else containsDuplicatedKeyL(l)
+and containsDuplicatedKey(data) = let val (x, y) = getCL(data) in containsDuplicatedKeyL(y) end;
+
+
+(********** funzioni di get **********)
+fun getList(data) = let val (x, y) = getCL(data) in y end;
+
 fun getL([], k) = raise KeyNotFound
 	| getL((a,b)::l, k) = if a = k then b else getL(l, k)
 and get(data, k) = let val (x, y) = getCL(data) in getL(y, k) end;
 
+fun findL([], k, f) = raise KeyNotFound
+	| findL( (a,b)::l, k, f) = if f (a, k) then b else findL(l, k, f)
+and find( data, k, f ) = let val (x, y) = getCL(data) in findL(y, k, f) end;
 
-fun getCompL([], k, f) = raise KeyNotFound
-	| getCompL( (a,b)::l, k, f) = if f (a, k) then b else getCompL(l, k, f)
-and getComp( data, k, f ) = let val (x, y) = getCL(data) in getCompL(y, k, f) end;
+fun getDuplicatedKeyL( [] ) = raise KeyNotFound
+	| getDuplicatedKeyL((a,b)::l) = if containsKeyL(l, a) then a else getDuplicatedKeyL(l)
+and getDuplicatedKey(data) = let val (x, y) = getCL(data) in getDuplicatedKeyL(y) end;
 
 
-fun isEmpty( data ) = let val (x, y) = getCL(data) in y = [] end;
+(********** funzioni di set **********)
+fun setApp([], k, v, found) = if found then [] else raise KeyNotFound
+	| setApp((a,b)::l, k, v, found) = 
+		if a = k then (a,v)::setApp(l, k, v, true) else (a,b)::setApp(l, k, v, found)
+and setL(l, k, v) = setApp(l, k, v, false)
+and set(data, k, v) = let val (x, y) = getCL(data) in x (setL(y, k, v)) end;
 
 
+(********** funzioni di put **********)
+fun concat(data1, data2) = 	let val (x1, y1) = getCL(data1) 
+								val (x2, y2) = getCL(data2)
+							in x1( y1 @ y2 ) end;
 
 fun headAddPair(data, a) = let val (x, y) = getCL(data) in x( a::y ) end;
-
-
 
 fun headPut(data, k, v) = let val (x, y) = getCL(data) in x( (k,v)::y ) end;
 
@@ -76,7 +91,7 @@ fun headPutAll(data, []) = data
 fun headPutAllFun(data, [], f) = data
 	| headPutAllFun(data, a::l, f) = let val (x,y) = f a in headPut( headPutAllFun(data, l, f), x, y) end;
 
-
+(**********)
 
 fun tailAddPair(data, a) = let val (x, y) = getCL(data) in x( y@[a] ) end;
 
@@ -90,25 +105,11 @@ fun tailPutAll(data, []) = data
 fun tailPutAllFun(data, [], f) = data
 	| tailPutAllFun(data, a::l, f) = let val (x,y) = f a in tailPutAllFun(tailPut( data, x, y), l, f) end;
 
-
-
-fun setApp([], k, v, found) = if found then [] else raise KeyNotFound
-	| setApp((a,b)::l, k, v, found) = 
-		if a = k then (a,v)::setApp(l, k, v, true) else (a,b)::setApp(l, k, v, found)
-and setL(l, k, v) = setApp(l, k, v, false)
-and set(data, k, v) = let val (x, y) = getCL(data) in x (setL(y, k, v)) end;
-
+(********** funzioni di remove **********)
 fun removeL([], k ) =  [] 
 	| removeL((a,b)::l, k) = if a = k then removeL(l, k) else (a,b)::removeL(l, k)
 and remove(data, k) = let val (x, y) = getCL(data) in x (removeL(y, k)) end;
 
-fun containsDuplicatedKeyL([] ) = false
-	| containsDuplicatedKeyL((a,b)::l) = if containsKeyL(l, a) then true else containsDuplicatedKeyL(l)
-and containsDuplicatedKey(data) = let val (x, y) = getCL(data) in containsDuplicatedKeyL(y) end;
-
-fun getDuplicatedKeyL( [] ) = raise KeyNotFound
-	| getDuplicatedKeyL((a,b)::l) = if containsKeyL(l, a) then a else getDuplicatedKeyL(l)
-and getDuplicatedKey(data) = let val (x, y) = getCL(data) in getDuplicatedKeyL(y) end;
 
 
 (********** FUNZIONI AUSILIARIE SU LISTE SEMPLICI **********)

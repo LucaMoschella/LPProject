@@ -2,18 +2,33 @@
 (********** tipi **********)
 exception ClassExtNotValid  of nomeClasse;
 
-exception UnknownVar of varPiu;
-exception UnknownVarInMetod of varPiu * nomeClasse * nomeMetodo;
-exception VarNotInitialized of nomeVariabile;
-exception VarNotInitializedInMetod of nomeVariabile * nomeClasse * nomeMetodo;
+exception UnknownVar of nomeVariabile;
+exception UnknownVarInMetodo of nomeVariabile * nomeClasse * nomeMetodo;
+exception UnknownVarInClasse of nomeVariabile * nomeClasse;
 
-exception FieldNotFound of nomeCampo;
-exception MethodNotFound of nomeMetodo;
-exception ClassNotFound of nomeClasse;
+exception VarNotInitialized of nomeVariabile;
+exception VarNotInitializedInMetodo of nomeVariabile * nomeClasse * nomeMetodo;
+exception VarNotInitializedInClasse of nomeVariabile * nomeClasse;
+
+exception FieldNotFound of nomeCampo * nomeClasse;
+exception MethodNotFound of nomeMetodo * nomeClasse;
+exception ClassNotFound of nomeClasse * nomeClasse;
 exception ReturnNotFound of nomeMetodo * nomeClasse;
 
-exception WrongSemToSint;
+exception WrongSemToSint; (* internal error *)
+
 exception TypeIsNotAClass;
+exception TypeIsNotAClassInMetodo of nomeMetodo * nomeClasse;
+exception TypeIsNotAClassInClasse of nomeClasse;
+
+exception TypeIsNotAClassCampo of tipoSintattico * nomeCampo * nomeClasse;
+exception TypeIsNotAClassMetodo of tipoSintattico * nomeMetodo * nomeClasse
+exception TypeIsNotAClassArgs of tipoSintattico * nomeVariabile * nomeMetodo * nomeClasse;
+exception TypeIsNotAClassLocals of tipoSintattico * nomeVariabile * nomeMetodo * nomeClasse;
+
+exception TypeIsNotAClassNew of nomeClasse;
+exception TypeIsNotAClassNewInMetodo of nomeClasse * nomeClasse * nomeMetodo;
+exception TypeIsNotAClassNewInClasse of nomeClasse * nomeClasse;
 
 exception TypeErrorDefField of tipoSintattico * nomeCampo * espressioneTipata * nomeClasse;
 exception TypeErrorReturn of nomeMetodo * tipoSintattico * espressioneTipata * nomeClasse;
