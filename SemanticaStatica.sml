@@ -77,10 +77,10 @@ fun buildComandiSList( l ) = headPutAllFun( buildData [], l, fn assegnamentoVarS
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TIPO SEMANTICO DI UN NOME CAMPO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 fun cSbody( programMap,  nomeclasse ) =  (fn defClasseS( nome , _ , campi, _)  => campi ) (get( programMap, nomeclasse ));
 
-fun allCampiSMap(programMap, Object) = buildData []
-	| allCampiSMap(programMap, nomeclasse) = concat( buildCampiSMap( cSbody( programMap,  nomeclasse ) ), allCampiSMap(programMap, getExtendedClassS( get(programMap, nomeclasse) )) );
+fun buildAllCampiSMap(programMap, Object) = buildData []
+	| buildAllCampiSMap(programMap, nomeclasse) = concat( buildCampiSMap( cSbody( programMap,  nomeclasse ) ), buildAllCampiSMap(programMap, getExtendedClassS( get(programMap, nomeclasse) )) );
 
-fun ftype( programMap, nomeclasse, nomecampo) = (fn defCampoS(t, _, _) => tipoSintToSem t) ( get( allCampiSMap(programMap, nomeclasse), (nomecampo)))
+fun ftype( programMap, nomeclasse, nomecampo) = (fn defCampoS(t, _, _) => tipoSintToSem t) ( get( buildAllCampiSMap(programMap, nomeclasse), (nomecampo)))
 	handle KeyNotFound => raise FieldNotFound(nomecampo);
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
@@ -88,11 +88,11 @@ fun ftype( programMap, nomeclasse, nomecampo) = (fn defCampoS(t, _, _) => tipoSi
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TIPO SEMANTICO DI UN NOME METODO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 fun mSbody( programMap,  nomeclasse ) =  (fn defClasseS( nome , _ , _ , metodi)  => metodi ) (get( programMap, nomeclasse ));
 
-fun allMetodiSMap(programMap, Object) = buildData []
-	| allMetodiSMap(programMap, nomeclasse) = concat( buildMetodiSMap( mSbody( programMap,  nomeclasse ) ), allMetodiSMap(programMap, getExtendedClassS( get(programMap, nomeclasse) )) );
+fun buildAllMetodiSMap(programMap, Object) = buildData []
+	| buildAllMetodiSMap(programMap, nomeclasse) = concat( buildMetodiSMap( mSbody( programMap,  nomeclasse ) ), buildAllMetodiSMap(programMap, getExtendedClassS( get(programMap, nomeclasse) )) );
 
 fun mtype( programMap, nomeclasse, nomemetodo, tipi) = (fn defMetodoS(t, _, _, _, _) => tipoSintToSem t) 
-	( getComp( allMetodiSMap(programMap, nomeclasse), (nomemetodo, tipi), fn ((m1,t1), (m2,t2)) => (m1 = m2) andalso (compatibleTipiSemSem(programMap, t1, t2))) )
+	( getComp( buildAllMetodiSMap(programMap, nomeclasse), (nomemetodo, tipi), fn ((m1,t1), (m2,t2)) => (m1 = m2) andalso (compatibleTipiSemSem(programMap, t1, t2))) )
 	handle KeyNotFound => raise MethodNotFound(nomemetodo);
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% pronde solo quelli della classe attuale *)
 

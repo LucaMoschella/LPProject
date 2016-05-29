@@ -39,9 +39,9 @@ fun cTbody( programMap,  nomeclasse ) =  (fn defClasseT( nome , _ , campi, _ )  
 
 fun buildClassCampiTMap( l, nomeclasse ) = tailPutAllFun( buildData [], l, fn defCampoT(t, n, s, e) => ((nomeclasse, n), defCampoT(t, n, s, e)));
 
-fun allClassCampiTMap(programMap, Object) = buildData []
-	| allClassCampiTMap(programMap, nomeclasse) = 
-		concat( buildClassCampiTMap( cTbody( programMap,  nomeclasse ), nomeclasse ), allClassCampiTMap(programMap, getExtendedClassT( get(programMap, nomeclasse) )) );
+fun buildAllClassCampiTMap(programMap, Object) = buildData []
+	| buildAllClassCampiTMap(programMap, nomeclasse) = 
+		concat( buildClassCampiTMap( cTbody( programMap,  nomeclasse ), nomeclasse ), buildAllClassCampiTMap(programMap, getExtendedClassT( get(programMap, nomeclasse) )) );
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
@@ -78,7 +78,7 @@ and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiu
 
 	| valutaEspressione (programMap, env, newT (nomeclasse, t), heap) =  
 		let 
-			val campiMap = allClassCampiTMap(programMap, nomeclasse)
+			val campiMap = buildAllClassCampiTMap(programMap, nomeclasse)
 			val campi = getList( campiMap )
 			val (oggetto, newheap) = allocObjHeap(campi, istanza( nomeclasse, [] ), heap)
 		in

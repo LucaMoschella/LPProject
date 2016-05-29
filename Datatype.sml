@@ -1,5 +1,3 @@
-use "Sintassi.sml";
-
 (********** SISTEMA DEI TIPI **********)
 datatype varPiu = varPiuNome of nomeVariabile | this;
 
@@ -129,6 +127,7 @@ fun f2List( [], f, g, z) = []
 fun f3List( [], f) = []
 	| f3List( a::l, f) = f a @ f3List(l, f);
 
+(*
 val l1 = [(1,1),(2,2),(3,3),(4,4),(5,5)];
 val l2 = [(6,6),(7,7),(8,8),(9,9),(10,10)];
 
@@ -136,3 +135,4 @@ val x = buildData [(1,1),(2,2),(3,3),(4,4),(5,5)];
 val y = buildData [(6,6),(7,7),(8,8),(9,9),(10,10)];
 
 headPutAll( y, l1);
+*)
