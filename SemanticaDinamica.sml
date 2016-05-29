@@ -34,7 +34,7 @@ fun getSuperCampiObj( programMap, istanza ( n, l)) =  f3List(l, fn (nc, nf, lo) 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
-(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RICERCA CAMPI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RICERCA CAMPI ASSOCIATI ALLE CLASSI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 fun cTbody( programMap,  nomeclasse ) =  (fn defClasseT( nome , _ , campi, _ )  => campi ) (get( programMap, nomeclasse ));
 
 fun buildClassCampiTMap( l, nomeclasse ) = tailPutAllFun( buildData [], l, fn defCampoT(t, n, s, e) => ((nomeclasse, n), defCampoT(t, n, s, e)));
@@ -50,7 +50,7 @@ fun allClassCampiTMap(programMap, Object) = buildData []
 (* Aggiunge i campi all'oggeto e all'heap *)
 fun allocObjHeap([], istanza( obj, campi), heap) = ( istanza( obj,campi ), heap )
 	| allocObjHeap( ( (nomeclasse, nomecampo), defCampoT( _, _, _, tipo ))::l, istanza( obj, campi), heap) = 
-		let val x = nextLoc() in (allocObjHeap( l,  istanza( obj, (nomeclasse, nomecampo, x)::campi), headPut( heap, x, tipoDefault tipo))) end
+		let val x = nextLoc() in (allocObjHeap( l,  istanza( obj, (nomeclasse, nomecampo, x)::campi), tailPut( heap, x, tipoDefault tipo))) end
 
 and inizializzaObj( programMap, obj, campiMap, [] , heap) = heap
 	| inizializzaObj( programMap, obj, campiMap, (classecampo, nomecampo, loccampo)::l, heap ) = 
@@ -89,8 +89,8 @@ and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiu
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
-print (stampaProgrammaS programmaWeird);
-val x = programmaStoT( programmaWeird );
+print (stampaProgrammaS programmaTEST);
+val x = programmaStoT( programmaTEST );
 
 val (x, y) = valutaEspressione ( buildClassiTMap x, buildEnv [], newT( nomeCl "B", classeT (Object) ), buildHeap [( buildLoc 42, intV 4)]);
 print (stampaVal(x) ^"\n" ^stampaHeap(y));

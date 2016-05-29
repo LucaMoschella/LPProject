@@ -931,7 +931,8 @@ val programmaTEST = codiceS(
 	        nomeCl "A",
 	        Object,
 	        [
-	           defCampoS ( intS, nomeC ("f"), intExprS 1) 
+	           defCampoS ( intS, nomeC ("f"), intExprS 1) ,
+	            defCampoS ( classeS(nomeCl "A"), nomeC ("classeAcampoA"), thisS)
 	        ],
 	        [
 	            defMetodoS ( classeS(nomeCl "B"), nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
@@ -942,7 +943,8 @@ val programmaTEST = codiceS(
 	        nomeCl "B",
 	        nomeCl "A",
 	        [
-	            defCampoS ( classeS(nomeCl "B"), nomeC ("f"), thisS)
+	            defCampoS ( classeS(nomeCl "B"), nomeC ("classeBcampoB"), thisS),
+	            defCampoS ( classeS(nomeCl "A"), nomeC ("classeBcampoA"), thisS)
 	        ],
 	        [
 	            defMetodoS ( classeS(nomeCl "B"), nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
