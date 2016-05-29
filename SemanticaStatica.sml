@@ -1,5 +1,5 @@
 use "Sintassi.sml";
-use "Datatype.sml";
+use "StruttureDati.sml";
 use "Exception.sml";
 use "PrintToJava.sml";
 use "ProgrammiEsempio.sml";
