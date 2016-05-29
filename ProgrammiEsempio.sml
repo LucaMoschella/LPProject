@@ -876,6 +876,55 @@ val programmaOverload = codiceS(
 	        )
 ]
 );
+val programmaOverload1 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [	        ],
+	        [	   
+	        	        defMetodoS ( classeS(nomeCl "B"), nomeM "m", [ defVarS( classeS( nomeCl "B"), (nomeV "b"))], [], [returnS (intExprS 0)]),
+	        defMetodoS ( classeS(nomeCl "A"), nomeM "m", [defVarS( classeS( nomeCl "A"), (nomeV "A"))], [], [returnS (nullS)])
+     ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        ],
+	        [
+	            	            
+
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "weird",
+	        nomeCl "B",
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "B"), (nomeV "b")),
+
+	            		defVarS( classeS( nomeCl "A"), (nomeV "resA")),
+	            		defVarS( classeS( nomeCl "A"), (nomeV "resInt"))
+
+	            	], (*locals*)
+	            	[ 
+		            	assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")),
+
+		            	assegnamentoVarS( (nomeV "resA"), chiamataMetodoS (varExprS((nomeV "b")) , nomeM "m" , [newS( nomeCl "A")])) ,
+		            	assegnamentoVarS( (nomeV "resInt"), chiamataMetodoS (varExprS((nomeV "b")) , nomeM "m" , [ newS( nomeCl "B")])) ,
+
+		            	returnS ( intExprS 0)
+	            	]) (*cmds*)
+	        ]
+	        )
+]
+);
 val programmaTEST = codiceS( 
 [
 	defClasseS(
@@ -908,19 +957,23 @@ val programmaTEST = codiceS(
 	        [],
 	        [
 	            defMetodoS ( intS, nomeM "main", 
-	            	[	 defVarS( intS, (nomeV "a"))     ], (*args*)
+	            	[	 defVarS( intS, (nomeV "par"))     ], (*args*)
 	            	[
-	            		defVarS( classeS( nomeCl "A"), (nomeV "b")),
+	            		defVarS( classeS( nomeCl "A"), (nomeV "a")),
+	            		defVarS( classeS( nomeCl "B"), (nomeV "b")),
+
 	            		defVarS( intS, (nomeV "res1")),
 	            		defVarS( classeS(nomeCl "B"), (nomeV "res2")),
+
 	            		defVarS( intS, (nomeV "cia"))
 
 	            	], (*locals*)
 	            	[ 
 	            		assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")),
+	            		assegnamentoVarS( (nomeV "a"), newS( nomeCl "A")),
 	            		assegnamentoVarS( (nomeV "res2"), chiamataMetodoS (varExprS(nomeV "b") , nomeM "get_f" , [])),
 
-	            		returnS ( intExprS 0)
+	            		returnS ( accessoCampoS( varExprS( nomeV "b"), nomeC "f"))
 	            	]) (*cmds*)
 	        ]
 	        )

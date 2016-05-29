@@ -37,7 +37,7 @@ exception KeyNotFound;
 (********** FUNZIONI POLIMORFE **********)
 fun concat(data1, data2) = 	let val (x1, y1) = getCL(data1) 
 								val (x2, y2) = getCL(data2)
-							in x1( (rev y1) @ y2 ) end;
+							in x1( y1 @ y2 ) end;
 
 fun getList(data) = let val (x, y) = getCL(data) in y end;
 
@@ -73,10 +73,10 @@ fun headPut(data, k, v) = let val (x, y) = getCL(data) in x( (k,v)::y ) end;
 fun headPutFun(data, v, f) = let val (x,y) = f v in headPut( data, x, y) end;
 
 fun headPutAll(data, []) = data
-	| headPutAll(data, (x,y)::l) = headPutAll(headPut( data, x, y), l);
+	| headPutAll(data, (x,y)::l) = headPut( headPutAll(data, l), x, y);
 
 fun headPutAllFun(data, [], f) = data
-	| headPutAllFun(data, a::l, f) = let val (x,y) = f a in headPutAllFun(headPut( data, x, y), l, f) end;
+	| headPutAllFun(data, a::l, f) = let val (x,y) = f a in headPut( headPutAllFun(data, l, f), x, y) end;
 
 
 
@@ -128,3 +128,11 @@ fun f2List( [], f, g, z) = []
 (* Modifica la lista, con la lista degli elementi generati dall'applicazione di f ad ogni elemento della lista *)
 fun f3List( [], f) = []
 	| f3List( a::l, f) = f a @ f3List(l, f);
+
+val l1 = [(1,1),(2,2),(3,3),(4,4),(5,5)];
+val l2 = [(6,6),(7,7),(8,8),(9,9),(10,10)];
+
+val x = buildData [(1,1),(2,2),(3,3),(4,4),(5,5)];
+val y = buildData [(6,6),(7,7),(8,8),(9,9),(10,10)];
+
+headPutAll( y, l1);

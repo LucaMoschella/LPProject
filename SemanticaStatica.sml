@@ -37,10 +37,10 @@ fun compatibleTipoSintSem (programMap, ts, tt ) = compatibleTipoSemSem(programMa
 
 fun compatibleTipoSintSint( programMap, ts1, ts2) = compatibleTipoSemSem(programMap, tipoSintToSem ts1, tipoSintToSem ts2);
 
-fun parametriCompatibili(programMap, [], [] ) = true
-	| parametriCompatibili(programMap, v::l, [] ) = false
-	| parametriCompatibili(programMap, [], t::l ) = false
-	| parametriCompatibili(programMap, (defVarS(t1,n))::l1, t2::l2 ) = if( not (compatibleTipoSintSem(programMap,t1,t2))) then false else parametriCompatibili(programMap,l1,l2 );
+fun compatibleTipiSemSem(programMap, [], [] ) = true
+	| compatibleTipiSemSem(programMap, v::l, [] ) = false
+	| compatibleTipiSemSem(programMap, [], t::l ) = false
+	| compatibleTipiSemSem(programMap, t1::l1, t2::l2 ) = if( not (compatibleTipoSemSem(programMap,t1,t2))) then false else compatibleTipiSemSem(programMap,l1,l2 );
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
@@ -75,34 +75,26 @@ fun buildComandiSList( l ) = headPutAllFun( buildData [], l, fn assegnamentoVarS
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TIPO SEMANTICO DI UN NOME CAMPO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-fun cercaTipoCampoinGerarchiaClasse ( programMap, defClasseS (Object, _, _, _), nomeC campoSintattico ) = raise FieldNotFound(nomeC campoSintattico)
-	| cercaTipoCampoinGerarchiaClasse (programMap,  defClasseS (nomeCl _, classeEstesa, [], _), nomeC campoSintattico ) = (cercaTipoCampoinGerarchiaClasse( programMap, get(programMap,classeEstesa ), nomeC campoSintattico)
-																													handle KeyNotFound => raise ClassNotFound(classeEstesa))
-	| cercaTipoCampoinGerarchiaClasse ( programMap, defClasseS (nomeCl classeSintattica, ext, (defCampoS( t, nomeC nc, r))::campi, metodi), nomeC campoSintattico ) =
-			if( nc = campoSintattico ) then tipoSintToSem ( t ) else cercaTipoCampoinGerarchiaClasse(programMap, defClasseS (nomeCl classeSintattica, ext, campi, metodi), nomeC campoSintattico );
+fun cSbody( programMap,  nomeclasse ) =  (fn defClasseS( nome , _ , campi, _)  => campi ) (get( programMap, nomeclasse ));
 
-fun ftype( programMap, nomec, nomecl) = cercaTipoCampoinGerarchiaClasse(programMap, get ( programMap, nomecl ), nomec )
-										handle KeyNotFound => raise ClassNotFound(nomecl);
+fun allCampiSMap(programMap, Object) = buildData []
+	| allCampiSMap(programMap, nomeclasse) = concat( buildCampiSMap( cSbody( programMap,  nomeclasse ) ), allCampiSMap(programMap, getExtendedClassS( get(programMap, nomeclasse) )) );
+
+fun ftype( programMap, nomeclasse, nomecampo) = (fn defCampoS(t, _, _) => tipoSintToSem t) ( get( allCampiSMap(programMap, nomeclasse), (nomecampo)))
+	handle KeyNotFound => raise FieldNotFound(nomecampo);
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TIPO SEMANTICO DI UN NOME METODO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-fun cercaTipoMetodoInGerarchiaClasse(programMap, defClasseS (Object, _, _, _), nomeM metodoSintattico, parametri ) = raise MethodNotFound(nomeM metodoSintattico)
+fun mSbody( programMap,  nomeclasse ) =  (fn defClasseS( nome , _ , _ , metodi)  => metodi ) (get( programMap, nomeclasse ));
 
-	| cercaTipoMetodoInGerarchiaClasse(programMap,  defClasseS (nomeCl _, classeEstesa, _, []), nomeM metodoSintattico, parametri ) = 
-			(cercaTipoMetodoInGerarchiaClasse( programMap, get(programMap, classeEstesa ), nomeM metodoSintattico, parametri)
-				handle KeyNotFound => raise ClassNotFound(classeEstesa))
-	| cercaTipoMetodoInGerarchiaClasse ( programMap, defClasseS (nomeCl classeSintattica, ext, campi, (defMetodoS(t,nomeM m,args,locals,cmds))::metodi), nomeM metodoSintattico,parametri ) =
-			if( (m = metodoSintattico) andalso (parametriCompatibili(programMap, args, parametri))) (* parametri deve contere tipi dal datatype types*)
-				then tipoSintToSem ( t ) 
-				else cercaTipoMetodoInGerarchiaClasse(programMap, defClasseS (nomeCl classeSintattica, ext, campi, metodi), nomeM metodoSintattico, parametri );
+fun allMetodiSMap(programMap, Object) = buildData []
+	| allMetodiSMap(programMap, nomeclasse) = concat( buildMetodiSMap( mSbody( programMap,  nomeclasse ) ), allMetodiSMap(programMap, getExtendedClassS( get(programMap, nomeclasse) )) );
 
-
-fun mtype( programMap, nomem, nomecl, tipi) = 
-	cercaTipoMetodoInGerarchiaClasse(programMap, get ( programMap, nomecl ), nomem, tipi )
-	handle KeyNotFound => raise ClassNotFound(nomecl);
-(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-
+fun mtype( programMap, nomeclasse, nomemetodo, tipi) = (fn defMetodoS(t, _, _, _, _) => tipoSintToSem t) 
+	( getComp( allMetodiSMap(programMap, nomeclasse), (nomemetodo, tipi), fn ((m1,t1), (m2,t2)) => (m1 = m2) andalso (compatibleTipiSemSem(programMap, t1, t2))) )
+	handle KeyNotFound => raise MethodNotFound(nomemetodo);
+(* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% pronde solo quelli della classe attuale *)
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CONTROLLO OVERRIDE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
@@ -124,7 +116,6 @@ fun controlloOverride (programMap, classebase, _, Object ) = true
 					else raise TypeErrorOverrideMismatch( n, supertype, nomeclasse, baseype, classebase )
 				end
 		end;
-
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
@@ -167,7 +158,7 @@ fun	espressioneStoT( programMap, cont, varExprS(nomeV v), executedCmds) =
 	| espressioneStoT( programMap, cont, accessoCampoS( v, c) , executedCmds) = 
 		let val expTyped = espressioneStoT( programMap, cont, v, executedCmds)
 		in
-			accessoCampoT( expTyped, c, ftype(programMap, c, getNomeClasseDaTipoT( estraiTipoSemantico expTyped)))
+			accessoCampoT( expTyped, c, ftype(programMap, getNomeClasseDaTipoT( estraiTipoSemantico expTyped), c))
 		end
 		
 	| espressioneStoT( programMap, cont, chiamataMetodoS( v, m, args) , executedCmds) = 
@@ -177,9 +168,8 @@ fun	espressioneStoT( programMap, cont, varExprS(nomeV v), executedCmds) =
 							m ,
 							fList(args, fn x => espressioneStoT(programMap, cont, x, executedCmds)),
 							mtype(	programMap, 
-									m, 
 									getNomeClasseDaTipoT( estraiTipoSemantico(expTyped) ),
-								(*	listExprToTipoT (programMap, cont, args ) *)
+									m,
 									fList(args, fn x => estraiTipoSemantico(espressioneStoT(programMap, cont, x, executedCmds)))
 								)
 				)
@@ -220,12 +210,14 @@ and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, co
 				let 
 					val argsMap = buildVarSMap args
 					val localsMap = buildVarSMap locals
+					val allVar = concat( argsMap, localsMap)
 					val cmdsMap = buildComandiSList comandi
 					val contestExpanded = headPutAllFun(cont, args @ locals, fn defVarS(t, v) => (varPiuNome v, tipoSintToSem t))
 					val defmetodo = defMetodoS( t, n, args, locals, comandi )
 				in				 
 					(if containsDuplicatedKey (argsMap) then raise MultipleArgsDef( getDuplicatedKey argsMap, nomeclasse, n)
 					else if containsDuplicatedKey (localsMap) then raise MultipleLocalsDef( getDuplicatedKey localsMap, nomeclasse, n)
+					else if containsDuplicatedKey (allVar) then raise MultipleLocalsArgsDef( getDuplicatedKey allVar, nomeclasse, n)
 					else if not (containsKey (cmdsMap, "return")) then raise ReturnNotFound(n, nomeclasse)
 					else
 						defMetodoT	( t, n, fList(args, fn defVarS( t, n) => defVarT(t,n,tipoSintToSem t)), 
@@ -318,12 +310,15 @@ and programmaStoT( programma ) =
 				( print ("ERROR TYPE MISMATCH: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse basec) ^ "> effettua un override del metodo definito nella classe <" ^ (stampaNomeClasse superc) ^  
 					 ">,\n                     cambiando il tipo di ritorno da <" ^ (stampaNomeTipoS supert) ^ "> a <" ^ (stampaNomeTipoS baset) ^ "> (incompatibili).\n\n"); codiceT [] )
 
-			| MultipleMetodoDef ( n, cla ) =>
-				( print ("ERROR: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
-					"> è definito più volte.\n\n"); codiceT [] )
+			| MultipleClasseDef ( cla ) =>
+				( print ("ERROR: La classe <" ^ (stampaNomeClasse cla) ^ "> è definita più volte.\n\n"); codiceT [] )
 
 			| MultipleCampoDef ( n, cla ) =>
 				( print ("ERROR: Il campo <" ^ (stampaNomeCampo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
+					"> è definito più volte.\n\n"); codiceT [] )
+
+			| MultipleMetodoDef ( n, cla ) =>
+				( print ("ERROR: Il metodo <" ^ (stampaNomeMetodo n) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ 
 					"> è definito più volte.\n\n"); codiceT [] )
 
 			| MultipleArgsDef ( n, cla, m ) =>
@@ -333,9 +328,10 @@ and programmaStoT( programma ) =
 			| MultipleLocalsDef ( n, cla, m ) =>
 				( print ("ERROR: La variabile <" ^ (stampaNomeVar n) ^ "> del metodo <" ^ (stampaNomeMetodo m) ^ "> nella classe <" 
 					^ (stampaNomeClasse cla) ^ "> è definita più volte.\n\n"); codiceT [] )
-			
-			| MultipleClasseDef ( cla ) =>
-				( print ("ERROR: La classe <" ^ (stampaNomeClasse cla) ^ "> è definita più volte.\n\n"); codiceT [] )
+
+			| MultipleLocalsArgsDef ( n, cla, m ) =>
+				( print ("ERROR: La variabile <" ^ (stampaNomeVar n) ^ "> del metodo <" ^ (stampaNomeMetodo m) ^ "> nella classe <" 
+					^ (stampaNomeClasse cla) ^ "> è già definita come parametro.\n\n"); codiceT [] )
 	end;	
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
@@ -362,6 +358,6 @@ programmaDouble
 programmaOverload 
 programmaTEST 
 
-
+*)
 print( stampaProgrammaS( programmaTEST));
-print( stampaProgrammaT( programmaStoT( programmaTEST)));*)
+print( stampaProgrammaT( programmaStoT( programmaTEST)));

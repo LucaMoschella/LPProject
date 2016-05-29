@@ -21,11 +21,12 @@ exception TypeErrorAssignVar of nomeMetodo * espressioneTipata * espressioneTipa
 exception TypeErrorAssignField of nomeMetodo * espressioneTipata * espressioneTipata * espressioneTipata * nomeClasse * nomeCampo;
 exception TypeErrorOverrideMismatch of nomeMetodo * tipoSintattico  * nomeClasse * tipoSintattico  * nomeClasse;
 
-exception MultipleMetodoDef of nomeMetodo * nomeClasse;
+exception MultipleClasseDef of nomeClasse;
 exception MultipleCampoDef of nomeCampo * nomeClasse;
+exception MultipleMetodoDef of nomeMetodo * nomeClasse;
 exception MultipleArgsDef of nomeVariabile * nomeClasse * nomeMetodo;
 exception MultipleLocalsDef of nomeVariabile * nomeClasse * nomeMetodo;
-exception MultipleClasseDef of nomeClasse;
+exception MultipleLocalsArgsDef of nomeVariabile * nomeClasse * nomeMetodo;
 
 (********** esecuzione **********)
 exception RuntimeError
