@@ -13,7 +13,7 @@ fun isSottoClasseT( programMap, Object, Object) = true
  |	isSottoClasseT( programMap, Object, nomeCl c2) = true
  |	isSottoClasseT( programMap, nomeCl c1, Object) = false
  |  isSottoClasseT( programMap, nomeCl c1, nomeCl c2) = if (c1 = c2) then true 
- 	else  isSottoClasseT(programMap, nomeCl c1,  getExtendedClassT(get(programMap,nomeCl c2)));
+ 	else isSottoClasseT(programMap, nomeCl c1,  getExtendedClassT(get(programMap,nomeCl c2)));
 
  (* il secondo è compatibile con il primo*)
 fun   compatibleTipoSemSemT (programMap, T, T) = false
@@ -35,7 +35,7 @@ fun compatibleTipiSemSemT(programMap, [], [] ) = true
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ESTRAZIONE INFORMAZIONI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 fun	estraiOggetto( objV obj) = obj
-	| estraiOggetto( _ ) = raise RuntimeErrorValIsNotObj;
+	| estraiOggetto( _ ) = raise RuntimeError;
 
 fun listVarTToTipoT( l ) = fList(l, fn defVarT(t, n, ts) => ts )
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
@@ -134,7 +134,7 @@ and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiu
 			val (objV (istanza (classeoggetto, campi)), newheap) = valutaEspressione(programMap, env, e, heap)
 
 
-			val (valoriargs, heapAfterArgs) = f4List( args, valutaEspressione, programMap, env, heap)
+			val (valoriargs, heapAfterArgs) = f4List( args, valutaEspressione, programMap, env, newheap)
 
 			(* ricerca a partire dalla variabile *)
 			val ( meto, param, cmds ) = mbody( programMap, eclasse, m, fList( args, fn x => estraiTipoSemantico x ))
@@ -186,16 +186,16 @@ and valutaProgramma( codiceT classi ) =
 			newheap)))
   
 	end
-	handle RuntimeError=> (print "Non c'è il main"; (intV ~1, buildHeap []))
+	handle MissingMain=> (print "Non è stato trovato il metodo main(), il programma non verrà eseguito!\n"; (intV ~1, buildHeap []))
 
-and cercaMain( [] )= raise RuntimeError
+and cercaMain( [] )= raise MissingMain
 	| cercaMain( defClasseT( n, ne, campi, metodi)::l )=
 	let
 		val metodiMap = buildMetodiTMap( metodi )
 	in
 		if( containsKey( metodiMap, ( nomeM "main", [] ))) 
 		then (fn defMetodoT( t, _, _, _, _) => ( tipoSintToSem t, n) )(get(metodiMap, (nomeM "main", [])))
-		else cercaMain( l ) handle KeyNotFound => raise RuntimeError
+		else cercaMain( l ) handle KeyNotFound => raise MissingMain
 	end;
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
@@ -222,8 +222,8 @@ programmaOverload
 programmaTEST 
 *)
 
-print (stampaProgrammaS programmaWeird );
-val x = programmaStoT( programmaWeird );
+print (stampaProgrammaS programmaStatDin2  );
+val x = programmaStoT( programmaStatDin2 );
 print (stampaProgrammaT x);
 (*
 val (x2, y) = valutaEspressione ( buildClassiTMap x, buildEnv [], newT( nomeCl "B", classeT (Object) ), buildHeap []);

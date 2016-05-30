@@ -56,12 +56,12 @@ fun estraiTipoSemantico( varExprT ( _, x)) = x
 	| estraiTipoSemantico( accessoCampoT ( _, _, x )) = x
 	| estraiTipoSemantico( chiamataMetodoT ( _, _, _, x)) = x;
 
-fun estraiCampiUsati( varExprS ( _ ) ) = []
-	| estraiCampiUsati( intExprS ( _ ) ) = []
-	| estraiCampiUsati( thisS  ) = []
+fun estraiCampiUsati( varExprS _ ) = []
+	| estraiCampiUsati( intExprS _ ) = []
+	| estraiCampiUsati( thisS ) = []
 	| estraiCampiUsati( superS  ) = []
 	| estraiCampiUsati( nullS ) = []
-	| estraiCampiUsati( newS ( _ ) ) = []
+	| estraiCampiUsati( newS _ ) = []
 	| estraiCampiUsati( accessoCampoS ( e1, c) ) = (estraiCampiUsati e1) @ [c] 
 	| estraiCampiUsati( chiamataMetodoS ( e1, _, args) ) = (estraiCampiUsati e1) @ (f3List( args, fn e => estraiCampiUsati e));
 
@@ -260,21 +260,19 @@ and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 				defClasseT( nomeClasseCorrente, 
 							nomeClasseEstesa, 
 							f2List( campi, 
-								fn (defCampoS( t, n, r), z) => 
-									let 
-										val right = espressioneStoT(programMap, contex, r, buildData [])
-										val campiusatiinR = estraiCampiUsati r;
-									in
-										if not( containsAllKey(z, campiusatiinR )) then raise RuntimeError
-										else if not (tipoValido(programMap, t)) then raise TypeIsNotAClassCampo(t, n, nomeClasseCorrente)
-										else if not (compatibleTipoSintSemS(programMap, t, estraiTipoSemantico right )) then raise TypeErrorDefField(t, n, right, nomeClasseCorrente)
-										else defCampoT(t, n, right, tipoSintToSem t) 
-									end,
-
-								fn (defCampoS( t, n, r), z) => headPut(z,n,defCampoS( t, n, r)),
-								buildData []
+									fn (defCampoS( t, n, r), z) => 
+										let 
+											val right = espressioneStoT(programMap, contex, r, buildData [])
+											val campiusatiinR = estraiCampiUsati r;
+										in
+											if not( containsAllKey(z, campiusatiinR )) then raise CampoNotInitialized( nomeClasseCorrente, n )
+											else if not (tipoValido(programMap, t)) then raise TypeIsNotAClassCampo(t, n, nomeClasseCorrente)
+											else if not (compatibleTipoSintSemS(programMap, t, estraiTipoSemantico right )) then raise TypeErrorDefField(t, n, right, nomeClasseCorrente)
+											else defCampoT(t, n, right, tipoSintToSem t) 
+										end,
+									fn (defCampoS( t, n, r), z) => headPut(z,n,defCampoS( t, n, r)),
+									buildData []
 									),
-
 							fList(metodi, fn m => 	(	controlloOverride( programMap, nomeClasseCorrente, m, nomeClasseCorrente );
 														metodoStoT( programMap, contex, nomeClasseCorrente, m))
 													)
@@ -299,6 +297,7 @@ and programmaStoT( programma ) =
 
 			| VarNotInitializedInMetodo( n, cla, m ) => ( print ("ERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata nel metodo <" ^ (stampaNomeMetodo m) ^ "> della classe <" ^ (stampaNomeClasse cla) ^ "> non è stata inizializzata.\n\n"); codiceT [] )			
 			| VarNotInitializedInClasse( n, cla ) => ( print ("ERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata durante l'inizializzazione dei campi della classe <" ^ (stampaNomeClasse cla) ^ "> non è stata inizializzata.\n\n"); codiceT [] )
+			| CampoNotInitialized( cla, n ) => ( print ("ERROR: Durante l'inizializzazione del campo <" ^ (stampaNomeCampo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^ "> vengono utilizzati uno o più campi non ancora inizializzati.\n\n"); codiceT [] )
 
 			| FieldNotFound (x, cla) => ( print ("ERROR: Il campo <" ^ (stampaNomeCampo x) ^ "> non è stato trovato nella gerarchia della classe <" ^ (stampaNomeClasse cla) ^ ">.\n\n"); codiceT [] )
 			| MethodNotFound (x, cla) => ( print ("ERROR: Il metodo <" ^ (stampaNomeMetodo x) ^ "> compatibile con gli argomenti passati non è stato trovato nella gerarchia della classe <" ^ (stampaNomeClasse cla) ^ ">.\n\n"); codiceT [] )			

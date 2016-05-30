@@ -125,7 +125,7 @@ fun stampaTriplaCampiObj( ind, (nomec, nomeca, lo) ) = ind ^ "(" ^ (stampaNomeCl
 fun stampaObj( istanza( nomec , l) ) = "{obj:" ^ (stampaNomeClasse( nomec )) ^ " - " ^ (stampaListaInLine(l, "", "Campi: <", "", ", ", "", ">", stampaTriplaCampiObj )) ^ "}";
 
 fun stampaVal( noV ) = "*"
-	| stampaVal( nullV ) = "nullS"
+	| stampaVal( nullV ) = "null"
 	| stampaVal( objV( obj ) )  = stampaObj obj
 	| stampaVal( intV i ) = Int.toString i;
 

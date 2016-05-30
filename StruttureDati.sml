@@ -1,4 +1,3 @@
-use "Sintassi.sml";
 (********** SISTEMA DEI TIPI **********)
 datatype varPiu = varPiuNome of nomeVariabile | this;
 

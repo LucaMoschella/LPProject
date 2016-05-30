@@ -9,6 +9,7 @@ exception UnknownVarInClasse of nomeVariabile * nomeClasse;
 exception VarNotInitialized of nomeVariabile;
 exception VarNotInitializedInMetodo of nomeVariabile * nomeClasse * nomeMetodo;
 exception VarNotInitializedInClasse of nomeVariabile * nomeClasse;
+exception CampoNotInitialized of nomeClasse * nomeCampo
 
 exception FieldNotFound of nomeCampo * nomeClasse;
 exception MethodNotFound of nomeMetodo * nomeClasse;
@@ -44,9 +45,5 @@ exception MultipleLocalsDef of nomeVariabile * nomeClasse * nomeMetodo;
 exception MultipleLocalsArgsDef of nomeVariabile * nomeClasse * nomeMetodo;
 
 (********** esecuzione **********)
-exception RuntimeError
-exception RuntimeErrorVarNotFoundInEnv;
-exception RuntimeErrorLocNotFoundInHeap;
-exception RuntimeErrorValIsNotObj;
-exception RuntimeErrorValIsNotInt;
-exception RuntimeErrorInitCampoNonTrovato;
+exception RuntimeError;
+exception MissingMain;
