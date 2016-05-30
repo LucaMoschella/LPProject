@@ -62,7 +62,7 @@ fun eval( programma ) =
 				| MissingMain=> (print "\nNon è stato trovato il metodo main(), il programma non verrà eseguito!\n"; noV)
 	);
 
-eval( programmaStatDin1 );
+eval( programmaTEST2 );
 
 (*
 programmaStatDin1
