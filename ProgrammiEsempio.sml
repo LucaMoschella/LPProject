@@ -56,7 +56,7 @@ val programmaWeird = codiceS(
 	        nomeCl "A",
 	        Object,
 	        [
-	           defCampoS ( intS, nomeC ("f"), chiamataMetodoS (( thisS) , nomeM "m" , [])) 
+	           defCampoS ( intS, nomeC ("f"), (varExprS (nomeV "sd"))) 
 
 
 
@@ -70,10 +70,13 @@ val programmaWeird = codiceS(
 	        nomeCl "B",
 	        nomeCl "A",
 	        [
-	            defCampoS ( intS, nomeC ("g"),chiamataMetodoS (( thisS) , nomeM "m" , []))
+
+
+	            defCampoS ( intS, nomeC ("g"),accessoCampoS (( thisS) , nomeC "p")),
+	            	            defCampoS ( intS, nomeC ("p"), intExprS 40 )
 	        ],
 	        [
-	            defMetodoS ( intS, nomeM "m", [], [], [returnS (accessoCampoS(  thisS, nomeC "g"))])
+	            defMetodoS ( intS, nomeM "m", [], [], [returnS (intExprS 9908)])
 	        ]
 	        ),
 
@@ -85,7 +88,7 @@ val programmaWeird = codiceS(
 	            defMetodoS ( intS, nomeM "main", 
 	            	[	           ], (*args*)
 	            	[defVarS( classeS( nomeCl "B"), (nomeV "b"))], (*locals*)
-	            	[ assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")) ,returnS (accessoCampoS( varExprS(nomeV "b"), nomeC "f"))]) (*cmds*)
+	            	[ assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")) ,returnS (accessoCampoS( varExprS(nomeV "b"), nomeC "g"))]) (*cmds*)
 	        ]
 	        )
 ]
@@ -959,7 +962,7 @@ val programmaTEST = codiceS(
 	        [],
 	        [
 	            defMetodoS (  intS, nomeM "main", 
-	            	[	 defVarS( classeS( nomeCl "B"), (nomeV "par"))     ], (*args*)
+	            	[	      ], (*args*)
 	            	[
 	            		defVarS( classeS( nomeCl "A"), (nomeV "a")),
 	            		defVarS( classeS( nomeCl "B"), (nomeV "b")),
@@ -980,5 +983,67 @@ val programmaTEST = codiceS(
 	            	]) (*cmds*)
 	        ]
 	        )
+]
+);
+
+
+
+val programmaTEST2 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	           defCampoS ( intS, nomeC ("f"), intExprS 1) ,
+	            defCampoS ( classeS(nomeCl "A"), nomeC ("classeAcampoA"), thisS)
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))]),
+	            defMetodoS (intS, nomeM "main", [],[],[returnS (accessoCampoS( newS (nomeCl "A"), nomeC "f"))])
+	        ]
+
+	        )
+
+	(*defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	            defCampoS ( classeS(nomeCl "B"), nomeC ("classeBcampoB"), thisS),
+	            defCampoS ( classeS(nomeCl "A"), nomeC ("classeBcampoA"), thisS)
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "get_f", [], [], [returnS (accessoCampoS( thisS, nomeC "f"))])
+	        ]
+	        ),
+
+
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS (  intS, nomeM "main", 
+	            	[	 defVarS( classeS( nomeCl "B"), (nomeV "par"))     ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "A"), (nomeV "a")),
+	            		defVarS( classeS( nomeCl "B"), (nomeV "b")),
+	            		defVarS( classeS( nomeCl "B"), (nomeV "bd")),
+
+	            		defVarS( intS, (nomeV "res1")),
+	            		defVarS( intS, (nomeV "res2")),
+
+	            		defVarS( intS, (nomeV "cia"))
+
+	            	], (*locals*)
+	            	[
+	            		assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")),
+	            		assegnamentoVarS( (nomeV "a"), newS( nomeCl "A")),
+	            		assegnamentoVarS( (nomeV "res2"), chiamataMetodoS (varExprS(nomeV "b") , nomeM "get_f" , [])),
+
+	            		returnS ( accessoCampoS( varExprS( nomeV "b"), nomeC "f"))
+	            	]) (*cmds*)
+	        ]
+	        )*)
 ]
 );

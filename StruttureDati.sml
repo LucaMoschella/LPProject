@@ -1,3 +1,4 @@
+use "Sintassi.sml";
 (********** SISTEMA DEI TIPI **********)
 datatype varPiu = varPiuNome of nomeVariabile | this;
 
@@ -30,6 +31,7 @@ fun getCL(buildContesto data) = (buildContesto, data)
 
 (********** ECCEZIONI INTERNE **********)
 exception KeyNotFound;
+exception InternalError;
 
 
 (******************** FUNZIONI POLIMORFE ********************)
@@ -40,6 +42,10 @@ fun isEmpty( data ) = let val (x, y) = getCL(data) in y = [] end;
 fun containsKeyL([], k ) = false
 	| containsKeyL((a,b)::l, k) = if a = k then true else containsKeyL(l, k)
 and containsKey(data, k) = let val (x, y) = getCL(data) in containsKeyL(y, k) end;
+
+fun containsAllKeyL(y, [] ) = true
+	| containsAllKeyL(y, k::l) = if not (containsKeyL( y, k)) then false else containsAllKeyL(y, l)
+and containsAllKey(data, l) = let val (x, y) = getCL(data) in containsAllKeyL(y, l) end;
 
 fun containsValueL([], v ) = false
 	| containsValueL((a,b)::l, v) = if b = v then true else containsValueL(l, v)
@@ -86,7 +92,7 @@ fun headPut(data, k, v) = let val (x, y) = getCL(data) in x( (k,v)::y ) end;
 fun headPutFun(data, v, f) = let val (x,y) = f v in headPut( data, x, y) end;
 
 fun headPutAll(data, []) = data
-	| headPutAll(data, (x,y)::l) = headPut( headPutAll(data, l), x, y);
+	| headPutAll(data, (x, y)::l) = headPut( headPutAll(data, l), x, y);
 
 fun headPutAllFun(data, [], f) = data
 	| headPutAllFun(data, a::l, f) = let val (x,y) = f a in headPut( headPutAllFun(data, l, f), x, y) end;
@@ -128,6 +134,19 @@ fun f2List( [], f, g, z) = []
 fun f3List( [], f) = []
 	| f3List( a::l, f) = f a @ f3List(l, f);
 
+fun f4List( [], f, p, e, heap) = ([], heap)
+	| f4List( a::l, f, p, e, heap) = 
+		let 
+			val (x, y) = f(p, e, a, heap) 
+			val (x2, y2) = f4List(l, f, p, e, y) 
+		in (x :: x2, y2)
+		end;
+
+(* crea una nuova lista creando coppie con gli elementi generati dalla conversione delle due passate in input*)
+fun f5List( [], f1, [], f2) = []
+	| f5List( l1, f1, [], f2) = raise InternalError
+	| f5List( [], f1, l2, f2) = raise InternalError
+	| f5List( a::l1, f1, b::l2, f2) = ( f1 a, f2 b )  :: f5List(l1, f1, l2, f2); 
 (*
 val l1 = [(1,1),(2,2),(3,3),(4,4),(5,5)];
 val l2 = [(6,6),(7,7),(8,8),(9,9),(10,10)];

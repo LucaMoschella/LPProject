@@ -18,31 +18,31 @@ fun tipoSemToSint ( intT ) = intS
 fun getExtendedClassS( defClasseS (_, nomeclasseestesa, _, _) ) = nomeclasseestesa;
 
 (* c1 è più in alto nella gerarchia di c2 *)
-fun isSottoClasse( programMap, Object, Object) = true
- |	isSottoClasse( programMap, Object, nomeCl c2) = true
- |	isSottoClasse( programMap, nomeCl c1, Object) = false
- |  isSottoClasse( programMap, nomeCl c1, nomeCl c2) = if (c1 = c2) then true 
- 	else  isSottoClasse(programMap, nomeCl c1,  getExtendedClassS(get(programMap,nomeCl c2)));
+fun isSottoClasseS( programMap, Object, Object) = true
+ |	isSottoClasseS( programMap, Object, nomeCl c2) = true
+ |	isSottoClasseS( programMap, nomeCl c1, Object) = false
+ |  isSottoClasseS( programMap, nomeCl c1, nomeCl c2) = if (c1 = c2) then true 
+ 	else  isSottoClasseS(programMap, nomeCl c1,  getExtendedClassS(get(programMap,nomeCl c2)));
 
 (* il secondo è compatibile con il primo*)
-fun   compatibleTipoSemSem (programMap, T, T) = false
-	| compatibleTipoSemSem (programMap, intT, T) = false
-	| compatibleTipoSemSem (programMap, classeT( nome ), T) = true
-  	| compatibleTipoSemSem (programMap, T, intT) = false
-	| compatibleTipoSemSem (programMap, intT, intT) = true
-	| compatibleTipoSemSem (programMap, classeT( nome ), intT) = false
-  	| compatibleTipoSemSem (programMap, T, classeT( nome )) = false
-	| compatibleTipoSemSem (programMap, intT, classeT( nome )) = false
-	| compatibleTipoSemSem (programMap, classeT( nome1 ), classeT( nome2 )) = isSottoClasse(programMap, nome1, nome2);
+fun   compatibleTipoSemSemS (programMap, T, T) = false
+	| compatibleTipoSemSemS (programMap, intT, T) = false
+	| compatibleTipoSemSemS (programMap, classeT( nome ), T) = true
+  	| compatibleTipoSemSemS (programMap, T, intT) = false
+	| compatibleTipoSemSemS (programMap, intT, intT) = true
+	| compatibleTipoSemSemS (programMap, classeT( nome ), intT) = false
+  	| compatibleTipoSemSemS (programMap, T, classeT( nome )) = false
+	| compatibleTipoSemSemS (programMap, intT, classeT( nome )) = false
+	| compatibleTipoSemSemS (programMap, classeT( nome1 ), classeT( nome2 )) = isSottoClasseS(programMap, nome1, nome2);
 
-fun compatibleTipoSintSem (programMap, ts, tt ) = compatibleTipoSemSem(programMap, tipoSintToSem ts ,tt);
+fun compatibleTipoSintSemS (programMap, ts, tt ) = compatibleTipoSemSemS(programMap, tipoSintToSem ts ,tt);
 
-fun compatibleTipoSintSint( programMap, ts1, ts2) = compatibleTipoSemSem(programMap, tipoSintToSem ts1, tipoSintToSem ts2);
+fun compatibleTipoSintSintS( programMap, ts1, ts2) = compatibleTipoSemSemS(programMap, tipoSintToSem ts1, tipoSintToSem ts2);
 
-fun compatibleTipiSemSem(programMap, [], [] ) = true
-	| compatibleTipiSemSem(programMap, v::l, [] ) = false
-	| compatibleTipiSemSem(programMap, [], t::l ) = false
-	| compatibleTipiSemSem(programMap, t1::l1, t2::l2 ) = if( not (compatibleTipoSemSem(programMap,t1,t2))) then false else compatibleTipiSemSem(programMap,l1,l2 );
+fun compatibleTipiSemSemS(programMap, [], [] ) = true
+	| compatibleTipiSemSemS(programMap, v::l, [] ) = false
+	| compatibleTipiSemSemS(programMap, [], t::l ) = false
+	| compatibleTipiSemSemS(programMap, t1::l1, t2::l2 ) = if( not (compatibleTipoSemSemS(programMap,t1,t2))) then false else compatibleTipiSemSemS(programMap,l1,l2 );
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
@@ -55,6 +55,15 @@ fun estraiTipoSemantico( varExprT ( _, x)) = x
 	| estraiTipoSemantico( newT ( _, x )) = x
 	| estraiTipoSemantico( accessoCampoT ( _, _, x )) = x
 	| estraiTipoSemantico( chiamataMetodoT ( _, _, _, x)) = x;
+
+fun estraiCampiUsati( varExprS ( _ ) ) = []
+	| estraiCampiUsati( intExprS ( _ ) ) = []
+	| estraiCampiUsati( thisS  ) = []
+	| estraiCampiUsati( superS  ) = []
+	| estraiCampiUsati( nullS ) = []
+	| estraiCampiUsati( newS ( _ ) ) = []
+	| estraiCampiUsati( accessoCampoS ( e1, c) ) = (estraiCampiUsati e1) @ [c] 
+	| estraiCampiUsati( chiamataMetodoS ( e1, _, args) ) = (estraiCampiUsati e1) @ (f3List( args, fn e => estraiCampiUsati e));
 
 fun getNomeClasseDaTipoT( classeT n) = n
  	| getNomeClasseDaTipoT( _ ) = raise TypeIsNotAClass;
@@ -94,7 +103,7 @@ fun buildAllMetodiSMap(programMap, Object) = buildData []
 	| buildAllMetodiSMap(programMap, nomeclasse) = concat( buildMetodiSMap( mSbody( programMap,  nomeclasse ) ), buildAllMetodiSMap(programMap, getExtendedClassS( get(programMap, nomeclasse) )) );
 
 fun mtype( programMap, nomeclasse, nomemetodo, tipi) = (fn defMetodoS(t, _, _, _, _) => tipoSintToSem t) 
-	( find( buildAllMetodiSMap(programMap, nomeclasse), (nomemetodo, tipi), fn ((m1,t1), (m2,t2)) => (m1 = m2) andalso (compatibleTipiSemSem(programMap, t1, t2))) )
+	( find( buildAllMetodiSMap(programMap, nomeclasse), (nomemetodo, tipi), fn ((m1,t1), (m2,t2)) => (m1 = m2) andalso (compatibleTipiSemSemS(programMap, t1, t2))) )
 	handle KeyNotFound => raise MethodNotFound(nomemetodo, nomeclasse);
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*)
 
@@ -113,7 +122,7 @@ fun controlloOverride (programMap, classebase, _, Object ) = true
 				let 
 					val supertype = (fn defMetodoS(t, _, _, _,_) => t) (get( metodiMap , metodoKey ))
 				in
-					if compatibleTipoSintSint( programMap, supertype, baseype)
+					if compatibleTipoSintSintS( programMap, supertype, baseype)
 					then controlloOverride( programMap, classebase, defmetodobase, getExtendedClassS defclasse ) 
 					else raise TypeErrorOverrideMismatch( n, supertype, nomeclasse, baseype, classebase )
 				end
@@ -122,7 +131,7 @@ fun controlloOverride (programMap, classebase, _, Object ) = true
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CONTROLLO INIZIALIZZAZIONE VARIABILI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-fun headPutAss( l, v ) = headPutFun( l, v, fn assegnamentoVarS(nomeV n, e) => (("assegnamentoVar", n), assegnamentoVarS(nomeV n, e) )
+fun headPutAss( data, l ) = headPutFun( data, l, fn assegnamentoVarS(nomeV n, e) => (("assegnamentoVar", n), assegnamentoVarS(nomeV n, e) )
 									| assegnamentoCampoS(e1, nomeC n, e2) => (("assegnamentoCampo", n), assegnamentoCampoS(e1, nomeC n, e2))
 									| returnS(e) => (("return", "notValid"), returnS(e)));
 
@@ -177,7 +186,7 @@ and comandoStoT( programMap, cont, assegnamentoVarS( nomevar, v), defMetodoS( _,
 			val left = espressioneStoT( programMap, cont, varExprS nomevar, executedCmds  )
 			val right = espressioneStoT( programMap, cont,  v, executedCmds  )
 		in
-			if( compatibleTipoSemSem( programMap, estraiTipoSemantico left, estraiTipoSemantico right) )
+			if( compatibleTipoSemSemS( programMap, estraiTipoSemantico left, estraiTipoSemantico right) )
 			then assegnamentoVarT( nomevar, right )
 			else raise TypeErrorAssignVar(nomemetodo, left, right, nomeclasse, nomevar)
 		end
@@ -188,7 +197,7 @@ and comandoStoT( programMap, cont, assegnamentoVarS( nomevar, v), defMetodoS( _,
 			val field = espressioneStoT( programMap, cont,  accessoCampoS( right1, nomecampo), executedCmds  )
 			val right = espressioneStoT( programMap, cont,  right2, executedCmds  )
 		in
-			if( compatibleTipoSemSem( programMap, estraiTipoSemantico field, estraiTipoSemantico right ))
+			if( compatibleTipoSemSemS( programMap, estraiTipoSemantico field, estraiTipoSemantico right ))
 			then assegnamentoCampoT(left, nomecampo, right)
 			else raise TypeErrorAssignField(nomemetodo, left, field, right, nomeclasse, nomecampo)
 		end
@@ -197,7 +206,7 @@ and comandoStoT( programMap, cont, assegnamentoVarS( nomevar, v), defMetodoS( _,
 		let 
 			val right = espressioneStoT(  programMap, cont,  d, executedCmds  )
 		in
-			if( compatibleTipoSintSem( programMap,  t, estraiTipoSemantico right ))
+			if( compatibleTipoSintSemS( programMap,  t, estraiTipoSemantico right ))
 			then returnT(right)
 			else raise TypeErrorReturn(nomemetodo, t, right, nomeclasse)
 		end
@@ -250,15 +259,22 @@ and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 			else 
 				defClasseT( nomeClasseCorrente, 
 							nomeClasseEstesa, 
-							fList( campi, fn defCampoS( t, n, r) => 
-										let 
-											val right = espressioneStoT(programMap, contex, r, buildData [])
-										in
-											if not (tipoValido(programMap, t)) then raise TypeIsNotAClassCampo(t, n, nomeClasseCorrente)
-											else if not (compatibleTipoSintSem(programMap, t, estraiTipoSemantico right )) then raise TypeErrorDefField(t, n, right, nomeClasseCorrente)
-											else defCampoT(t, n, right, tipoSintToSem t) 
-										end
+							f2List( campi, 
+								fn (defCampoS( t, n, r), z) => 
+									let 
+										val right = espressioneStoT(programMap, contex, r, buildData [])
+										val campiusatiinR = estraiCampiUsati r;
+									in
+										if not( containsAllKey(z, campiusatiinR )) then raise RuntimeError
+										else if not (tipoValido(programMap, t)) then raise TypeIsNotAClassCampo(t, n, nomeClasseCorrente)
+										else if not (compatibleTipoSintSemS(programMap, t, estraiTipoSemantico right )) then raise TypeErrorDefField(t, n, right, nomeClasseCorrente)
+										else defCampoT(t, n, right, tipoSintToSem t) 
+									end,
+
+								fn (defCampoS( t, n, r), z) => headPut(z,n,defCampoS( t, n, r)),
+								buildData []
 									),
+
 							fList(metodi, fn m => 	(	controlloOverride( programMap, nomeClasseCorrente, m, nomeClasseCorrente );
 														metodoStoT( programMap, contex, nomeClasseCorrente, m))
 													)
@@ -337,8 +353,8 @@ programmaCampo1
 programmaDouble 
 programmaOverload 
 programmaTEST 
+
+print( stampaProgrammaS( programmaCast1));
+print( stampaProgrammaT( programmaStoT( programmaCast1)));
+
 *)
-
-print( stampaProgrammaS( programmaTEST));
-print( stampaProgrammaT( programmaStoT( programmaTEST)));
-
