@@ -63,6 +63,7 @@ fun eval( programma ) =
 	);
 
 eval( programmaOverride0 );
+
 (*
 programmaStatDin 
 programmaWeird 
@@ -84,8 +85,4 @@ programmaCampo1
 programmaDouble 
 programmaOverload 
 programmaTEST 
-
-print( stampaProgrammaS( programmaCast1));
-print( stampaProgrammaT( programmaStoT( programmaCast1)));
-
 *)
