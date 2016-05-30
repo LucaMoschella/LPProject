@@ -48,7 +48,7 @@ fun buildClassiTMap( codiceT l ) = tailPutAllFun( buildData [(Object, defClasseT
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OPERAZIONI CON OGGETTI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-fun coerciObj( programMap, nomeclasse, istanza ( n, l)) =  f3List(l, fn (nc, nf, lo) => if( isSottoClasseT(programMap, nc, nomeclasse)) then [(nc, nf, lo)] else [] );
+fun coerciObj( programMap, superclasse, istanza (n, l)) =  istanza(superclasse, f3List(l, fn (nc, nf, lo) => if( isSottoClasseT(programMap, nc, superclasse)) then [(nc, nf, lo)] else [] ));
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
@@ -93,15 +93,10 @@ and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiu
 
 	| valutaEspressione (programMap, env, intExprT (n, t), heap) = (intV(n), heap)
 
- 	| valutaEspressione (programMap, env,  thisT (t) , heap) = (get(env, this), heap)
+ 	| valutaEspressione (programMap, env, thisT t, heap) = (get(env, this), heap)
 
-	| valutaEspressione (programMap, env,  superT (t) , heap) = 
-		let 
-			val nomeclasse = getNomeClasseDaTipoT t
-			val x = estraiOggetto( get(env, this) ) 
-		in 
-			(objV ( istanza ( nomeclasse, coerciObj(programMap, nomeclasse, x))), heap)
-		end
+	| valutaEspressione (programMap, env, superT t, heap) = 
+			(objV ( coerciObj(programMap, getNomeClasseDaTipoT t, estraiOggetto( get(env, this) ) ) ), heap)
 
 	| valutaEspressione (programMap, env,  nullT (t) , heap) = (nullV, heap)
 

@@ -136,19 +136,19 @@ exception NotEnv;
 exception NotHeap;
 exception NotDataList;
 
-fun stampaCoppiaVarVal( ind, (variabileSintattica, v) ) = "" ^ (stampaNomeVarPiu variabileSintattica) ^ ":" ^ ( stampaVal v) ^ "";
-fun stampaCoppiaLocVal( ind, (locaz, v)) = "" ^ (stampaLoc locaz) ^ ":" ^ ( stampaVal v) ^ "";
+fun stampaCoppiaVarVal( ind, (variabileSintattica, v) ) = ind ^ (stampaNomeVarPiu variabileSintattica) ^ ":" ^ ( stampaVal v) ^ "";
+fun stampaCoppiaLocVal( ind, (locaz, v)) = ind ^ (stampaLoc locaz) ^ ":" ^ ( stampaVal v) ^ "";
 fun stampaCoppiaVarPiuType( ind, (v, t)) = ind ^ "(" ^ (stampaNomeVarPiu v) ^ ":" ^ (stampaNomeTipoT t) ^ ")";
 fun stampaCoppiaData( ind, (s1, s2)) = ind ^ "(" ^ s1 ^ ":" ^ s2 ^ ")";
 
-fun stampaContesto (buildContesto l) = stampaListaInLine(l, "", "Contesto: [", "", "; ", "", "]\n", stampaCoppiaVarPiuType)
+fun stampaContesto (buildContesto l) = stampaListaNewLine(l, DEF_IND, "Contesto:", "", "; ", "", "\n", stampaCoppiaVarPiuType)
 	| stampaContesto( _ ) = raise NotContesto;
 
-fun stampaEnv (buildEnv  l) = stampaListaInLine(l, "", "Ambiente: [", "", "; ", "", "]\n", stampaCoppiaVarVal)
+fun stampaEnv (buildEnv  l) = stampaListaNewLine(l, DEF_IND, "Ambiente:", "", "; ", "", "\n", stampaCoppiaVarVal)
 	| stampaEnv( _ ) = raise NotEnv;
 
-fun stampaHeap (buildHeap l) = stampaListaInLine(l, "", "Heap: [", "", "; ", "", "]\n", stampaCoppiaLocVal)
+fun stampaHeap (buildHeap l) = stampaListaNewLine(l, DEF_IND, "Heap:", "", "; ", "", "\n", stampaCoppiaLocVal)
 	| stampaHeap( _ ) = raise NotHeap;
 
-fun stampaDataList (buildData l) = stampaListaInLine(l, "", "Data: [", "", "; ", "", "]\n", stampaCoppiaData)
+fun stampaDataList (buildData l) = stampaListaNewLine(l, DEF_IND, "Data:", "", "; ", "", "\n", stampaCoppiaData)
 	| stampaDataList( _ ) = raise NotDataList;

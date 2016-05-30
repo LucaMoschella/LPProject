@@ -16,8 +16,8 @@ fun eval( programma ) =
 			let
 				val (res, h) = valutaProgramma programmaTipato
 			in
-				(print ("\nIl programma è stato correttamente eseguito ed ha restituito: " ^ (stampaVal( res ))^ "\n");
-				print (stampaHeap h); res)
+				(print ("\nIl programma è stato correttamente eseguito ed ha restituito: " ^ (stampaVal( res )));
+				print ("\n\nAl termine dell'esecuzione lo stato della memoria è il seguente:\n" ^ (stampaHeap h)); res)
 			end
 		end
 				(* STATIC ERROR *)
