@@ -62,27 +62,31 @@ fun eval( programma ) =
 				| MissingMain=> (print "\nNon è stato trovato il metodo main(), il programma non verrà eseguito!\n"; noV)
 	);
 
-eval( programmaOverride0 );
+eval( programmaStatDin1 );
 
 (*
-programmaStatDin 
-programmaWeird 
-programmaOverride0 
-programmaOverride1 
-programmaOverride2 
-programmaOverride3 
-programmaOverride4 
-programmaOverride5 
-programmaOverride6 
-programmaInizializzazione1 
-programmaInizializzazione2 
-programmaVisibilita1 
-programmaVisibilita2 
-programmaCast1 
-programmaCast2 
-programmaCast3 
-programmaCampo1 
-programmaDouble 
-programmaOverload 
-programmaTEST 
+programmaStatDin1
+programmaStatDin2
+programmaWeird
+programmaOverride0
+programmaOverride1
+programmaOverride2
+programmaOverride3
+programmaOverride4
+programmaOverride5
+programmaOverride6
+programmaInizializzazione0
+programmaInizializzazione1
+programmaInizializzazione2
+programmaVisibilita1
+programmaVisibilita2
+programmaCast1
+programmaCast2
+programmaCast3
+programmaCampo1
+programmaDouble
+programmaOverload
+programmaOverload1
+programmaTEST
+programmaTEST2
 *)
