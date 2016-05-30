@@ -182,7 +182,6 @@ and valutaProgramma( codiceT classi ) =
 			newheap)
 	end
 	
-
 and cercaMain( [] )= raise MissingMain
 	| cercaMain( defClasseT( n, ne, campi, metodi)::l )=
 	let

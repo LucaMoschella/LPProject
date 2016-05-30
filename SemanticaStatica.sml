@@ -259,9 +259,8 @@ and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 									fn (defCampoS( t, n, r), z) => 
 										let 
 											val right = espressioneStoT(programMap, contex, r, buildData [])
-											val campiusatiinR = estraiCampiUsati r;
 										in
-											if not( containsAllKey(z, campiusatiinR )) then raise CampoNotInitialized( nomeClasseCorrente, n )
+											if not (containsAllKey(z, estraiCampiUsati r)) then raise CampoNotInitialized(nomeClasseCorrente, n)
 											else if not (tipoValido(programMap, t)) then raise TypeIsNotAClassCampo(t, n, nomeClasseCorrente)
 											else if not (compatibleTipoSintSemS(programMap, t, estraiTipoSemantico right )) then raise TypeErrorDefField(t, n, right, nomeClasseCorrente)
 											else defCampoT(t, n, right, tipoSintToSem t) 
@@ -269,9 +268,7 @@ and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 									fn (defCampoS( t, n, r), z) => headPut(z,n,defCampoS( t, n, r)),
 									buildData []
 									),
-							fList(metodi, fn m => 	(	controlloOverride( programMap, nomeClasseCorrente, m, nomeClasseCorrente );
-														metodoStoT( programMap, contex, nomeClasseCorrente, m))
-													)
+							fList(metodi, fn m => (controlloOverride( programMap, nomeClasseCorrente, m, nomeClasseCorrente ); metodoStoT( programMap, contex, nomeClasseCorrente, m)))
 						))	
 			handle VarNotInitialized v => raise VarNotInitializedInClasse( v, nomeClasseCorrente )
 				| UnknownVar v => raise UnknownVarInClasse( v, nomeClasseCorrente )
