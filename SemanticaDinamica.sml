@@ -48,8 +48,7 @@ fun buildClassiTMap( codiceT l ) = tailPutAllFun( buildData [(Object, defClasseT
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OPERAZIONI CON OGGETTI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-fun getSuperClasseObj( programMap, istanza(c, (_)) ) = getExtendedClassT( get( programMap, c ) );
-fun getSuperCampiObj( programMap, istanza ( n, l)) =  f3List(l, fn (nc, nf, lo) => if( n = nc) then [] else [(nc, nf, lo)] );
+fun coerciObj( programMap, nomeclasse, istanza ( n, l)) =  f3List(l, fn (nc, nf, lo) => if( isSottoClasseT(programMap, nc, nomeclasse)) then [(nc, nf, lo)] else [] );
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
@@ -98,9 +97,10 @@ and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiu
 
 	| valutaEspressione (programMap, env,  superT (t) , heap) = 
 		let 
+			val nomeclasse = getNomeClasseDaTipoT t
 			val x = estraiOggetto( get(env, this) ) 
 		in 
-			(objV ( istanza ( getSuperClasseObj(programMap, x), getSuperCampiObj(programMap, x))), heap)
+			(objV ( istanza ( nomeclasse, coerciObj(programMap, nomeclasse, x))), heap)
 		end
 
 	| valutaEspressione (programMap, env,  nullT (t) , heap) = (nullV, heap)

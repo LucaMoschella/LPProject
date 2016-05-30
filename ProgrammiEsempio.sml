@@ -448,6 +448,8 @@ val programmaOverride6 = codiceS(
 	        nomeCl "A",
 	        Object,
 	        [
+	        	 defCampoS ( classeS( nomeCl "A"), nomeC ("f"), thisS)
+
 	        ],
 	        [	        	
 	        	defMetodoS ( classeS( nomeCl "A"), nomeM "m", [], [], [returnS (nullS)])
@@ -458,6 +460,8 @@ val programmaOverride6 = codiceS(
 	        nomeCl "B",
 	        nomeCl "A",
 	        [
+	        	defCampoS ( classeS( nomeCl "A"), nomeC ("f"), superS)
+
 	        ],
 	        [
 	        	defMetodoS ( classeS( nomeCl "B"), nomeM "m", [], [], [returnS (nullS)])
@@ -467,7 +471,8 @@ val programmaOverride6 = codiceS(
 	defClasseS(
 	        nomeCl "C",
 	        nomeCl "B",
-	        [
+	        [	        	defCampoS ( classeS( nomeCl "A"), nomeC ("f"), superS)
+
 	        ],
 	        [
 	        	defMetodoS ( classeS( nomeCl "C"), nomeM "m", [], [], [returnS (nullS)])
@@ -478,18 +483,18 @@ val programmaOverride6 = codiceS(
 	        Object,
 	        [],
 	        [
-	            defMetodoS ( intS, nomeM "main", 
+	            defMetodoS (  classeS( nomeCl "C"), nomeM "main", 
 	            	[	           ], 
 	            	[
 	            		defVarS( classeS( nomeCl "B"), (nomeV "res")),
 	            		defVarS( classeS( nomeCl "C"), (nomeV "a"))
 	            	], 
-	            	[ 
-
+	            	[    
+	            	assegnamentoVarS( (nomeV "a"),newS( nomeCl "C")),
 
 	            		assegnamentoVarS( (nomeV "res"), chiamataMetodoS (varExprS( (nomeV "a")) , nomeM "m" , [])),
 
-	            		returnS ( intExprS 0)
+	            		returnS ( varExprS( nomeV "a"))
 					]) 
 	        ]
 	        )

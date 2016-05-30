@@ -16,7 +16,8 @@ fun eval( programma ) =
 			let
 				val (res, h) = valutaProgramma programmaTipato
 			in
-				(print ("\nIl programma è stato correttamente eseguito ed ha restituito: " ^ (stampaVal( res ))^ "\n"); res)
+				(print ("\nIl programma è stato correttamente eseguito ed ha restituito: " ^ (stampaVal( res ))^ "\n");
+				print (stampaHeap h); res)
 			end
 		end
 				(* STATIC ERROR *)
@@ -62,7 +63,7 @@ fun eval( programma ) =
 				| MissingMain=> (print "\nNon è stato trovato il metodo main(), il programma non verrà eseguito!\n"; noV)
 	);
 
-eval( programmaTEST2 );
+eval( programmaOverride6 );
 
 (* PROGRAMMI DI ESEMPIO DISPONIBILI:
 programmaStatDin1
