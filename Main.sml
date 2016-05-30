@@ -64,7 +64,7 @@ fun eval( programma ) =
 
 eval( programmaTEST2 );
 
-(*
+(* PROGRAMMI DI ESEMPIO DISPONIBILI:
 programmaStatDin1
 programmaStatDin2
 programmaWeird
