@@ -1,6 +1,3 @@
-use "SemanticaStatica.sml";
-
-
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OPERAZIONI CON TIPI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 fun tipoDefault( intT ) = intV 0
 	| tipoDefault( classeT n ) = nullV
@@ -133,7 +130,6 @@ and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiu
 			val eclasse = getNomeClasseDaTipoT(estraiTipoSemantico e)
 			val (objV (istanza (classeoggetto, campi)), newheap) = valutaEspressione(programMap, env, e, heap)
 
-
 			val (valoriargs, heapAfterArgs) = f4List( args, valutaEspressione, programMap, env, newheap)
 
 			(* ricerca a partire dalla variabile *)
@@ -147,13 +143,14 @@ and valutaEspressione (programMap, env, varExprT(v, t), heap) = (get(env, varPiu
 			valutaComandi(programMap, headPut(newenv, this, objV (istanza (classeoggetto, campi))), finalcmds, heapAfterArgs)
 		end
 
-and valutaComandi( programMap, env, assegnamentoVarT(v, e)::l ,heap) =
+and valutaComandi( programMap, env, [], heap) = raise RuntimeError
+
+	| valutaComandi( programMap, env, assegnamentoVarT(v, e)::l ,heap) =
 		let
 			val (valore, newheap) = valutaEspressione(programMap, env, e, heap)
 		in
 			valutaComandi(programMap, headPut(env, varPiuNome v, valore), l , newheap)
 		end
-
 
 	| valutaComandi( programMap, env, assegnamentoCampoT(e1, c, e2)::l ,heap) =
 		let
@@ -170,7 +167,6 @@ and valutaComandi( programMap, env, assegnamentoVarT(v, e)::l ,heap) =
 			valutaComandi(programMap, env, l, set( finalheap, loc, vr))
 		end
 
-
 	| valutaComandi( programMap, env, returnT e::l ,heap) = valutaEspressione(programMap, env, e, heap)
 
 and valutaProgramma( codiceT classi ) =
@@ -179,59 +175,20 @@ and valutaProgramma( codiceT classi ) =
 		val (mainTipo, mainClasse) = cercaMain( classi )
 		val (startObj, newheap) = valutaEspressione( programMap, buildEnv [], newT(mainClasse, classeT mainClasse), buildHeap [] )
 	in
-		( (valutaEspressione(
+		valutaEspressione(
 			programMap, 
 			buildEnv [(this, startObj)], 
 			chiamataMetodoT( thisT ( classeT mainClasse), nomeM "main" , [] , mainTipo),
-			newheap)))
-  
+			newheap)
 	end
-	handle MissingMain=> (print "Non è stato trovato il metodo main(), il programma non verrà eseguito!\n"; (intV ~1, buildHeap []))
+	
 
 and cercaMain( [] )= raise MissingMain
 	| cercaMain( defClasseT( n, ne, campi, metodi)::l )=
 	let
 		val metodiMap = buildMetodiTMap( metodi )
 	in
-		if( containsKey( metodiMap, ( nomeM "main", [] ))) 
-		then (fn defMetodoT( t, _, _, _, _) => ( tipoSintToSem t, n) )(get(metodiMap, (nomeM "main", [])))
-		else cercaMain( l ) handle KeyNotFound => raise MissingMain
+		(fn defMetodoT( t, _, _, _, _) => ( tipoSintToSem t, n) )(get(metodiMap, (nomeM "main", [])))
+		handle KeyNotFound => cercaMain( l )
 	end;
-
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-(*
-programmaStatDin 
-programmaWeird 
-programmaOverride0 
-programmaOverride1 
-programmaOverride2 
-programmaOverride3 
-programmaOverride4 
-programmaOverride5 
-programmaOverride6 
-programmaInizializzazione1 
-programmaInizializzazione2 
-programmaVisibilita1 
-programmaVisibilita2 
-programmaCast1 
-programmaCast2 
-programmaCast3 
-programmaCampo1 
-programmaDouble 
-programmaOverload 
-programmaTEST 
-*)
-
-print (stampaProgrammaS programmaStatDin2  );
-val x = programmaStoT( programmaStatDin2 );
-print (stampaProgrammaT x);
-(*
-val (x2, y) = valutaEspressione ( buildClassiTMap x, buildEnv [], newT( nomeCl "B", classeT (Object) ), buildHeap []);
-print (stampaVal(x2) ^"\n" ^stampaHeap(y) ^ "\n\n");
-
-mbody(buildClassiTMap x, nomeCl "esempio", nomeM "main", [] )
-*)
-
-val (i,u ) = valutaProgramma x;
-
-print("\nIL PROGRAMMA HA VALUTATO: " ^ (stampaVal( i )) ^ " ! :)\n\n " ^ (stampaHeap u));
