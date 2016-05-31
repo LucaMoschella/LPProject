@@ -1,5 +1,3 @@
-
-
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CONVERSIONE E COMPATIBILITA FRA TIPI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 fun tipoValido ( programMap, intS ) = true
 	| tipoValido ( programMap, classeS c ) = containsKey(programMap, c);

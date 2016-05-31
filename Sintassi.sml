@@ -56,9 +56,3 @@ and metodoTipato = defMetodoT of tipoSintattico * nomeMetodo *  variabileTipata 
 and classeTipata = defClasseT of nomeClasse * nomeClasse * campoTipato list * metodoTipato list
 
 and programmaTipato = codiceT of classeTipata list; 
-
-(*
-use "Datatype.sml";
-use "Exception.sml";
-use "PrintToJava.sml";
-*)

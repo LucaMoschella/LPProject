@@ -150,12 +150,3 @@ fun f5List( [], f1, [], f2) = []
 	| f5List( l1, f1, [], f2) = raise InternalError
 	| f5List( [], f1, l2, f2) = raise InternalError
 	| f5List( a::l1, f1, b::l2, f2) = ( f1 a, f2 b )  :: f5List(l1, f1, l2, f2); 
-(*
-val l1 = [(1,1),(2,2),(3,3),(4,4),(5,5)];
-val l2 = [(6,6),(7,7),(8,8),(9,9),(10,10)];
-
-val x = buildData [(1,1),(2,2),(3,3),(4,4),(5,5)];
-val y = buildData [(6,6),(7,7),(8,8),(9,9),(10,10)];
-
-headPutAll( y, l1);
-*)
