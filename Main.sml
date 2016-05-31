@@ -4,7 +4,8 @@ use "Exception.sml";
 use "PrintToJava.sml";
 use "SemanticaStatica.sml";
 use "SemanticaDinamica.sml";
-use "ProgrammiEsempio.sml";
+use "ProgrammiEsempioCorretti.sml";
+use "ProgrammiEsempioSbagliati.sml";
 
 fun eval( programma ) =
 	(
@@ -27,12 +28,11 @@ fun eval( programma ) =
 				| UnknownVarInClasse( n, cla ) => ( print ("\nERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata durante l'inizializzazione dei campi della classe <" ^ (stampaNomeClasse cla) ^ "> non è stata definita.\n\n"); noV )
 
 				| VarNotInitializedInMetodo( n, cla, m ) => ( print ("\nERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata nel metodo <" ^ (stampaNomeMetodo m) ^ "> della classe <" ^ (stampaNomeClasse cla) ^ "> non è stata inizializzata.\n\n"); noV )			
-				| VarNotInitializedInClasse( n, cla ) => ( print ("\nERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata durante l'inizializzazione dei campi della classe <" ^ (stampaNomeClasse cla) ^ "> non è stata inizializzata.\n\n"); noV )
 				| CampoNotDef( cla, n ) => ( print ("\nERROR: Durante l'inizializzazione del campo <" ^ (stampaNomeCampo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^ "> vengono utilizzati uno o più campi non ancora definiti.\n\n"); noV )
 
 				| FieldNotFound (x, cla) => ( print ("\nERROR: Il campo <" ^ (stampaNomeCampo x) ^ "> non è stato trovato nella gerarchia della classe <" ^ (stampaNomeClasse cla) ^ ">.\n\n"); noV )
 				| MethodNotFound (x, cla) => ( print ("\nERROR: Il metodo <" ^ (stampaNomeMetodo x) ^ "> compatibile con gli argomenti passati non è stato trovato nella gerarchia della classe <" ^ (stampaNomeClasse cla) ^ ">.\n\n"); noV )			
-				| ClassNotFound (x, x2) => ( print ("\nERROR: La classe <" ^ (stampaNomeClasse x) ^ ">  estende la classe non definita <" ^ (stampaNomeClasse x2) ^ ">.\n\n"); noV )			
+				| ClassExtNotFound (x, x2) => ( print ("\nERROR: La classe <" ^ (stampaNomeClasse x) ^ "> estende la classe non definita <" ^ (stampaNomeClasse x2) ^ ">.\n\n"); noV )			
 				| ReturnNotFound (x, cla) => ( print ("\nERROR: Il metodo <" ^ (stampaNomeMetodo x) ^ "> nella classe <" ^ (stampaNomeClasse cla) ^ "> non contiene un comando di return.\n\n"); noV )
 
 				| TypeIsNotAClassInMetodo(m, cla) => ( print ("\nERROR: L'espressione utilizzata nel metodo <" ^ (stampaNomeMetodo m) ^ "> della classe <" ^ (stampaNomeClasse cla) ^  "> non risolve in un oggetto valido.\n\n"); noV ) 
@@ -63,34 +63,61 @@ fun eval( programma ) =
 				| MissingMain=> (print "\nNon è stato trovato il metodo main(), il programma non verrà eseguito!\n"; noV)
 	);
 
-eval( programmaOverrideOK );
 
-(* PROGRAMMI DI ESEMPIO DISPONIBILI:
-Esempi presi dalle dispense:
+(*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*)
+(*%%%%%%%%%%%%%%%%%%% PROGRAMMI DI ESEMPIO DISPONIBILI %%%%%%%%%%%%%%%%%%%%%%%%%%*)
+(*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*)
+
+(*%%%%%%%%%%%%%%%%%% PROGRAMMI DI ESEMPIO CORRETTI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*)
+(* 
 	programmaStatDin1
 	programmaStatDin2
 	programmaWeird
-
-Esempi vari di programmi corretti:
-programmaOverride0
-programmaOverride1
-programmaOverride2
-programmaOverride3
-programmaOverride4
-programmaOverride5
-programmaOverride6
-programmaInizializzazione0
-programmaInizializzazione1
-programmaInizializzazione2
-programmaVisibilita1
-programmaVisibilita2
-programmaCast1
-programmaCast2
-programmaCast3
-programmaCampo1
-programmaDouble
-programmaOverload
-programmaOverload1
-programmaTEST
-programmaTEST2
+	programmaOverrideOK
+	programmaSuperOK
+	programmaEredOK
 *)
+
+(*%%%%%%%%%%%%%%%%%% PROGRAMMI DI ESEMPIO NON CORRETTI %%%%%%%%%%%%%%%%%%%%%%%%%%*)
+(* 
+	programmaClassExtNotValid 
+
+	programmaUnknownVarInMetodo
+	programmaUnknownVarInClasse
+
+	programmaVarNotInitializedInMetodo
+	programmaCampoNotDef
+
+	programmaFieldNotFound 
+	programmaMethodNotFound 
+	programmaClassExtNotFound 
+	programmaReturnNotFound 
+
+	programmaTypeIsNotAClassInMetodo
+	programmaTypeIsNotAClassInClasse
+
+	programmaTypeIsNotAClassCampo 
+	programmaTypeIsNotAClassMetodo 
+	programmaTypeIsNotAClassArgs 
+	programmaTypeIsNotAClassLocals 
+
+	programmaTypeIsNotAClassNewInMetodo 
+	programmaTypeIsNotAClassNewInClasse 
+
+	programmaTypeErrorDefField 
+	programmaTypeErrorReturn 
+	programmaTypeErrorAssignVar 
+	programmaTypeErrorAssignField 
+	programmaTypeErrorOverrideMismatch 
+	
+	programmaMultipleClasseDef 
+	programmaMultipleCampoDef 
+	programmaMultipleMetodoDef 
+	programmaMultipleArgsDef 
+	programmaMultipleLocalsDef 
+	programmaMultipleLocalsArgsDef 
+
+	programmaMissingMain
+*)
+
+eval( programmaOverrideOK );

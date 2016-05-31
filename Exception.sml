@@ -8,12 +8,11 @@ exception UnknownVarInClasse of nomeVariabile * nomeClasse;
 
 exception VarNotInitialized of nomeVariabile;
 exception VarNotInitializedInMetodo of nomeVariabile * nomeClasse * nomeMetodo;
-exception VarNotInitializedInClasse of nomeVariabile * nomeClasse;
 exception CampoNotDef of nomeClasse * nomeCampo
 
 exception FieldNotFound of nomeCampo * nomeClasse;
 exception MethodNotFound of nomeMetodo * nomeClasse;
-exception ClassNotFound of nomeClasse * nomeClasse;
+exception ClassExtNotFound of nomeClasse * nomeClasse;
 exception ReturnNotFound of nomeMetodo * nomeClasse;
 
 exception WrongSemToSint; (* internal error *)

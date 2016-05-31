@@ -251,7 +251,7 @@ and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 		in
 			(if containsDuplicatedKey (campiMap) then raise MultipleCampoDef( getDuplicatedKey campiMap, nomeClasseCorrente)
 			else if containsDuplicatedKey (metodiMap) then raise MultipleMetodoDef( (fn (x,y) => x)(getDuplicatedKey metodiMap), nomeClasseCorrente)
-			else if not (containsKey( programMap, nomeClasseEstesa)) then raise ClassNotFound(nomeClasseCorrente, nomeClasseEstesa)
+			else if not (containsKey( programMap, nomeClasseEstesa)) then raise ClassExtNotFound(nomeClasseCorrente, nomeClasseEstesa)
 			else 
 				defClasseT( nomeClasseCorrente, 
 							nomeClasseEstesa, 
@@ -270,8 +270,7 @@ and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 									),
 							fList(metodi, fn m => (controlloOverride( programMap, nomeClasseCorrente, m, nomeClasseCorrente ); metodoStoT( programMap, contex, nomeClasseCorrente, m)))
 						))	
-			handle VarNotInitialized v => raise VarNotInitializedInClasse( v, nomeClasseCorrente )
-				| UnknownVar v => raise UnknownVarInClasse( v, nomeClasseCorrente )
+			handle UnknownVar v => raise UnknownVarInClasse( v, nomeClasseCorrente )
 				| TypeIsNotAClassNew c => raise TypeIsNotAClassNewInClasse(c, nomeClasseCorrente )
 				| TypeIsNotAClass => raise TypeIsNotAClassInClasse( nomeClasseCorrente)				
 		end
