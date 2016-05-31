@@ -103,10 +103,7 @@ val programmaWeird = codiceS(
 	        nomeCl "A",
 	        Object,
 	        [
-	           defCampoS ( intS, nomeC ("f"), intExprS 90) 
-
-
-
+	           defCampoS ( intS, nomeC ("f"),  chiamataMetodoS ( thisS , nomeM "m" , []))
 	        ],
 	        [
 	            defMetodoS ( intS, nomeM "m", [], [], [returnS (intExprS 3)])
@@ -117,13 +114,10 @@ val programmaWeird = codiceS(
 	        nomeCl "B",
 	        nomeCl "A",
 	        [
-
-
-	            defCampoS ( intS, nomeC ("g"),accessoCampoS (( thisS) , nomeC "p")),
-	            	            defCampoS ( intS, nomeC ("p"), intExprS 40 )
+	            defCampoS ( intS, nomeC ("g"),  chiamataMetodoS ( thisS , nomeM "m" , []))
 	        ],
 	        [
-	            defMetodoS ( intS, nomeM "m", [], [], [returnS (intExprS 9908)])
+	            defMetodoS ( intS, nomeM "m", [], [], [returnS (accessoCampoS (( thisS) , nomeC "g"))])
 	        ]
 	        ),
 
@@ -134,15 +128,91 @@ val programmaWeird = codiceS(
 	        [
 	            defMetodoS ( intS, nomeM "main", 
 	            	[	           ], (*args*)
-	            	[defVarS( classeS( nomeCl "B"), (nomeV "b"))], (*locals*)
-	            	[ assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")) ,returnS (accessoCampoS( varExprS(nomeV "b"), nomeC "g"))]) (*cmds*)
+	            	[
+	            		defVarS( classeS( nomeCl "B"), (nomeV "b"))
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( (nomeV "b"), newS( nomeCl "B")),
+	            		returnS (accessoCampoS( varExprS(nomeV "b"), nomeC "f"))
+	            	]) (*cmds*)
 	        ]
 	        )
 ]
 );
 
-(**************************** VARIE ***********************************)
+(**************************** Programmi corretti ***********************************)
 
+val programmaOverrideOK = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        	defCampoS ( classeS( nomeCl "A"), nomeC ("a"),  nullS)
+	        ],
+	        [	       
+	        	defMetodoS ( classeS( nomeCl "A"), nomeM "set", [defVarS( classeS( nomeCl "A"), (nomeV "a"))], [], 
+	        		[
+	        			returnS (nullS)
+	        		])	        
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        	defCampoS ( classeS( nomeCl "A"), nomeC ("b"),  nullS)
+	        ],
+	        [
+	        	defMetodoS ( classeS( nomeCl "A"), nomeM "set", [defVarS( classeS( nomeCl "A"), (nomeV "b"))], [], 
+	        		[
+	        			assegnamentoCampoS(thisS, nomeC "b", varExprS (nomeV "b")),
+	        			returnS (thisS)
+	        		])	        
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "C",
+	        nomeCl "B",
+	        [
+	        	defCampoS ( classeS( nomeCl "C"), nomeC ("c"),  nullS)
+	        ],
+	        [
+	        	defMetodoS ( classeS( nomeCl "C"), nomeM "set", [defVarS( classeS( nomeCl "C"), (nomeV "c"))], [], 
+	        		[
+	        			returnS (nullS)
+	        		])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( classeS( nomeCl "A"), nomeM "main", 
+	            	[	           ], 
+	            	[
+	            		defVarS( classeS( nomeCl "A"), (nomeV "a")),
+	            		defVarS( classeS( nomeCl "A"), (nomeV "resA"))
+	            	], 
+	            	[ 
+	            		assegnamentoVarS( (nomeV "a"), newS( nomeCl "C")),
+
+	            		assegnamentoVarS( (nomeV "resA"), chiamataMetodoS (varExprS( (nomeV "a")) , nomeM "set" , [newS( nomeCl "C")])),
+
+	            		returnS (varExprS (nomeV "resA"))
+					]) 
+	        ]
+	        )
+
+]
+);
+
+
+(**************************** Programmi errati ***********************************)
 val programmaOverride0 = codiceS( 
 [
 	defClasseS(
@@ -163,8 +233,8 @@ val programmaOverride0 = codiceS(
 	        [
 	        	defMetodoS ( classeS( nomeCl "B"), nomeM "get_f", [], [], [returnS (newS( nomeCl "B"))])
 	        ]
-	        )
-(*
+	        ),
+
 	defClasseS(
 	        nomeCl "esempio",
 	        Object,
@@ -194,9 +264,10 @@ val programmaOverride0 = codiceS(
 					]) 
 	        ]
 	        )
-*)
+
 ]
 );
+
 val programmaOverride1 = codiceS( 
 [
 	defClasseS(

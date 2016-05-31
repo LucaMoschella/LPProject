@@ -28,7 +28,7 @@ fun eval( programma ) =
 
 				| VarNotInitializedInMetodo( n, cla, m ) => ( print ("\nERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata nel metodo <" ^ (stampaNomeMetodo m) ^ "> della classe <" ^ (stampaNomeClasse cla) ^ "> non è stata inizializzata.\n\n"); noV )			
 				| VarNotInitializedInClasse( n, cla ) => ( print ("\nERROR: La variabile <" ^ (stampaNomeVar n) ^ "> utilizzata durante l'inizializzazione dei campi della classe <" ^ (stampaNomeClasse cla) ^ "> non è stata inizializzata.\n\n"); noV )
-				| CampoNotInitialized( cla, n ) => ( print ("\nERROR: Durante l'inizializzazione del campo <" ^ (stampaNomeCampo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^ "> vengono utilizzati uno o più campi non ancora inizializzati.\n\n"); noV )
+				| CampoNotDef( cla, n ) => ( print ("\nERROR: Durante l'inizializzazione del campo <" ^ (stampaNomeCampo n) ^ "> della classe <" ^ (stampaNomeClasse cla) ^ "> vengono utilizzati uno o più campi non ancora definiti.\n\n"); noV )
 
 				| FieldNotFound (x, cla) => ( print ("\nERROR: Il campo <" ^ (stampaNomeCampo x) ^ "> non è stato trovato nella gerarchia della classe <" ^ (stampaNomeClasse cla) ^ ">.\n\n"); noV )
 				| MethodNotFound (x, cla) => ( print ("\nERROR: Il metodo <" ^ (stampaNomeMetodo x) ^ "> compatibile con gli argomenti passati non è stato trovato nella gerarchia della classe <" ^ (stampaNomeClasse cla) ^ ">.\n\n"); noV )			
@@ -63,12 +63,15 @@ fun eval( programma ) =
 				| MissingMain=> (print "\nNon è stato trovato il metodo main(), il programma non verrà eseguito!\n"; noV)
 	);
 
-eval( programmaOverride6 );
+eval( programmaOverrideOK );
 
 (* PROGRAMMI DI ESEMPIO DISPONIBILI:
-programmaStatDin1
-programmaStatDin2
-programmaWeird
+Esempi presi dalle dispense:
+	programmaStatDin1
+	programmaStatDin2
+	programmaWeird
+
+Esempi vari di programmi corretti:
 programmaOverride0
 programmaOverride1
 programmaOverride2

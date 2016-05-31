@@ -38,6 +38,10 @@ exception InternalError;
 (********** funzioni di check **********)
 fun isEmpty( data ) = let val (x, y) = getCL(data) in y = [] end;
 
+fun containsPairL([], k, v ) = false
+	| containsPairL((a,b)::l, k, v) = if (a = k) andalso (b = v) then true else containsPairL(l, k, v)
+and containsPair(data, k, v) = let val (x, y) = getCL(data) in containsPairL(y, k, v) end;
+
 fun containsKeyL([], k ) = false
 	| containsKeyL((a,b)::l, k) = if a = k then true else containsKeyL(l, k)
 and containsKey(data, k) = let val (x, y) = getCL(data) in containsKeyL(y, k) end;

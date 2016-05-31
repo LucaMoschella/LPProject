@@ -127,18 +127,18 @@ fun controlloOverride (programMap, classebase, _, Object ) = true
 
 
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CONTROLLO INIZIALIZZAZIONE VARIABILI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
-fun headPutAss( data, l ) = headPutFun( data, l, fn assegnamentoVarS(nomeV n, e) => (("assegnamentoVar", n), assegnamentoVarS(nomeV n, e) )
-									| assegnamentoCampoS(e1, nomeC n, e2) => (("assegnamentoCampo", n), assegnamentoCampoS(e1, nomeC n, e2))
-									| returnS(e) => (("return", "notValid"), returnS(e)));
+fun headPutAss( data, l ) = headPutFun( data, l, fn assegnamentoVarS(nomeV n, e) => ("varInit", n)
+									| assegnamentoCampoS(e1, nomeC n, e2) => ("_", "_")
+									| returnS(e) => ("_", "_"));
 
-fun isInitialized(cmds,  nomeV v ) = containsKey(cmds, ("assegnamentoVar", v));
+fun isInitialized(cmds,  nomeV v ) = containsPair(cmds, "varInit", v);
 (* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% *)
 
 
 (* %%%%%%%%%%%%%%%%% REGOLE PER LA TRADUZIONE IN PROGRAMMA TIPATO %%%%%%%%%%%%%%%%%%%%% *)
 fun	espressioneStoT( programMap, cont, varExprS( v ), executedCmds) = 
 		if not (containsKey( cont, varPiuNome ( v ) )) then raise UnknownVar(  v  )
-		else if not (isInitialized( executedCmds,  v  )) then raise VarNotInitialized(  v )
+		else if not (isInitialized( executedCmds,  v  )) then raise VarNotInitialized(  v ) 
 		else varExprT( v , get( cont, varPiuNome ( v )))
 
 	| espressioneStoT( programMap, cont, intExprS n, executedCmds) = 
@@ -233,8 +233,8 @@ and metodoStoT( programMap, cont, nomeclasse, defMetodoS( t, n, args, locals, co
 											f2List(comandi, 
 												fn (cmd, exec) => comandoStoT(programMap, contestExpanded, cmd, defmetodo, nomeclasse, exec), (* questo è il comando per convertire la lista *)
 												fn (cmd, exec) => headPutAss(exec, cmd),	(* questo serve per dirgli cosa si deve portare dietro mentre scorre la lista: i comandi usati + quello attuale *)
-												buildData []) (* inzialmente non sono stati eseguiti comandi*)
-									))			
+												headPutAllFun(buildData [], args, fn (defVarS( t, nomeV v)) => ("varInit", v) ) (* mettiamo delle inizializzazioni fittizie verso i parametri, che non devono essere considerati non inizializzati *)
+									)))		
 					handle VarNotInitialized v => raise VarNotInitializedInMetodo( v, nomeclasse, n )
 						  | UnknownVar v => raise UnknownVarInMetodo( v, nomeclasse, n )
 						  | TypeIsNotAClassNew c => raise TypeIsNotAClassNewInMetodo(c, nomeclasse, n)
@@ -260,7 +260,7 @@ and classeStoT(programMap, defClasseS(nomeClasseCorrente, nomeClasseEstesa, camp
 										let 
 											val right = espressioneStoT(programMap, contex, r, buildData [])
 										in
-											if not (containsAllKey(z, estraiCampiUsati r)) then raise CampoNotInitialized(nomeClasseCorrente, n)
+											if not (containsAllKey(z, estraiCampiUsati r)) then raise CampoNotDef(nomeClasseCorrente, n)
 											else if not (tipoValido(programMap, t)) then raise TypeIsNotAClassCampo(t, n, nomeClasseCorrente)
 											else if not (compatibleTipoSintSemS(programMap, t, estraiTipoSemantico right )) then raise TypeErrorDefField(t, n, right, nomeClasseCorrente)
 											else defCampoT(t, n, right, tipoSintToSem t) 

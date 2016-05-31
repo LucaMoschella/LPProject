@@ -122,7 +122,7 @@ and stampaProgrammaT ( codiceT l ) =
 fun stampaLoc ( buildLoc i) = "loc#" ^ (Int.toString i);
 
 fun stampaTriplaCampiObj( ind, (nomec, nomeca, lo) ) = ind ^ "(" ^ (stampaNomeClasse nomec) ^ ":" ^ ( stampaNomeCampo nomeca) ^ ":" ^ (stampaLoc lo) ^ ")";
-fun stampaObj( istanza( nomec , l) ) = "{obj:" ^ (stampaNomeClasse( nomec )) ^ " - " ^ (stampaListaInLine(l, "", "Campi: <", "", ", ", "", ">", stampaTriplaCampiObj )) ^ "}";
+fun stampaObj( istanza( nomec , l) ) = "{Obj:" ^ (stampaNomeClasse( nomec )) ^ "  " ^ (stampaListaInLine(l, "", "Campi:<", "", ", ", "", ">", stampaTriplaCampiObj )) ^ "}";
 
 fun stampaVal( noV ) = "*"
 	| stampaVal( nullV ) = "null"
@@ -141,14 +141,14 @@ fun stampaCoppiaLocVal( ind, (locaz, v)) = ind ^ (stampaLoc locaz) ^ ":" ^ ( sta
 fun stampaCoppiaVarPiuType( ind, (v, t)) = ind ^ "(" ^ (stampaNomeVarPiu v) ^ ":" ^ (stampaNomeTipoT t) ^ ")";
 fun stampaCoppiaData( ind, (s1, s2)) = ind ^ "(" ^ s1 ^ ":" ^ s2 ^ ")";
 
-fun stampaContesto (buildContesto l) = stampaListaNewLine(l, DEF_IND, "Contesto:", "", "; ", "", "\n", stampaCoppiaVarPiuType)
+fun stampaContesto (buildContesto l) = stampaListaNewLine(l, DEF_IND, "Contesto:", "", "", "", "\n", stampaCoppiaVarPiuType)
 	| stampaContesto( _ ) = raise NotContesto;
 
-fun stampaEnv (buildEnv  l) = stampaListaNewLine(l, DEF_IND, "Ambiente:", "", "; ", "", "\n", stampaCoppiaVarVal)
+fun stampaEnv (buildEnv  l) = stampaListaNewLine(l, DEF_IND, "Ambiente:", "", "", "", "\n", stampaCoppiaVarVal)
 	| stampaEnv( _ ) = raise NotEnv;
 
-fun stampaHeap (buildHeap l) = stampaListaNewLine(l, DEF_IND, "Heap:", "", "; ", "", "\n", stampaCoppiaLocVal)
+fun stampaHeap (buildHeap l) = stampaListaNewLine(l, DEF_IND, "Heap:", "", "", "", "\n", stampaCoppiaLocVal)
 	| stampaHeap( _ ) = raise NotHeap;
 
-fun stampaDataList (buildData l) = stampaListaNewLine(l, DEF_IND, "Data:", "", "; ", "", "\n", stampaCoppiaData)
+fun stampaDataList (buildData l) = stampaListaNewLine(l, DEF_IND, "Data:", "", "", "", "\n", stampaCoppiaData)
 	| stampaDataList( _ ) = raise NotDataList;
