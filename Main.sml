@@ -17,8 +17,11 @@ fun eval( programma ) =
 			let
 				val (res, h) = valutaProgramma programmaTipato
 			in
-				(print ("\nIl programma è stato correttamente eseguito ed ha restituito: " ^ (stampaVal( res )));
-				print ("\n\nAl termine dell'esecuzione lo stato della memoria è il seguente:\n" ^ (stampaHeap h)); res)
+				(
+					print ("\nIl programma è stato correttamente eseguito ed ha restituito: " ^ (stampaVal( res )) );
+					if isEmpty h then (print "\n\nAl termine dell'esecuzione la memoria non è stata modificata.\n"; res)
+					else (print ("\n\nAl termine dell'esecuzione lo stato della memoria è il seguente:\n" ^ (stampaHeap h)); res)
+				)
 			end
 		end
 				(* STATIC ERROR *)
@@ -82,6 +85,10 @@ fun eval( programma ) =
 	programmaOverrideOK
 	programmaSuperOK
 	programmaEredOK
+
+	programmaRelazione1   		-> Primo esempio nella relazione
+	programmaRelazione2			-> Secondo esempio nella relazione
+
 *)
 
 (*..................... PROGRAMMI DI ESEMPIO NON CORRETTI .......................*)
@@ -126,4 +133,4 @@ fun eval( programma ) =
 	programmaMissingMain
 *)
 
-eval( programmaOverrideOK );
+eval( programmaRelazione1 );

@@ -331,3 +331,125 @@ val programmaEredOK = codiceS(
 
 ]
 );
+
+val programmaRelazione1 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "m", [defVarS( classeS( nomeCl "A"), (nomeV "x"))], [], 
+	            	[
+	            		returnS (intExprS 1)
+	            	])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "m", [defVarS( classeS( nomeCl "B"), (nomeV "x"))], [], 
+	            	[
+	            		returnS (intExprS 0)
+	            	])	        
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "C",
+	        nomeCl "B",
+	        [
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "m", [defVarS( classeS(Object), (nomeV "x"))], [], 
+	            	[
+	            		returnS (intExprS ~1)
+	            	])	        
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "C"), (nomeV "c"))
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( (nomeV "c"), newS( nomeCl "C")),
+
+	            		returnS (chiamataMetodoS (varExprS(nomeV "c") , nomeM "m" , [ varExprS( nomeV "c")]))
+	            	]) (*cmds*)
+	        ]
+	        )
+]
+);
+
+val programmaRelazione2 = codiceS( 
+[
+	defClasseS(
+	        nomeCl "A",
+	        Object,
+	        [
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "m", [defVarS( classeS(Object), (nomeV "x"))], [], 
+	            	[
+	            		returnS (intExprS 1)
+	            	])
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "B",
+	        nomeCl "A",
+	        [
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "m", [defVarS( classeS(Object), (nomeV "x"))], [], 
+	            	[
+	            		returnS (intExprS 2)
+	            	])	        
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "C",
+	        nomeCl "B",
+	        [
+	        ],
+	        [
+	            defMetodoS ( intS, nomeM "m", [defVarS( classeS(nomeCl "A"), (nomeV "x"))], [], 
+	            	[
+	            		returnS (intExprS 3)
+	            	])	        
+	        ]
+	        ),
+
+	defClasseS(
+	        nomeCl "esempio",
+	        Object,
+	        [],
+	        [
+	            defMetodoS ( intS, nomeM "main", 
+	            	[	           ], (*args*)
+	            	[
+	            		defVarS( classeS( nomeCl "B"), (nomeV "b"))
+	            	], (*locals*)
+	            	[ 
+	            		assegnamentoVarS( (nomeV "b"), newS( nomeCl "C")),
+
+	            		returnS (chiamataMetodoS (varExprS(nomeV "b") , nomeM "m" , [nullS]))
+	            	]) (*cmds*)
+	        ]
+	        )
+]
+);
